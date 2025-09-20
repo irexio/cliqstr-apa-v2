@@ -32,8 +32,6 @@ export const getCurrentUser = query({
       myProfile: profile ? {
         id: profile._id,
         username: profile.username,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
         image: profile.image,
         bannerImage: profile.bannerImage,
         about: profile.about,
@@ -48,6 +46,8 @@ export const getCurrentUser = query({
         stripeCustomerId: account.stripeCustomerId || null,
         suspended: account.suspended,
         birthdate: account.birthdate,
+        firstName: account.firstName,
+        lastName: account.lastName,
       } : null,
     };
   },
@@ -355,6 +355,8 @@ export const createUserWithAccount = mutation({
     isVerified: v.optional(v.boolean()),
     verificationToken: v.optional(v.string()),
     verificationExpires: v.optional(v.number()),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -382,6 +384,8 @@ export const createUserWithAccount = mutation({
       stripeCustomerId: undefined,
       suspended: false,
       createdAt: now,
+      firstName: args.firstName,
+      lastName: args.lastName,
     });
 
     return userId;

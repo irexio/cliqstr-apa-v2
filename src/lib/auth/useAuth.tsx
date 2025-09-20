@@ -14,8 +14,6 @@ interface User {
   myProfile: {
     id: Id<"myProfiles">;
     username: string;
-    firstName: string | undefined;
-    lastName: string | undefined;
     image: string | undefined;
     bannerImage: string | undefined;
     about: string | undefined;
@@ -30,6 +28,8 @@ interface User {
     stripeCustomerId: string | null;
     suspended: boolean;
     birthdate: number;
+    firstName: string | undefined;
+    lastName: string | undefined;
   } | null;
 }
 

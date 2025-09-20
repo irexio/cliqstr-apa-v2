@@ -156,9 +156,14 @@ export function HeaderComponent() {
             setIsApproved(userData.account?.isApproved === true || userData.approved === true);
             
             // Set minimal user data needed for the dropdown
+            // Header avatar uses Account data (firstName/lastName) for initials, not MyProfile
+            const accountName = userData.account?.firstName && userData.account?.lastName 
+              ? `${userData.account.firstName} ${userData.account.lastName}`
+              : userData.email?.split('@')[0] || 'User';
+            
             setUserData({
               id: userData.id,
-              name: userData.myProfile?.firstName || userData.myProfile?.name || userData.email?.split('@')[0] || 'User',
+              name: accountName,
               email: userData.email || '',
               role: userData.account?.role || userData.role || '',
               // Do not pass MyProfile avatar - header shows Account initials only
@@ -197,9 +202,14 @@ export function HeaderComponent() {
             setIsApproved(userData.account?.isApproved === true || userData.approved === true);
             
             // Set minimal user data needed for the dropdown
+            // Header avatar uses Account data (firstName/lastName) for initials, not MyProfile
+            const accountName = userData.account?.firstName && userData.account?.lastName 
+              ? `${userData.account.firstName} ${userData.account.lastName}`
+              : userData.email?.split('@')[0] || 'User';
+            
             setUserData({
               id: userData.id,
-              name: userData.myProfile?.firstName || userData.myProfile?.name || userData.email?.split('@')[0] || 'User',
+              name: accountName,
               email: userData.email || '',
               role: userData.account?.role || userData.role || '',
               // Do not pass MyProfile avatar - header shows Account initials only
