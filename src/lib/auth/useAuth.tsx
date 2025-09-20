@@ -18,6 +18,8 @@ interface User {
     bannerImage: string | undefined;
     about: string | undefined;
     birthdate: number | undefined; // Can be undefined since it comes from account
+    firstName: string | undefined; // Can be undefined since it comes from account
+    lastName: string | undefined; // Can be undefined since it comes from account
     showYear: boolean;
   } | null;
   account: {

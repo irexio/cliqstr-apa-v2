@@ -14,6 +14,8 @@ export default defineSchema({
     verificationToken: v.optional(v.string()),
     isVerified: v.boolean(),
     isParent: v.boolean(),
+    firstName: v.optional(v.string()), // Temporary: for existing data compatibility
+    lastName: v.optional(v.string()), // Temporary: for existing data compatibility
   })
     .index("by_email", ["email"])
     .index("by_reset_token", ["resetToken"])
