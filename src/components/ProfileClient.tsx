@@ -251,8 +251,8 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
                     
                     return date.toLocaleDateString('en-US', 
                       profileData.showYear 
-                        ? { year: 'numeric', month: 'long', day: 'numeric' }
-                        : { month: 'long', day: 'numeric' }
+                        ? { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' }
+                        : { timeZone: 'UTC', month: 'long', day: 'numeric' }
                     );
                   } catch (error) {
                     console.error('Date parsing error:', error, 'Input:', profileData.birthdate);

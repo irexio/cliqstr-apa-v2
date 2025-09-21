@@ -82,7 +82,7 @@ export default function ProfilePageServerConvex({ username }: ProfilePageServerC
   
   const profileData = {
     id: profile._id,
-    name: `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.username,
+    name: `${profile.account?.firstName || ''} ${profile.account?.lastName || ''}`.trim() || profile.username,
     username: profile.username,
     birthdate: profile.account?.birthdate ? new Date(profile.account.birthdate).toISOString() : undefined,
     bio: profile.about || '',

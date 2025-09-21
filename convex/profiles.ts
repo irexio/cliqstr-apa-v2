@@ -26,9 +26,11 @@ export const getProfileByUsername = query({
         id: user._id,
         email: user.email,
       } : null,
-      // Include account data for birthdate access
+      // Include account data for birthdate and name access (single source of truth)
       account: account ? {
         birthdate: account.birthdate,
+        firstName: account.firstName,
+        lastName: account.lastName,
         role: account.role,
         isApproved: account.isApproved,
       } : null,
@@ -55,9 +57,11 @@ export const getProfileByUserId = query({
     
     return {
       ...profile,
-      // Include account data for birthdate access
+      // Include account data for birthdate and name access (single source of truth)
       account: account ? {
         birthdate: account.birthdate,
+        firstName: account.firstName,
+        lastName: account.lastName,
         role: account.role,
         isApproved: account.isApproved,
       } : null,
