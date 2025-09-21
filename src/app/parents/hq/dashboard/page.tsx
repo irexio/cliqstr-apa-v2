@@ -13,8 +13,12 @@ import ParentsHQContent from '@/components/parents/ParentsHQContent';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 import { enforceAPA } from '@/lib/auth/enforceAPA';
 
-export default async function ParentsHQDashboard() {
+export default async function ParentsHQDashboard({
+  searchParams,
+}: {
+  searchParams: { approvalToken?: string };
+}) {
   const user = await getCurrentUser();
-  enforceAPA(user);
+  enforceAPA(user, searchParams.approvalToken);
   return <ParentsHQContent />;
 }

@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation';
 
-export function enforceAPA(user: any) {
+export function enforceAPA(user: any, approvalToken?: string) {
+  // Allow access if there's an approval token (for new parent signup flow)
+  if (!user && approvalToken) {
+    return; // Don't redirect, allow access
+  }
+  
   if (!user) redirect('/sign-in');
   const role = user.account?.role;
   const approved = !!user.account?.isApproved;
