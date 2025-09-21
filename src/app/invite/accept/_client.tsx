@@ -22,21 +22,35 @@ function InviteAcceptContent() {
 
   const checkInviteToken = async (token: string) => {
     try {
+      console.log('[INVITE_ACCEPT] Checking token:', token);
+      
       // First, try to check if it's a parent approval token
       const parentResponse = await fetch(`/api/parent-approval/accept?token=${encodeURIComponent(token)}`);
+      console.log('[INVITE_ACCEPT] Parent approval response status:', parentResponse.status);
+      
       if (parentResponse.ok) {
         const parentData = await parentResponse.json();
+        console.log('[INVITE_ACCEPT] Parent approval data:', parentData);
+        
         if (parentData.approval) {
+          console.log('[INVITE_ACCEPT] Found parent approval, parent state:', parentData.approval.parentState);
+          
           // This is a parent approval token - handle as before
           if (parentData.approval.parentState === 'existing_parent') {
+            console.log('[INVITE_ACCEPT] Redirecting existing parent to Parents HQ');
             router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`);
           } else {
+            console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
             sessionStorage.setItem('parentApprovalToken', token);
             sessionStorage.setItem('parentApprovalData', JSON.stringify(parentData.approval));
             router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
           }
           return;
+        } else {
+          console.log('[INVITE_ACCEPT] No approval data in response');
         }
+      } else {
+        console.log('[INVITE_ACCEPT] Parent approval response not ok:', parentResponse.status);
       }
 
       // If not a parent approval token, try to validate as a regular invite
