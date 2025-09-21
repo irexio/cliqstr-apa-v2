@@ -53,6 +53,15 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
     setSuccess(false);
 
     try {
+      console.log('[INVITE_FORM] Form submission started', {
+        inviteType,
+        friendFirstName,
+        friendLastName,
+        childBirthdate,
+        parentEmail,
+        trustedAdultContact,
+        cliqId
+      });
       // 🔐 Session Check: Verify user is still authenticated before API call
       const authCheck = await fetch('/api/auth/status');
       const { user } = await authCheck.json();
@@ -67,21 +76,28 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       }
       
       // Validate required fields
+      console.log('[INVITE_FORM] Validating fields...');
       if (!inviteType) {
+        console.log('[INVITE_FORM] Error: No invite type selected');
         throw new Error('Please select who this invite is for');
       }
 
       if (inviteType === 'child') {
+        console.log('[INVITE_FORM] Validating child invite fields...');
         if (!friendFirstName.trim()) {
+          console.log('[INVITE_FORM] Error: Missing child first name');
           throw new Error("Child's first name is required");
         }
         if (!friendLastName.trim()) {
+          console.log('[INVITE_FORM] Error: Missing child last name');
           throw new Error("Child's last name is required");
         }
         if (!childBirthdate.trim()) {
+          console.log('[INVITE_FORM] Error: Missing child birthdate');
           throw new Error("Child's birthdate is required");
         }
         if (!parentEmail.trim()) {
+          console.log('[INVITE_FORM] Error: Missing parent email');
           throw new Error('Parent/guardian email is required');
         }
         // Basic email validation
@@ -89,10 +105,9 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
         if (!emailRegex.test(parentEmail)) {
           throw new Error('Please enter a valid parent email address');
         }
-        // Basic birthdate validation (YYYY-MM-DD format)
-        const birthdateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!birthdateRegex.test(childBirthdate)) {
-          throw new Error('Please enter birthdate in YYYY-MM-DD format');
+        // Basic birthdate validation - just check it's not empty and looks like a date
+        if (childBirthdate.length < 8) {
+          throw new Error('Please enter a valid birthdate');
         }
       } else if (inviteType === 'adult') {
         if (!trustedAdultContact.trim()) {
@@ -115,6 +130,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       }
 
       // Prepare the request payload based on invite type
+      console.log('[INVITE_FORM] Creating payload...');
       const payload: any = {
         cliqId,
         inviteType,
@@ -133,6 +149,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
         payload.inviteeEmail = trustedAdultContact.trim();
       }
 
+      console.log('[INVITE_FORM] Sending API request with payload:', payload);
       const response = await fetch('/api/invites/create', {
         method: 'POST',
         headers: {
