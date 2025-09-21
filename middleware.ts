@@ -14,6 +14,16 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Special handling for Parents HQ access
+  if (pathname === '/parents/hq') {
+    const pendingInviteCookie = req.cookies.get('pending_invite');
+    const hasApprovalToken = req.nextUrl.searchParams.get('approvalToken');
+    if (pendingInviteCookie || hasApprovalToken) {
+      console.log('[MIDDLEWARE] Allowing PHQ access with invite or approvalToken');
+      return NextResponse.next();
+    }
+  }
+
   // Canonical host redirect (production only): www -> apex
   try {
     const host = req.headers.get('host') || '';

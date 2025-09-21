@@ -30,11 +30,11 @@ export default function ParentsHQContent() {
         const data = res.ok ? await res.json() : null;
 
         if (!data?.user) {
-          // Allow unauthenticated users if they have a pending invite (signup flow)
+          // Allow unauthenticated users if they have a pending invite or approval token (signup flow)
           if (typeof document !== 'undefined') {
             const hasPendingInvite = document.cookie.includes('pending_invite=');
-            if (hasPendingInvite) {
-              // Let them proceed to signup - don't redirect
+            if (hasPendingInvite || approvalToken) {
+              // Let them proceed to signup wizard, don't redirect
               if (!cancelled) setAuthLoading(false);
               return;
             }
