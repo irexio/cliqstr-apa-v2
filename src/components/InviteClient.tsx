@@ -137,26 +137,38 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
         inviteNote: inviteNote.trim() || undefined,
       };
 
+      let response;
+      
       if (inviteType === 'child') {
-        // Child invites need friendFirstName, friendLastName, childBirthdate, and parentEmail
-        payload.friendFirstName = friendFirstName.trim();
-        payload.friendLastName = friendLastName.trim();
-        payload.childBirthdate = childBirthdate.trim(); // Child's birthdate for account creation
-        payload.inviteeEmail = parentEmail.trim(); // Send invite to parent's email
-        payload.parentEmail = parentEmail.trim(); // Parent email for approval process
+        // Child invites use the parent approval API (same as direct child signup)
+        const childPayload = {
+          childFirstName: friendFirstName.trim(),
+          childLastName: friendLastName.trim(),
+          childBirthdate: childBirthdate.trim(),
+          parentEmail: parentEmail.trim(),
+        };
+        
+        console.log('[INVITE_FORM] Sending child invite via parent approval API:', childPayload);
+        response = await fetch('/api/parent-approval/request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(childPayload),
+        });
       } else {
-        // Adult and Parent invites need inviteeEmail
+        // Adult and Parent invites use the regular invite API
         payload.inviteeEmail = trustedAdultContact.trim();
+        
+        console.log('[INVITE_FORM] Sending adult/parent invite via invite API:', payload);
+        response = await fetch('/api/invites/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
       }
-
-      console.log('[INVITE_FORM] Sending API request with payload:', payload);
-      const response = await fetch('/api/invites/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
 
       const data = await response.json();
 
@@ -174,26 +186,35 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       }
 
       setSuccess(true);
-      // Reset form
-      setFriendFirstName('');
-      setFriendLastName('');
-      setChildBirthdate('');
-      setParentEmail('');
-      setTrustedAdultContact('');
-      setInviteType('');
-      setInviteNote('');
       
-      // Redirect to invitation sent page with details
-      const recipientName = inviteType === 'child' ? friendFirstName.trim() : trustedAdultContact.trim();
-      const params = new URLSearchParams({
-        name: recipientName,
-        type: inviteType
-      });
-      
-      // Use router to navigate after a brief delay to show success message
-      setTimeout(() => {
-        window.location.href = `/invite/sent?${params.toString()}`;
-      }, 1500);
+      if (inviteType === 'child') {
+        // Child invites redirect to awaiting approval (same as direct child signup)
+        setTimeout(() => {
+          window.location.href = '/awaiting-approval';
+        }, 1500);
+      } else {
+        // Adult/Parent invites redirect to invite sent page
+        // Reset form
+        setFriendFirstName('');
+        setFriendLastName('');
+        setChildBirthdate('');
+        setParentEmail('');
+        setTrustedAdultContact('');
+        setInviteType('');
+        setInviteNote('');
+        
+        // Redirect to invitation sent page with details
+        const recipientName = trustedAdultContact.trim();
+        const params = new URLSearchParams({
+          name: recipientName,
+          type: inviteType
+        });
+        
+        // Use router to navigate after a brief delay to show success message
+        setTimeout(() => {
+          window.location.href = `/invite/sent?${params.toString()}`;
+        }, 1500);
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
