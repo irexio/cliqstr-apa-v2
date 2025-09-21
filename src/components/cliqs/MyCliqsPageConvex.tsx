@@ -54,12 +54,12 @@ export default function MyCliqsPageConvex() {
         <p className="text-lg text-neutral-700 mb-8 text-center">
           Let's get you started — create a profile or start your first cliq.
         </p>
-        <div className="flex flex-row gap-6 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
           <Link href="/profile/create">
-            <Button className="bg-black text-white hover:bg-gray-900">Create Your Profile</Button>
+            <Button className="bg-black text-white hover:bg-gray-900 w-full sm:w-auto">Create Your Profile</Button>
           </Link>
           <Link href="/cliqs/build">
-            <Button className="bg-black text-white hover:bg-gray-900">Create New Cliq</Button>
+            <Button className="bg-black text-white hover:bg-gray-900 w-full sm:w-auto">Create New Cliq</Button>
           </Link>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function MyCliqsPageConvex() {
   }));
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">My Cliqs</h1>
       <CliqsGrid initialCliqs={formattedCliqs} currentUserId={user.id} />
     </div>

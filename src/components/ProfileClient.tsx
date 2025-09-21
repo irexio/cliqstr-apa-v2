@@ -104,7 +104,7 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden m-4 sm:m-6">
       {/* Banner Section */}
       <div className="relative h-60 bg-gradient-to-r from-gray-100 to-gray-200">
         {profileData.bannerUrl ? (
@@ -160,7 +160,7 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
       </div>
 
       {/* Profile Header */}
-      <div className="px-8 pb-6 relative -mt-[60px] z-10">
+      <div className="px-4 sm:px-8 pb-6 relative -mt-[60px] z-10">
         {/* Avatar */}
         <div className="relative w-[120px] h-[120px] rounded-full bg-white border-4 border-white mb-4 overflow-hidden">
           {profileData.avatarUrl ? (
@@ -214,16 +214,16 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
         </div>
 
         {/* Profile Info */}
-        <div className="flex justify-between items-start flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-black mb-1">{profileData.name}</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-1">{profileData.name}</h1>
             <p className="text-base text-gray-600 mb-3">@{profileData.username}</p>
             {profileData.bio && profileData.bio !== 'My Cliq' && (
               <p className="text-gray-700 text-[15px] max-w-[400px] leading-relaxed">
                 {profileData.bio}
               </p>
             )}
-            <div className="flex gap-6 mt-4 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 mt-4 text-sm text-gray-600">
               <span>Birthday: {
                 (() => {
                   if (!profileData.birthdate || profileData.birthdate === 'Invalid Date') {
@@ -276,7 +276,7 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
       </div>
 
       {/* My Wall Section */}
-      <div className="px-8 py-6">
+      <div className="px-4 sm:px-8 py-6">
         <ScrapbookGallery
           items={scrapbookItems}
           userId={profileData.id}
