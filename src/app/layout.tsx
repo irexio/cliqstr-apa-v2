@@ -8,6 +8,7 @@ import '@uploadthing/react/styles.css';
 
 import { Poppins } from 'next/font/google';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 // Import from the wrapper which should handle the re-export
 // Version: 2024.1.27.1
 import SessionProvider from '@/components/SessionProvider';
@@ -38,9 +39,11 @@ export default function RootLayout({
       <body className="text-[#202020] font-poppins antialiased">
         <ConvexClientProvider>
           <SessionProvider>
-            <AuthProvider>
-              <AppFrame>{children}</AppFrame>
-            </AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <AuthProvider>
+                <AppFrame>{children}</AppFrame>
+              </AuthProvider>
+            </Suspense>
           </SessionProvider>
         </ConvexClientProvider>
       </body>

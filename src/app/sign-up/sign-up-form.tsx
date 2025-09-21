@@ -33,7 +33,7 @@ export default function SignUpForm() {
   const [password, setPassword] = useState('');
   
   // Flow state
-  const [currentStep, setCurrentStep] = useState<FlowStep>(preFilledEmail && approvalToken ? 'adult-credentials' : 'initial');
+  const [currentStep, setCurrentStep] = useState<FlowStep>(approvalToken ? 'adult-credentials' : 'initial');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isChild, setIsChild] = useState(false);

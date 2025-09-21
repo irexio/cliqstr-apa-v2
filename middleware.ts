@@ -15,7 +15,7 @@ export function middleware(req: NextRequest) {
   }
 
   // Special handling for Parents HQ access
-  if (pathname === '/parents/hq') {
+  if (pathname.startsWith('/parents/hq')) {
     const pendingInviteCookie = req.cookies.get('pending_invite');
     const hasApprovalToken = req.nextUrl.searchParams.get('approvalToken');
     if (pendingInviteCookie || hasApprovalToken) {

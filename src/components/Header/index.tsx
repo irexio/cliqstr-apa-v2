@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 import DesktopNav from './DesktopNav';
@@ -26,6 +27,8 @@ type UserData = {
 export function HeaderComponent() {
   console.log('[Header] Component rendering at', new Date().toISOString());
   // Cache bust: 1738004100 - Force clean rebuild without hooks
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isApproved, setIsApproved] = useState(false); // Track APA approval status
   const [hasCliqs, setHasCliqs] = useState(false);
@@ -35,6 +38,65 @@ export function HeaderComponent() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isMobile, setIsMobile] = useState(true); // Default to mobile for SSR
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  // Define public pages that don't need auth checks
+  const isPublicPage = (path: string) => {
+    const publicPaths = [
+      '/',
+      '/sign-in',
+      '/sign-up',
+      '/about',
+      '/pricing',
+      '/privacy',
+      '/terms',
+      '/safety',
+      '/how-it-works',
+      '/features',
+      '/for-parents',
+      '/faqs',
+      '/verification-pending',
+      '/verification-success',
+      '/awaiting-approval',
+      '/reset-password',
+      '/forgot-password',
+      '/email-confirmation',
+      '/verification-error',
+      '/join',
+      '/join-expired',
+      '/join-invalid',
+      '/invite/declined',
+      '/invite/invalid',
+      '/invite/sent',
+      '/invite/manual',
+      '/not-authorized',
+      '/suspended',
+      '/under-development',
+      '/waitlist'
+    ];
+    
+    // Check exact matches and invite pages
+    return publicPaths.includes(path) || 
+           path.startsWith('/invite/') ||
+           path.startsWith('/auth/') ||
+           path.startsWith('/verify-');
+  };
+
+  // Check if we should skip auth checks
+  const shouldSkipAuthCheck = () => {
+    // Skip on public pages
+    if (isPublicPage(pathname)) {
+      console.log('[Header] Skipping auth check - public page:', pathname);
+      return true;
+    }
+    
+    // Skip when approvalToken is present (parent approval flow)
+    if (searchParams.get('approvalToken')) {
+      console.log('[Header] Skipping auth check - approvalToken present');
+      return true;
+    }
+    
+    return false;
+  };
 
   // Custom mobile detection
   useEffect(() => {
@@ -131,6 +193,12 @@ export function HeaderComponent() {
 
   // Fetch user data and authentication status - simplified to just check if logged in
   const fetchUser = async () => {
+    // Skip auth checks on public pages or when approvalToken is present
+    if (shouldSkipAuthCheck()) {
+      console.log('[Header] Skipping fetchUser due to skip conditions');
+      return;
+    }
+
     try {
       console.log('[Header] Attempting to fetch auth status');
       
@@ -238,15 +306,21 @@ export function HeaderComponent() {
   };
 
   useEffect(() => {
-    fetchUser();
-    
-    // Set up interval to periodically check auth status (every 10 minutes for age gating compliance)
-    const interval = setInterval(() => {
+    // Only fetch user if we're not on a public page and no approvalToken
+    if (!shouldSkipAuthCheck()) {
       fetchUser();
-    }, 10 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
+      
+      // Set up interval to periodically check auth status (every 10 minutes for age gating compliance)
+      const interval = setInterval(() => {
+        // Re-check skip conditions on each interval
+        if (!shouldSkipAuthCheck()) {
+          fetchUser();
+        }
+      }, 10 * 60 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [pathname, searchParams]); // Re-run when pathname or searchParams change
 
   return (
     <header className="w-full bg-white border-b border-gray-200 relative">

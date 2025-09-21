@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PlanBanner from '@/components/PlanBanner';
@@ -25,7 +26,9 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-container flex flex-col min-h-screen bg-white text-[#202020]">
-      <Header />
+      <Suspense fallback={<div className="h-24 bg-white border-b border-gray-200"></div>}>
+        <Header />
+      </Suspense>
       <PlanBanner />
       <main className="flex-1 pb-5">{children}</main>
       <Footer />
