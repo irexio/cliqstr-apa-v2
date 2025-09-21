@@ -83,6 +83,12 @@ export function HeaderComponent() {
 
   // Check if we should skip auth checks
   const shouldSkipAuthCheck = () => {
+    console.log('[Header] Checking skip conditions:', {
+      pathname,
+      approvalToken: searchParams.get('approvalToken'),
+      isPublic: isPublicPage(pathname)
+    });
+    
     // Skip on public pages
     if (isPublicPage(pathname)) {
       console.log('[Header] Skipping auth check - public page:', pathname);
@@ -95,6 +101,7 @@ export function HeaderComponent() {
       return true;
     }
     
+    console.log('[Header] NOT skipping auth check');
     return false;
   };
 

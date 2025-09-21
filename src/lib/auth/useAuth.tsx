@@ -98,6 +98,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if we should skip auth checks
   const shouldSkipAuthCheck = () => {
+    console.log('[AuthProvider] Checking skip conditions:', {
+      pathname,
+      approvalToken: searchParams.get('approvalToken'),
+      isPublic: isPublicPage(pathname)
+    });
+    
     // Skip on public pages
     if (isPublicPage(pathname)) {
       console.log('[AuthProvider] Skipping auth check - public page:', pathname);
@@ -110,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     }
     
+    console.log('[AuthProvider] NOT skipping auth check');
     return false;
   };
 
