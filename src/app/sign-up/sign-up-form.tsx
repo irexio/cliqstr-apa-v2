@@ -34,6 +34,14 @@ export default function SignUpForm() {
   
   // Flow state
   const [currentStep, setCurrentStep] = useState<FlowStep>(approvalToken ? 'adult-credentials' : 'initial');
+  
+  // Debug logging
+  console.log('[SIGNUP_FORM] Initial state:', {
+    approvalToken,
+    preFilledEmail,
+    currentStep,
+    pathname: typeof window !== 'undefined' ? window.location.pathname : 'server'
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isChild, setIsChild] = useState(false);
@@ -315,6 +323,9 @@ export default function SignUpForm() {
       </div>
     );
   }
+
+  // Debug: Log what step we're rendering
+  console.log('[SIGNUP_FORM] Rendering step:', currentStep);
 
   // Step 1: Initial form (firstName + birthdate)
   if (currentStep === 'initial') {
