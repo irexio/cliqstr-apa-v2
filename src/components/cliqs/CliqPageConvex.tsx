@@ -96,6 +96,7 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
     bannerImage: cliq.coverImage || undefined,
     privacy: cliq.privacy,
     memberCount: members?.length || 0,
+    ownerId: cliq.ownerId,
   };
 
   return (
