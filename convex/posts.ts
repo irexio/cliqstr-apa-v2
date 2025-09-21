@@ -143,6 +143,30 @@ export const deletePost = mutation({
   },
 });
 
+// Update post (author only)
+export const updatePost = mutation({
+  args: {
+    postId: v.id("posts"),
+    content: v.string(),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    // Only author can update
+    if (post.authorId !== args.userId) {
+      throw new Error("Not authorized to update this post");
+    }
+
+    await ctx.db.patch(args.postId, {
+      content: args.content,
+    });
+  },
+});
+
 // Add reply to post
 export const addReply = mutation({
   args: {

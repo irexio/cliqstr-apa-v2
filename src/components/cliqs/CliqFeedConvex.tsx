@@ -34,9 +34,10 @@ interface FormattedPost {
 interface CliqFeedConvexProps {
   cliqId: string;
   posts?: any[]; // Posts passed from parent component
+  showPostForm?: boolean; // Whether to show the post creation form
 }
 
-export default function CliqFeedConvex({ cliqId, posts: initialPosts }: CliqFeedConvexProps) {
+export default function CliqFeedConvex({ cliqId, posts: initialPosts, showPostForm = true }: CliqFeedConvexProps) {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -116,8 +117,9 @@ export default function CliqFeedConvex({ cliqId, posts: initialPosts }: CliqFeed
 
   return (
     <div className="space-y-6">
-      {/* Feed Controls & Composer */}
-      <section className="bg-white rounded-xl p-5 mb-6 shadow-sm">
+      {/* Feed Controls & Composer - Only show if showPostForm is true */}
+      {showPostForm && (
+        <section className="bg-white rounded-xl p-5 mb-6 shadow-sm">
         {user?.myProfile && user.myProfile.username ? (
           /* Post composer for users with profiles */
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -178,7 +180,8 @@ export default function CliqFeedConvex({ cliqId, posts: initialPosts }: CliqFeed
             </div>
           </div>
         )}
-      </section>
+        </section>
+      )}
       
       {error && <div className="text-red-600 text-center py-2">{error}</div>}
       

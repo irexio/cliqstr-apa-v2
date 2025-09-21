@@ -105,13 +105,13 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
         <CliqNoticeBar cliqId={cliqId} />
         
         {/* Cliq Profile Content */}
-        <CliqProfileContent cliq={cliqProfile} />
+        <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />
         
         {/* Post Form */}
         <PostForm cliqId={cliqId} />
         
         {/* Cliq Feed */}
-        <CliqFeedConvex cliqId={cliqId} posts={posts} />
+        <CliqFeedConvex cliqId={cliqId} posts={posts} showPostForm={false} />
         
         {/* Cliq Tools */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

@@ -25,6 +25,8 @@ export default function EditCliqForm({ cliq }: EditCliqFormProps) {
   const [coverImage, setCoverImage] = useState(cliq.coverImage || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +58,43 @@ export default function EditCliqForm({ cliq }: EditCliqFormProps) {
       setError(err.message || 'Failed to update cliq');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBannerUploadComplete = async (res: any) => {
+    if (res?.[0]?.url) {
+      setCoverImage(res[0].url);
+      setIsUploading(false);
+      
+      // Auto-save the cliq with the new banner
+      try {
+        setLoading(true);
+        setError('');
+        
+        await fetchJson(`/api/cliqs/${cliq.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim(),
+            description: description.trim(),
+            privacy,
+            coverImage: res[0].url,
+          }),
+        });
+
+        // Show success message briefly
+        setError('');
+        setSuccessMessage('Banner uploaded and saved successfully!');
+        setTimeout(() => {
+          router.push(`/cliqs/${cliq.id}`);
+          router.refresh();
+        }, 2000);
+      } catch (err: any) {
+        console.error('[CLIQ_BANNER_AUTO_SAVE_ERROR]', err);
+        setError('Banner uploaded but failed to save. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -137,15 +176,22 @@ export default function EditCliqForm({ cliq }: EditCliqFormProps) {
         )}
         <UploadDropzone
           endpoint="cliqBanner"
-          onClientUploadComplete={(res: any) => {
-            if (res?.[0]?.url) setCoverImage(res[0].url);
+          onUploadBegin={() => {
+            setIsUploading(true);
+            setError('');
           }}
+          onClientUploadComplete={handleBannerUploadComplete}
           onUploadError={(err: Error) => {
             console.error('Cover upload error:', err);
             setError('Failed to upload cover image');
+            setIsUploading(false);
           }}
           appearance={{
-            container: 'border-dashed border-2 border-gray-300 rounded-lg p-4',
+            container: `border-dashed border-2 rounded-lg p-4 ${
+              isUploading 
+                ? 'border-blue-300 bg-blue-50' 
+                : 'border-gray-300'
+            }`,
             button: 'bg-black text-white rounded-md px-4 py-2 text-sm hover:bg-gray-800',
           }}
         />
@@ -154,6 +200,12 @@ export default function EditCliqForm({ cliq }: EditCliqFormProps) {
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm">
+          {successMessage}
         </div>
       )}
 
@@ -167,10 +219,10 @@ export default function EditCliqForm({ cliq }: EditCliqFormProps) {
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || isUploading}
           className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
         >
-          {loading ? 'Updating...' : 'Update Cliq'}
+          {loading ? 'Updating...' : isUploading ? 'Uploading...' : 'Update Cliq'}
         </button>
       </div>
     </form>

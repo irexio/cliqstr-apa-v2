@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 
 interface MyProfile {
   id: string;
-  firstName: string | null;
-  lastName: string | null;
+  firstName: string | null; // Read-only from Account
+  lastName: string | null;  // Read-only from Account
   username: string;
   about: string | null;
-  birthdate: Date | null;
+  birthdate: Date | null;   // Read-only from Account
   showYear: boolean;
 }
 
@@ -22,13 +22,9 @@ interface EditProfileFormProps {
 export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditProfileFormProps) {
   const router = useRouter();
   
-  const [firstName, setFirstName] = useState(profile.firstName || '');
-  const [lastName, setLastName] = useState(profile.lastName || '');
+  // firstName, lastName, and birthdate are read-only from Account
   const [username, setUsername] = useState(profile.username);
   const [about, setAbout] = useState(profile.about || '');
-  const [birthdate, setBirthdate] = useState(
-    profile.birthdate ? new Date(profile.birthdate).toISOString().split('T')[0] : ''
-  );
   const [showYear, setShowYear] = useState(profile.showYear);
   
   const [loading, setLoading] = useState(false);
@@ -41,11 +37,9 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
 
     try {
       const payload = {
-        firstName: firstName.trim() || null,
-        lastName: lastName.trim() || null,
+        // firstName, lastName, and birthdate are managed by Account - not editable here
         username: username.trim(),
         about: about.trim() || null,
-        birthdate: birthdate ? new Date(birthdate).toISOString() : null,
         showYear,
         image: avatarUrl,
         bannerImage: bannerUrl,
@@ -88,32 +82,30 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
         </div>
       )}
 
-      {/* First Name */}
+      {/* First Name - Read Only */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           First Name
         </label>
-        <input
-          type="text"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter your first name"
-        />
+        <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+          {profile.firstName || 'Not set'}
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          First name is managed in your Account settings and cannot be changed here.
+        </p>
       </div>
 
-      {/* Last Name */}
+      {/* Last Name - Read Only */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Last Name
         </label>
-        <input
-          type="text"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter your last name"
-        />
+        <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+          {profile.lastName || 'Not set'}
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Last name is managed in your Account settings and cannot be changed here.
+        </p>
       </div>
 
       {/* Username */}
@@ -151,20 +143,21 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
         </p>
       </div>
 
-      {/* Birthdate */}
+      {/* Birthdate - Read Only */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Birthdate
         </label>
-        <input
-          type="date"
-          value={birthdate}
-          onChange={(e) => setBirthdate(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          required
-        />
-        <p className="text-xs text-gray-500 mt-2">
-          This is for social display only. Your account birthdate remains unchanged for age verification.
+        <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+          {profile.birthdate ? new Date(profile.birthdate).toLocaleDateString('en-US', { 
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }) : 'Not set'}
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Birthdate is managed in your Account settings and cannot be changed here.
         </p>
       </div>
 
