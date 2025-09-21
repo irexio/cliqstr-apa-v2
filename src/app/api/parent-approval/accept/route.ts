@@ -53,11 +53,15 @@ export async function POST(req: NextRequest) {
       // Determine redirect based on parent state
       let redirectUrl: string;
       
+      console.log(`[PARENT-APPROVAL-ACCEPT] Parent state: ${approval.parentState}`);
+      
       if (approval.parentState === 'existing_parent') {
-        // Existing parent - go directly to Parents HQ
+        // Existing parent - go directly to Parents HQ (they already have a plan)
+        console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting existing parent to Parents HQ`);
         redirectUrl = `/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`;
       } else {
         // New parent or existing adult converting to parent - go to plan selection
+        console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting new/existing adult to plan selection`);
         redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
       }
 
