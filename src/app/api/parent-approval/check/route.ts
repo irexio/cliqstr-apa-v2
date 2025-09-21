@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     console.log(`[PARENT-APPROVAL-CHECK] Checking token: ${token}`);
 
     // Get the parent approval by token
-    const pendingSignup = await convexHttp.query(api.pendingChildSignups.getParentApprovalByToken, {
+    const pendingSignup = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
       approvalToken: token,
     });
 

@@ -19,7 +19,7 @@ import type * as cliqs from "../cliqs.js";
 import type * as invites from "../invites.js";
 import type * as memberships from "../memberships.js";
 import type * as migrate from "../migrate.js";
-import type * as pendingChildSignups from "../pendingChildSignups.js";
+import type * as parentApprovals from "../parentApprovals.js";
 import type * as posts from "../posts.js";
 import type * as profiles from "../profiles.js";
 import type * as scrapbook from "../scrapbook.js";
@@ -40,7 +40,7 @@ declare const fullApi: ApiFromModules<{
   invites: typeof invites;
   memberships: typeof memberships;
   migrate: typeof migrate;
-  pendingChildSignups: typeof pendingChildSignups;
+  parentApprovals: typeof parentApprovals;
   posts: typeof posts;
   profiles: typeof profiles;
   scrapbook: typeof scrapbook;

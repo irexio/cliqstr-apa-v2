@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
     // Handle approval token flow (direct child signup)
     if (approvalToken) {
       // Get the approval record
-      const approval = await convexHttp.query(api.pendingChildSignups.getParentApprovalByToken, {
+      const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
         approvalToken,
       });
 
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Mark the approval as completed
-      await convexHttp.mutation(api.pendingChildSignups.approveParentApproval, {
+      await convexHttp.mutation(api.parentApprovals.approveParentApproval, {
         approvalToken,
       });
 

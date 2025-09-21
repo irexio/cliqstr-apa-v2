@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const expiresAt = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 days
 
     // Create a parent approval record in Convex
-    const approval = await convexHttp.mutation(api.pendingChildSignups.createParentApproval, {
+    const approval = await convexHttp.mutation(api.parentApprovals.createParentApproval, {
       childFirstName,
       childLastName,
       childBirthdate,

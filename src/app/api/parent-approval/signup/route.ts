@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     console.log(`[PARENT-APPROVAL-SIGNUP] Processing parent signup for: ${email}`);
 
     // Get the parent approval record
-    const approval = await convexHttp.query(api.pendingChildSignups.getParentApprovalByToken, {
+    const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
       approvalToken,
     });
 

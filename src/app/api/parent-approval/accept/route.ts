@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     console.log(`[PARENT-APPROVAL-ACCEPT] Processing ${action} for token: ${token}`);
 
     // Get the parent approval record
-    const approval = await convexHttp.query(api.pendingChildSignups.getParentApprovalByToken, {
+    const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
       approvalToken: token,
     });
 
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     if (action === 'approve') {
       // Mark as approved
-      await convexHttp.mutation(api.pendingChildSignups.approveParentApproval, {
+      await convexHttp.mutation(api.parentApprovals.approveParentApproval, {
         approvalToken: token,
       });
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
     } else if (action === 'decline') {
       // Mark as declined
-      await convexHttp.mutation(api.pendingChildSignups.declineParentApproval, {
+      await convexHttp.mutation(api.parentApprovals.declineParentApproval, {
         approvalToken: token,
       });
 
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
     console.log(`[PARENT-APPROVAL-CHECK] Checking token: ${token}`);
 
     // Get the parent approval by token
-    const approval = await convexHttp.query(api.pendingChildSignups.getParentApprovalByToken, {
+    const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
       approvalToken: token,
     });
 

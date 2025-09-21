@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     console.log(`[PARENT-APPROVAL-PLAN] Processing plan selection for token: ${approvalToken}, plan: ${plan}`);
 
     // Get the parent approval record
-    const approval = await convexHttp.query(api.pendingChildSignups.getParentApprovalByToken, {
+    const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
       approvalToken,
     });
 
