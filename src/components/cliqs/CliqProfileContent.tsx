@@ -32,7 +32,7 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
 
   return (
     <>
-      <div className="w-full max-w-3xl mx-auto">
+      <div className="w-full max-w-4xl mx-auto">
         {/* Banner Image - Full Width */}
         {cliq.bannerImage && (
           <img
