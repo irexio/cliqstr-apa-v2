@@ -39,18 +39,21 @@ export default function SignUpForm() {
   const [isChild, setIsChild] = useState(false);
   const [childName, setChildName] = useState('');
 
-  // Load child name from localStorage if this is a parent approval flow
+  // Load child name from API if this is a parent approval flow
   useEffect(() => {
     if (approvalToken && typeof window !== 'undefined') {
-      const approvalData = localStorage.getItem('parentApprovalData');
-      if (approvalData) {
+      const fetchChildName = async () => {
         try {
-          const approval = JSON.parse(approvalData);
-          setChildName(`${approval.childFirstName} ${approval.childLastName}`);
+          const res = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`);
+          const data = await res.json();
+          if (res.ok && data?.approval) {
+            setChildName(`${data.approval.childFirstName} ${data.approval.childLastName}`);
+          }
         } catch (error) {
-          console.error('Error parsing approval data:', error);
+          console.error('Error fetching approval data:', error);
         }
-      }
+      };
+      fetchChildName();
     }
   }, [approvalToken]);
 
@@ -147,43 +150,35 @@ export default function SignUpForm() {
       // Check if this is a parent approval flow
       if (approvalToken) {
         console.log('[PARENT-APPROVAL] Processing parent sign-up with approval token');
-        
-        // Get approval data from localStorage
-        const approvalData = localStorage.getItem('parentApprovalData');
-        if (!approvalData) {
-          setError('Approval data not found. Please try the approval link again.');
+
+        // Fetch approval details directly from API
+        const resCheck = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`);
+        const data = await resCheck.json();
+
+        if (!resCheck.ok || !data?.approval) {
+          setError('Invalid or expired approval token. Please try the link again.');
           setLoading(false);
           return;
         }
 
-        const approval = JSON.parse(approvalData);
-        
-        // Create parent account with approval token
+        const approval = data.approval;
+
         const body = {
           firstName,
           lastName,
-          email,
+          email: approval.parentEmail || email, // prefill from server
           password,
           birthdate,
           approvalToken,
         };
-        
+
         const res = await fetchJson('/api/parent-approval/signup', {
           method: 'POST',
           body: JSON.stringify(body),
         });
 
         if (res.success) {
-          // Parent account created successfully, redirect to plan selection
-          setCurrentStep('adult-processing');
-          
-          // Store the approval token in localStorage for the plan selection flow
-          localStorage.setItem('parentApprovalToken', approvalToken);
-          localStorage.setItem('parentApprovalData', JSON.stringify(res.child));
-          
-          setTimeout(() => {
-            router.push(`/choose-plan?approvalToken=${encodeURIComponent(approvalToken)}`);
-          }, 1500);
+          router.push(`/choose-plan?approvalToken=${encodeURIComponent(approvalToken)}`);
         } else {
           setError(res.error || 'Failed to create parent account');
           setLoading(false);

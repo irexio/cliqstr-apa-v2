@@ -41,8 +41,6 @@ function InviteAcceptContent() {
             router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`);
           } else {
             console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
-            localStorage.setItem('parentApprovalToken', token);
-            localStorage.setItem('parentApprovalData', JSON.stringify(parentData.approval));
             router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
           }
           return;
