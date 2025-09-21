@@ -71,7 +71,7 @@ Child initiates signup, parent approval required.
 13. **Child can sign in** with credentials
 
 ### Data Created
-- `pendingChildSignups` table: child info, parent email, approval token
+- `parentApprovals` table: child info, parent email, approval token
 - Parent account (if new)
 - Child account and profile (after parent approval)
 
@@ -311,7 +311,7 @@ Adult creates child invite, existing adult upgrades to parent and approves child
 
 ### Invite Tables
 - `invites` - Invite records for adults
-- `pendingChildSignups` - Parent approval records for children
+- `parentApprovals` - Parent approval records for children
 
 ### Relationship Tables
 - `memberships` - User memberships in cliqs
@@ -347,4 +347,11 @@ Adult creates child invite, existing adult upgrades to parent and approves child
 ---
 
 *Last Updated: January 15, 2025*
-*Version: 1.0*
+*Version: 1.1*
+
+## Recent Updates
+
+### January 15, 2025 - Critical Fix
+- **Fixed parent approval table name mismatch**: Changed from `pendingChildSignups` to `parentApprovals` to match the actual database schema
+- **Updated all API calls**: All parent approval routes now use `api.parentApprovals` instead of `api.pendingChildSignups`
+- **Result**: Child signup and invite flows now work correctly - parents see proper account setup forms instead of blank sign-in forms
