@@ -15,6 +15,9 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
 import { generateJoinCode } from '@/lib/auth/generateJoinCode';
+import { sendChildInviteEmail } from '@/lib/auth/sendChildInviteEmail';
+import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
+import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +38,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, inviteeEmail, inviteType, cliqId, inviteNote } = body;
+    const { 
+      email, 
+      inviteeEmail, 
+      inviteType, 
+      cliqId, 
+      inviteNote,
+      friendFirstName,
+      friendLastName,
+      childBirthdate,
+      parentEmail
+    } = body;
 
     // Handle both old and new payload formats
     const targetEmail = inviteeEmail || email;
@@ -86,9 +99,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 4: Create invite using Convex
+    const inviteToken = crypto.randomUUID();
+    const joinCode = generateJoinCode();
+    
     const inviteId = await convexHttp.mutation(api.invites.createInvite, {
-      token: crypto.randomUUID(),
-      joinCode: generateJoinCode(),
+      token: inviteToken,
+      joinCode: joinCode,
       targetEmailNormalized: emailNorm,
       targetUserId: targetUserId as any,
       targetState,
@@ -98,11 +114,67 @@ export async function POST(request: NextRequest) {
       inviteeEmail: targetEmail, // Keep original casing
       cliqId: cliqId ? cliqId as any : undefined, // Use cliqId if provided
       isApproved: false,
+      // Child invite specific fields
+      friendFirstName: friendFirstName,
+      friendLastName: friendLastName,
+      childBirthdate: childBirthdate,
+      inviteNote: inviteNote,
+      inviteType: inviteType,
+      parentAccountExists: targetState === 'existing_parent',
     });
 
-    // TODO: Send email with link: ${BASE_URL}/invite/${invite.token}
+    // Step 5: Send appropriate email based on invite type
+    try {
+      if (inviteType === 'child') {
+        // Get cliq name for the email
+        const cliq = cliqId ? await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: cliqId as any }) : null;
+        const cliqName = cliq?.name || 'a Cliq';
+        
+        // Get inviter name for the email
+        const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
+        const inviterName = inviterProfile ? `${inviterProfile.firstName} ${inviterProfile.lastName}`.trim() : user.email?.split('@')[0] || 'Someone';
+        
+        const inviteLink = `${BASE_URL}/invite/accept?code=${inviteToken}`;
+        
+        await sendChildInviteEmail({
+          to: targetEmail,
+          cliqName: cliqName,
+          inviterName: inviterName,
+          inviteLink: inviteLink,
+          friendFirstName: friendFirstName || '',
+          friendLastName: friendLastName || '',
+          inviteNote: inviteNote,
+          inviteCode: joinCode,
+          parentAccountExists: targetState === 'existing_parent'
+        });
+        
+        console.log(`[INVITE_CREATE] Child invite email sent to ${targetEmail} for ${friendFirstName} ${friendLastName}`);
+      } else {
+        // Adult invite - use regular invite email
+        const cliq = cliqId ? await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: cliqId as any }) : null;
+        const cliqName = cliq?.name || 'a Cliq';
+        
+        const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
+        const inviterName = inviterProfile ? `${inviterProfile.firstName} ${inviterProfile.lastName}`.trim() : user.email?.split('@')[0] || 'Someone';
+        
+        const inviteLink = `${BASE_URL}/invite/accept?code=${inviteToken}`;
+        
+        await sendInviteEmail({
+          to: targetEmail,
+          cliqName: cliqName,
+          inviterName: inviterName,
+          inviteLink: inviteLink,
+          inviteCode: joinCode
+        });
+        
+        console.log(`[INVITE_CREATE] Adult invite email sent to ${targetEmail}`);
+      }
+    } catch (emailError) {
+      console.error('[INVITE_CREATE] Failed to send email:', emailError);
+      // Don't fail the entire request if email fails - invite was still created
+    }
     
-    // Step 5: Response (safe for authenticated inviter UI)
+    // Step 6: Response (safe for authenticated inviter UI)
     return NextResponse.json({
       ok: true,
       inviteId,

@@ -152,6 +152,7 @@ export default defineSchema({
     message: v.optional(v.string()),
     friendFirstName: v.optional(v.string()),
     friendLastName: v.optional(v.string()),
+    childBirthdate: v.optional(v.string()),
     inviteNote: v.optional(v.string()),
     inviteType: v.optional(v.string()),
     trustedAdultContact: v.optional(v.string()),

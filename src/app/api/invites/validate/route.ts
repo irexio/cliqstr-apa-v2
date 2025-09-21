@@ -74,11 +74,19 @@ export async function GET(req: Request) {
     const inviteRole = (invite.invitedRole || '').toLowerCase();
     const recipientEmail = invite.inviteeEmail || invite.trustedAdultContact || null;
 
+    // Get additional invite details for the response
+    const cliq = invite.cliqId ? await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: invite.cliqId }) : null;
+    const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: invite.inviterId });
+
     const res = NextResponse.json({
       valid: true,
-      inviteRole,         // 'adult' | 'child'
+      inviteType: invite.inviteType || inviteRole,  // 'adult' | 'child' | 'parent'
+      inviteRole,         // 'adult' | 'child' (for backward compatibility)
       inviteId: invite._id,
       cliqId: invite.cliqId,
+      cliqName: cliq?.name || 'Unknown Cliq',
+      inviterName: inviterProfile ? `${inviterProfile.account?.firstName || ''} ${inviterProfile.account?.lastName || ''}`.trim() || inviterProfile.username || 'Someone' : 'Someone',
+      friendFirstName: invite.friendFirstName,
       recipientEmail,     // used to prefill sign-up
       reason: null,
     });

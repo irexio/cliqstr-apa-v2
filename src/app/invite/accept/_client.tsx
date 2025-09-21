@@ -13,38 +13,77 @@ function InviteAcceptContent() {
 
   useEffect(() => {
     if (!code) {
-      setError('No approval code provided');
+      setError('No invite code provided');
       setLoading(false);
       return;
     }
-    checkParentApprovalToken(code);
+    checkInviteToken(code);
   }, [code]);
 
-  const checkParentApprovalToken = async (token: string) => {
+  const checkInviteToken = async (token: string) => {
     try {
-      const response = await fetch(`/api/parent-approval/accept?token=${encodeURIComponent(token)}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || 'Invalid approval code');
+      // First, try to check if it's a parent approval token
+      const parentResponse = await fetch(`/api/parent-approval/accept?token=${encodeURIComponent(token)}`);
+      if (parentResponse.ok) {
+        const parentData = await parentResponse.json();
+        if (parentData.approval) {
+          // This is a parent approval token - handle as before
+          if (parentData.approval.parentState === 'existing_parent') {
+            router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`);
+          } else {
+            sessionStorage.setItem('parentApprovalToken', token);
+            sessionStorage.setItem('parentApprovalData', JSON.stringify(parentData.approval));
+            router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
+          }
+          return;
+        }
+      }
+
+      // If not a parent approval token, try to validate as a regular invite
+      const inviteResponse = await fetch(`/api/validate-invite?code=${encodeURIComponent(token)}`);
+      if (!inviteResponse.ok) {
+        setError('Invalid invite code');
         setLoading(false);
         return;
       }
-      const data = await response.json();
-      if (data.approval) {
-        if (data.approval.parentState === 'existing_parent') {
-          router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`);
-        } else {
-          sessionStorage.setItem('parentApprovalToken', token);
-          sessionStorage.setItem('parentApprovalData', JSON.stringify(data.approval));
-          router.push(`/sign-up?email=${encodeURIComponent(data.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
-        }
-      } else {
-        setError('Invalid approval code');
+      
+      const inviteData = await inviteResponse.json();
+      if (!inviteData.valid) {
+        setError('Invalid invite code');
         setLoading(false);
+        return;
       }
+
+      // Store invite context for the flow
+      sessionStorage.setItem('inviteContext', JSON.stringify({
+        inviteCode: token,
+        inviteType: inviteData.inviteType || 'adult',
+        cliqName: inviteData.cliqName,
+        inviterName: inviteData.inviterName,
+        method: 'email'
+      }));
+
+      // Route based on invite type
+      const inviteType = inviteData.inviteType || 'adult';
+      
+      if (inviteType === 'adult') {
+        console.log('[INVITE_ACCEPT] Routing adult to choose-plan');
+        router.push('/choose-plan');
+      } else if (inviteType === 'parent') {
+        console.log('[INVITE_ACCEPT] Routing parent to invite/parent');
+        router.push(`/invite/parent?code=${token}`);
+      } else if (inviteType === 'child') {
+        console.log('[INVITE_ACCEPT] Routing child to parent-approval');
+        router.push('/parent-approval');
+      } else {
+        // Fallback to adult flow
+        console.log('[INVITE_ACCEPT] Unknown invite type, defaulting to choose-plan');
+        router.push('/choose-plan');
+      }
+
     } catch (err) {
-      console.error('Error checking approval token:', err);
-      setError('Failed to verify approval code');
+      console.error('Error checking invite token:', err);
+      setError('Failed to verify invite code');
       setLoading(false);
     }
   };

@@ -37,7 +37,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
   // New simplified state for redesigned invite form
   const [friendFirstName, setFriendFirstName] = useState('');
   const [friendLastName, setFriendLastName] = useState('');
-  const [childEmail, setChildEmail] = useState(''); // Child's email for invites
+  const [childBirthdate, setChildBirthdate] = useState(''); // Child's birthdate for account creation
   const [parentEmail, setParentEmail] = useState(''); // Parent's email for approval
   const [trustedAdultContact, setTrustedAdultContact] = useState(''); // For adult invites
   const [inviteType, setInviteType] = useState<'child' | 'adult' | 'parent' | ''>(''); // Must be explicitly selected
@@ -78,19 +78,21 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
         if (!friendLastName.trim()) {
           throw new Error("Child's last name is required");
         }
-        if (!childEmail.trim()) {
-          throw new Error("Child's email is required");
+        if (!childBirthdate.trim()) {
+          throw new Error("Child's birthdate is required");
         }
         if (!parentEmail.trim()) {
           throw new Error('Parent/guardian email is required');
         }
         // Basic email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(childEmail)) {
-          throw new Error('Please enter a valid child email address');
-        }
         if (!emailRegex.test(parentEmail)) {
           throw new Error('Please enter a valid parent email address');
+        }
+        // Basic birthdate validation (YYYY-MM-DD format)
+        const birthdateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!birthdateRegex.test(childBirthdate)) {
+          throw new Error('Please enter birthdate in YYYY-MM-DD format');
         }
       } else if (inviteType === 'adult') {
         if (!trustedAdultContact.trim()) {
@@ -120,10 +122,11 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       };
 
       if (inviteType === 'child') {
-        // Child invites need friendFirstName, friendLastName, childEmail, and parentEmail
+        // Child invites need friendFirstName, friendLastName, childBirthdate, and parentEmail
         payload.friendFirstName = friendFirstName.trim();
         payload.friendLastName = friendLastName.trim();
-        payload.inviteeEmail = childEmail.trim(); // Send invite to child's email
+        payload.childBirthdate = childBirthdate.trim(); // Child's birthdate for account creation
+        payload.inviteeEmail = parentEmail.trim(); // Send invite to parent's email
         payload.parentEmail = parentEmail.trim(); // Parent email for approval process
       } else {
         // Adult and Parent invites need inviteeEmail
@@ -157,7 +160,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       // Reset form
       setFriendFirstName('');
       setFriendLastName('');
-      setChildEmail('');
+      setChildBirthdate('');
       setParentEmail('');
       setTrustedAdultContact('');
       setInviteType('');
@@ -227,8 +230,8 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       {inviteType === 'child' && (
         <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
           <p className="text-sm text-blue-800">
-            💡 <strong>Note:</strong> The invite will be sent to the child's email. 
-            They will go through the signup process and their parent will be contacted for approval.
+            💡 <strong>Note:</strong> The invite will be sent to the parent/guardian's email. 
+            They will create the child's account and set up permissions through Parent HQ.
           </p>
         </div>
       )}
@@ -264,18 +267,17 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
           </div>
           
           <div>
-            <Label htmlFor="childEmail">Child's Email *</Label>
+            <Label htmlFor="childBirthdate">Child's Birthdate *</Label>
             <Input
-              id="childEmail"
-              type="email"
-              value={childEmail}
-              onChange={(e) => setChildEmail(e.target.value)}
-              placeholder="child@example.com"
+              id="childBirthdate"
+              type="date"
+              value={childBirthdate}
+              onChange={(e) => setChildBirthdate(e.target.value)}
               required
               className="mt-1"
             />
             <p className="text-xs text-gray-500 mt-1">
-              The invite will be sent to this email address
+              Required for account creation and age verification
             </p>
           </div>
           
@@ -291,7 +293,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
               className="mt-1"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Parent will be contacted for approval during signup
+              The invite will be sent to this email address
             </p>
           </div>
         </>
@@ -342,7 +344,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
         <div className="bg-green-50 border border-green-200 rounded-md p-3">
           <p className="text-green-600 text-sm">
             {inviteType === 'child'
-              ? 'Invite sent to parent/guardian for approval!'
+              ? 'Invite sent to parent/guardian! They will create the child account.'
               : 'Invite sent successfully!'}
           </p>
         </div>
