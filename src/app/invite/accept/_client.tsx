@@ -41,8 +41,8 @@ function InviteAcceptContent() {
             router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`);
           } else {
             console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
-            sessionStorage.setItem('parentApprovalToken', token);
-            sessionStorage.setItem('parentApprovalData', JSON.stringify(parentData.approval));
+            localStorage.setItem('parentApprovalToken', token);
+            localStorage.setItem('parentApprovalData', JSON.stringify(parentData.approval));
             router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
           }
           return;
@@ -54,7 +54,7 @@ function InviteAcceptContent() {
       }
 
       // If not a parent approval token, try to validate as a regular invite
-      const inviteResponse = await fetch(`/api/validate-invite?code=${encodeURIComponent(token)}`);
+      const inviteResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(token)}`);
       if (!inviteResponse.ok) {
         setError('Invalid invite code');
         setLoading(false);
