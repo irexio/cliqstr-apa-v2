@@ -86,7 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       '/not-authorized',
       '/suspended',
       '/under-development',
-      '/waitlist'
+      '/waitlist',
+      '/parent-approval'
     ];
     
     // Check exact matches and invite pages

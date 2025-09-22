@@ -27,8 +27,8 @@ export async function sendUnifiedParentApprovalEmail({
 }: SendUnifiedParentApprovalEmailParams) {
   console.log(`📨 [sendUnifiedParentApprovalEmail] Sending ${context} approval email to: ${to} for child: ${childName}`);
   
-  // Build approval URL - link to frontend page, not API endpoint
-  const approvalLink = `${BASE_URL}/invite/accept?code=${encodeURIComponent(approvalToken)}`;
+  // Build approval URL - link to parent approval page
+  const approvalLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken)}`;
   
   console.log(`🔗 [sendUnifiedParentApprovalEmail] Generated approval link: ${approvalLink}`);
 
