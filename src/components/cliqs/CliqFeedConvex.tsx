@@ -22,6 +22,7 @@ interface FormattedPost {
   content?: string;
   image?: string;
   createdAt: string;
+  cliqId: string;
   author: {
     id?: string;
     myProfile: {
@@ -194,6 +195,7 @@ export default function CliqFeedConvex({ cliqId, posts: initialPosts, showPostFo
             content: post.content,
             image: post.image,
             createdAt: new Date(post.createdAt).toISOString(),
+            cliqId: cliqId,
             author: {
               id: post.author?.id,
               myProfile: post.author?.profile ? {
@@ -278,6 +280,7 @@ export default function CliqFeedConvex({ cliqId, posts: initialPosts, showPostFo
                       id: reply.id,
                       content: reply.content,
                       createdAt: new Date(reply.createdAt).toISOString(),
+                      cliqId: cliqId,
                       author: {
                         id: reply.author?.id,
                         myProfile: reply.author?.profile ? {

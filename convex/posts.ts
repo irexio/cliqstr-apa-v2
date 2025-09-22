@@ -341,3 +341,121 @@ export const getPostsForCliqFeed = query({
     return postsWithReplies;
   },
 });
+
+// Suspend a specific post (Red Alert)
+export const suspendPost = mutation({
+  args: {
+    postId: v.id("posts"),
+    redAlertId: v.id("redAlerts"),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    await ctx.db.patch(args.postId, {
+      moderationStatus: "suspended",
+      suspendedAt: Date.now(),
+      redAlertTriggered: true,
+      redAlertId: args.redAlertId,
+      suspensionReason: args.reason,
+    });
+
+    return args.postId;
+  },
+});
+
+// Suspend all content from a user in a specific cliq (Red Alert)
+export const suspendUserContent = mutation({
+  args: {
+    userId: v.id("users"),
+    cliqId: v.id("cliqs"),
+    redAlertId: v.id("redAlerts"),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
+      .filter((q) => q.eq(q.field("authorId"), args.userId))
+      .collect();
+
+    let suspendedCount = 0;
+    for (const post of posts) {
+      await ctx.db.patch(post._id, {
+        moderationStatus: "suspended",
+        suspendedAt: Date.now(),
+        redAlertTriggered: true,
+        redAlertId: args.redAlertId,
+        suspensionReason: args.reason,
+      });
+      suspendedCount++;
+    }
+
+    return suspendedCount;
+  },
+});
+
+// Suspend content from a time range in a cliq (Red Alert)
+export const suspendContentByTimeRange = mutation({
+  args: {
+    cliqId: v.id("cliqs"),
+    startTime: v.number(),
+    endTime: v.number(),
+    redAlertId: v.id("redAlerts"),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
+      .filter((q) => 
+        q.and(
+          q.gte(q.field("createdAt"), args.startTime),
+          q.lte(q.field("createdAt"), args.endTime)
+        )
+      )
+      .collect();
+
+    let suspendedCount = 0;
+    for (const post of posts) {
+      await ctx.db.patch(post._id, {
+        moderationStatus: "suspended",
+        suspendedAt: Date.now(),
+        redAlertTriggered: true,
+        redAlertId: args.redAlertId,
+        suspensionReason: args.reason,
+      });
+      suspendedCount++;
+    }
+
+    return suspendedCount;
+  },
+});
+
+// Restore suspended content (for moderation review)
+export const restorePost = mutation({
+  args: {
+    postId: v.id("posts"),
+    restoredBy: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    await ctx.db.patch(args.postId, {
+      moderationStatus: "approved",
+      suspendedAt: undefined,
+      suspendedBy: undefined,
+      suspensionReason: undefined,
+      redAlertTriggered: false,
+      redAlertId: undefined,
+    });
+
+    return args.postId;
+  },
+});

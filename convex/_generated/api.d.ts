@@ -23,6 +23,7 @@ import type * as parentApprovals from "../parentApprovals.js";
 import type * as parentLinks from "../parentLinks.js";
 import type * as posts from "../posts.js";
 import type * as profiles from "../profiles.js";
+import type * as redAlerts from "../redAlerts.js";
 import type * as scrapbook from "../scrapbook.js";
 import type * as users from "../users.js";
 
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   parentLinks: typeof parentLinks;
   posts: typeof posts;
   profiles: typeof profiles;
+  redAlerts: typeof redAlerts;
   scrapbook: typeof scrapbook;
   users: typeof users;
 }>;

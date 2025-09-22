@@ -109,10 +109,19 @@ export default defineSchema({
     authorId: v.id("users"),
     cliqId: v.id("cliqs"),
     expiresAt: v.optional(v.number()),
+    // Content moderation fields
+    moderationStatus: v.optional(v.union(v.literal("approved"), v.literal("pending"), v.literal("flagged"), v.literal("suspended"))),
+    suspendedAt: v.optional(v.number()),
+    suspendedBy: v.optional(v.id("users")),
+    suspensionReason: v.optional(v.string()),
+    redAlertTriggered: v.optional(v.boolean()),
+    redAlertId: v.optional(v.id("redAlerts")),
   })
     .index("by_author_id", ["authorId"])
     .index("by_cliq_id", ["cliqId"])
-    .index("by_created_at", ["createdAt"]),
+    .index("by_created_at", ["createdAt"])
+    .index("by_moderation_status", ["moderationStatus"])
+    .index("by_red_alert", ["redAlertTriggered"]),
 
   replies: defineTable({
     content: v.string(),
@@ -216,6 +225,9 @@ export default defineSchema({
     triggeredById: v.id("users"),
     reason: v.optional(v.string()),
     triggeredAt: v.number(),
+    status: v.optional(v.union(v.literal("pending"), v.literal("reviewed"), v.literal("resolved"), v.literal("dismissed"))),
+    moderatorNotes: v.optional(v.string()),
+    reviewedAt: v.optional(v.number()),
   })
     .index("by_cliq_id", ["cliqId"])
     .index("by_triggered_by", ["triggeredById"])

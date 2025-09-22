@@ -180,6 +180,17 @@ export const getAllMemberships = query({
   },
 });
 
+// Get all memberships for a specific cliq
+export const getMembershipsByCliqId = query({
+  args: { cliqId: v.id("cliqs") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("memberships")
+      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
+      .collect();
+  },
+});
+
 // Create membership
 export const createMembership = mutation({
   args: {
