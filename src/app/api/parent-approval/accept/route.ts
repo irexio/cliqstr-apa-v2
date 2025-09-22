@@ -60,9 +60,9 @@ export async function POST(req: NextRequest) {
         console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting existing parent to Parents HQ`);
         redirectUrl = `/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`;
       } else {
-        // New parent or existing adult converting to parent - go to sign-up first
-        console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting new/existing adult to sign-up`);
-        redirectUrl = `/sign-up?email=${encodeURIComponent(approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`;
+        // New parent or existing adult converting to parent - go to plan selection
+        console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting new/existing adult to plan selection`);
+        redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
       }
 
       return NextResponse.json({
