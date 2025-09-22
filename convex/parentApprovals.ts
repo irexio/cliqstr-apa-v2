@@ -197,6 +197,39 @@ export const markParentApprovalsExpired = mutation({
 });
 
 /**
+ * Update parent approval status (generic mutation)
+ */
+export const updateParentApprovalStatus = mutation({
+  args: {
+    approvalToken: v.string(),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("declined"), v.literal("expired")),
+  },
+  handler: async (ctx, args) => {
+    const approval = await ctx.db
+      .query("parentApprovals")
+      .withIndex("by_approval_token", (q) => q.eq("approvalToken", args.approvalToken))
+      .first();
+
+    if (!approval) {
+      throw new Error("Parent approval not found");
+    }
+
+    // Update status and add timestamp based on status
+    const updates: any = { status: args.status };
+    
+    if (args.status === "approved") {
+      updates.approvedAt = Date.now();
+    } else if (args.status === "declined") {
+      updates.declinedAt = Date.now();
+    }
+
+    await ctx.db.patch(approval._id, updates);
+
+    return approval;
+  },
+});
+
+/**
  * Get parent approval by invite ID (for invite context)
  */
 export const getParentApprovalByInviteId = query({
