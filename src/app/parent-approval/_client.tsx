@@ -24,6 +24,7 @@ export default function ParentApprovalContent() {
   // Form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [birthdate, setBirthdate] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -68,10 +69,12 @@ export default function ParentApprovalContent() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            token,
+            approvalToken: token,
             firstName: firstName.trim(),
             lastName: lastName.trim(),
+            email: approvalData.parentEmail,
             password: password.trim(),
+            birthdate: birthdate.trim(),
           }),
         });
 
@@ -174,6 +177,20 @@ export default function ParentApprovalContent() {
             autoComplete="family-name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700 mb-1">
+            Birthdate
+          </label>
+          <input
+            id="birthdate"
+            type="date"
+            required
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
