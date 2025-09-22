@@ -1,59 +1,62 @@
-import React from 'react';
-import { InfoPageLayout } from '@/components/InfoPageLayout';
-
 export default function AboutPage() {
-  const breadcrumbs = [
-    { label: 'Home', href: '/' },
-    { label: 'About' }
-  ];
-
   return (
-    <InfoPageLayout 
-      breadcrumbs={breadcrumbs}
-      title="About Cliqstr"
-    >
+    <main className="max-w-4xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">About Us</h1>
+      
       <div className="space-y-8">
-        <p className="info-lead-text">
-          Cliqstr is a private, ad-free platform built for kids, families, and anyone seeking a more personal, intentional social experience.
-          We believe people of all ages deserve safe spaces to connect — without being tracked, targeted, or manipulated by algorithms.
-        </p>
+        {/* Main Introduction */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <p className="text-gray-600 leading-relaxed">
+            Cliqstr is a family-first, ad-free, algorithm-free social platform created to give families, children, and trusted groups a safe and private place to connect online. Unlike mainstream social media, Cliqstr was designed from the ground up for privacy, parental partnership, and healthier conversations.
+          </p>
+        </div>
 
-          <div className="space-y-3">
-            <h2 className="info-section-title">Why We Exist</h2>
-            <p className="info-body-text">
-              Existing social media platforms prioritize engagement at any cost — even if it means harming mental health or violating user trust.
-              Cliqstr was built differently. We prioritize safety, trust, and real connection from the start.
-            </p>
-          </div>
+        {/* What Sets Us Apart */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">What sets Cliqstr apart:</h2>
+          <ul className="space-y-3">
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">No advertising or data harvesting</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">No direct messages or contact scraping</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">No location tracking</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">No manipulative algorithms</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Mandatory adult approval for all users under 18</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">A Parents HQ dashboard for managing permissions, invites, and receiving Red Alert notifications</span>
+            </li>
+          </ul>
+        </div>
 
-          <div className="space-y-3">
-            <h2 className="info-section-title">What Makes Us Different</h2>
-            <ul className="list-disc list-inside info-body-text space-y-1">
-              <li>No ads, ever</li>
-              <li>No tracking or third-party data sharing</li>
-              <li>Role-based access for youth, adults, and parents</li>
-              <li>Built-in privacy — every cliq is its own space</li>
-              <li>Parental approvals and oversight for all underage accounts</li>
-              <li>AI moderation that protects without overreaching</li>
-            </ul>
-          </div>
+        {/* Mission Statement */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <p className="text-gray-600 leading-relaxed">
+            Cliqstr's mission is to replace conflict and unsafe shortcuts with a third option: a safe, legal, and fun digital home — for families, and for anyone interested in a better way to socialize online.
+          </p>
+        </div>
 
-          <div className="space-y-3">
-            <h2 className="info-section-title">Homework Helpline</h2>
-            <p className="info-body-text">
-              The Homework Helpline is an optional AI-powered support tool built into Cliqstr to help kids stay focused, build confidence, and better understand their schoolwork.
-              It offers thoughtful prompts, explanations, and reset suggestions to support independent learning — without doing the work for them.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <h2 className="info-section-title">CliqSafe (Coming Soon)</h2>
-            <p className="info-body-text">
-              CliqSafe is an optional add-on currently in development. It’s designed to extend Cliqstr’s protections beyond the app — helping families apply the same privacy and safety principles across all of their child’s internet use.
-              Features will include VPN-based safeguards, content filtering, and parental controls that align with Cliqstr’s mission.
-            </p>
-          </div>
+        {/* Looking Ahead */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Looking Ahead</h2>
+          <p className="text-gray-600 leading-relaxed">
+            Some features, such as Homework Helpline and CliqSafe, are part of Cliqstr's long-term roadmap. These will be introduced in the future as funding and development allow. For now, our focus remains on building the most secure, fun, and family-centered online platform possible.
+          </p>
+        </div>
       </div>
-    </InfoPageLayout>
+    </main>
   );
 }

@@ -1,69 +1,90 @@
-import { InfoPageLayout } from '@/components/InfoPageLayout';
-
 export default function HowItWorksPage() {
-  const breadcrumbs = [
-    { label: 'Home', href: '/' },
-    { label: 'How It Works' }
-  ];
-
   return (
-    <InfoPageLayout 
-      breadcrumbs={breadcrumbs}
-      title="How Cliqstr Works"
-    >
+    <main className="max-w-4xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">How It Works</h1>
+      
       <div className="space-y-8">
-        <p className="info-lead-text">
-          Cliqstr helps kids, families, and small groups connect safely — without ads, algorithms, or chaos. Here's how to get started.
-        </p>
+        {/* Cliqs and Explore */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Cliqs and Explore</h2>
+          <p className="text-gray-600 leading-relaxed">
+            When you join Cliqstr, you can create cliqs — private or shared spaces for conversations, photos, and activities. Depending on your plan, you can run multiple cliqs at the same time.
+          </p>
+        </div>
 
-          <div className="rounded-xl bg-gray-100 shadow-sm p-5 sm:p-6">
-            <h2 className="info-section-title mb-2">1. Create Your Cliq</h2>
-            <h3 className="font-semibold mt-2">Choose Your Cliq Type</h3>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li><strong>Private:</strong> Invite-only. Only people you personally invite can join. Hidden from search.</li>
-              <li><strong>Semi-Private:</strong> Discoverable in search. Members can request to join — or be invited by someone already in the group.</li>
-              <li><strong>Public:</strong> Open to eligible users based on age group. Anyone who qualifies can find and join — but moderation and approvals still apply to keep things safe.</li>
-            </ul>
-            <p className="text-gray-700 text-sm sm:text-base mt-2">Every cliq has privacy settings and tools to shape the kind of space you want to create.</p>
-          </div>
+        {/* Private Cliqs */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Private Cliqs</h2>
+          <ul className="space-y-3">
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Invite-only and not visible in Explore.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Great for immediate family or small, trusted groups.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Example: one cliq just for your household, another for extended family with aunts, uncles, and cousins.</span>
+            </li>
+          </ul>
+        </div>
 
-          <div className="rounded-xl bg-gray-100 shadow-sm p-5 sm:p-6">
-            <h2 className="info-section-title mb-2">2. Invite Members (the Safe Way)</h2>
-            <p className="info-body-text">Cliqstr invites are built for trust — not virality.</p>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Parents must approve any invites involving minors</li>
-              <li>Adults can invite other adults directly</li>
-              <li>Cliq owners decide who can send invites or manage members</li>
-            </ul>
-            <p className="text-gray-700 text-sm sm:text-base mt-2">Every invite is intentional, not random. That’s the point.</p>
-          </div>
+        {/* Semi-Private Cliqs */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Semi-Private Cliqs</h2>
+          <ul className="space-y-3">
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Visible in Explore, but entry requires approval.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">The cliq owner reviews and approves requests.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Example: wedding planning, remembering a loved one, or a school event group.</span>
+            </li>
+          </ul>
+        </div>
 
-          <div className="rounded-xl bg-gray-100 shadow-sm p-5 sm:p-6">
-            <h2 className="info-section-title mb-2">3. Share & Connect</h2>
-            <p className="info-body-text">
-              Post updates, photos, creative work, or questions — in a space built for trust, not likes.<br />
-              There’s no pressure to perform. Just honest, expressive feedback from the people in your cliq.
-            </p>
-          </div>
+        {/* Public Cliqs */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Public Cliqs</h2>
+          <ul className="space-y-3">
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Visible in Explore and discoverable by Cliqstr members.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Anyone can request to join, but they must be age-appropriate.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <span className="text-gray-600">Example: book clubs, gardening groups, photography circles, or tech discussions.</span>
+            </li>
+          </ul>
+        </div>
 
-          <div className="rounded-xl bg-gray-100 shadow-sm p-5 sm:p-6">
-            <h2 className="info-section-title mb-2">4. Meaningful Connections, Grown Safely</h2>
-            <p className="info-body-text">Cliqstr makes it easy to build strong, supportive cliqs — without unwelcome, intrusive distractions.</p>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>AI quietly flags harmful or off-topic content</li>
-              <li>Role-based permissions keep access and actions appropriate</li>
-              <li>Parents have oversight tools in cliqs involving minors</li>
-            </ul>
-            <p className="text-gray-700 text-sm sm:text-base mt-2">From the start, every connection is shaped by intention — and protected by design.<br />Your cliq grows, but never outgrows its purpose.</p>
-          </div>
+        {/* Important Difference */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Important Difference</h2>
+          <p className="text-gray-600 leading-relaxed">
+            Even public cliqs on Cliqstr are not open to the wider internet. They can be explored and discovered inside Cliqstr, and a sampling may appear on the homepage — but to see inside and participate, you must join first.
+          </p>
+        </div>
 
-          <div className="rounded-xl bg-gray-100 shadow-sm p-5 sm:p-6 md:col-span-2">
-            <h2 className="info-section-title mb-2">5. Coming Soon: Homework Helpline</h2>
-            <p className="info-body-text">
-              Our optional AI support tool helps kids stay focused, explore new topics, and build confidence with their schoolwork. It offers thoughtful prompts and mindset resets — never answers — and supports healthy learning habits at home.
-            </p>
-          </div>
+        {/* Note to Parents */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Note to Parents</h2>
+          <p className="text-gray-600 leading-relaxed">
+            We want to create a safe and fun place for your child. Getting started might feel confusing at first, so we recommend that you help your child set up their account. Step-by-step instructions are included in the Parent HQ Page, which you'll see at sign up.
+          </p>
+        </div>
       </div>
-    </InfoPageLayout>
+    </main>
   );
 }
