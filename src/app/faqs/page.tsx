@@ -1,76 +1,88 @@
-import React from 'react';
-import { InfoPageLayout } from '@/components/InfoPageLayout';
+'use client';
+
+import { useState } from 'react';
 
 export default function FAQPage() {
-  const breadcrumbs = [
-    { label: 'Home', href: '/' },
-    { label: 'FAQs' }
+  const [openItems, setOpenItems] = useState<number[]>([]);
+
+  const toggleItem = (index: number) => {
+    setOpenItems(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
+  };
+
+  const faqs = [
+    {
+      question: "What is Cliqstr?",
+      answer: "Cliqstr is a family-first, ad-free social platform designed for privacy, safety, and community. It gives children a safe space to connect while ensuring parents remain in control."
+    },
+    {
+      question: "How do children join?",
+      answer: "Children cannot sign up alone. A parent must approve their account and verify adulthood with a credit card. All permissions and activity oversight happen in the Parents HQ dashboard."
+    },
+    {
+      question: "How does moderation work?",
+      answer: "Cliqstr uses a hybrid approach: AI scans posts and images in real time, while trained, background-checked adult moderators review anything flagged. Parents are notified of issues that involve their child."
+    },
+    {
+      question: "What happens if a child breaks the rules?",
+      answer: "Cliqstr uses a strike-based system. Multiple confirmed violations can lead to suspension or removal. Parents are informed whenever their child's account is flagged."
+    },
+    {
+      question: "What is a Red Alert?",
+      answer: "A Red Alert is triggered when a child encounters or reports a high-risk situation (e.g., threats, self-harm, grooming attempts). Parents are always notified immediately—they are full partners in keeping their children safe."
+    },
+    {
+      question: "Can children access public groups?",
+      answer: "No. Children are limited to private cliqs that parents approve. Semi-private and public cliqs are restricted to adults only."
+    },
+    {
+      question: "What about custody or abuse situations?",
+      answer: "Cliqstr is building additional safeguards for complex family situations. Our roadmap includes protections for custody, divorce, and abuse cases, ensuring parents and guardians can maintain oversight."
+    },
+    {
+      question: "Is homework help safe?",
+      answer: "Yes. Our Homework Help feature is under development and will use AI for academic support only, with filters blocking unsafe conversations. Human oversight is planned as funding allows."
+    }
   ];
 
   return (
-    <InfoPageLayout 
-      breadcrumbs={breadcrumbs}
-      title="Frequently Asked Questions"
-    >
-      <div className="space-y-8">
-
-          {/* For Everyone */}
-          <div className="space-y-6">
-            <h2 className="info-section-title">For Everyone</h2>
-            <ul className="info-list">
-              <li><strong>What is a Cliq?</strong><br />A Cliq is a private social circle. Think of it like a group chat — but with full feeds, member control, and built-in privacy.</li>
-              <li><strong>Can I join Cliqstr without an invite?</strong><br />Yes. Adults 18+ can sign up directly. Children under 18 require parental approval.</li>
-              <li><strong>Is Cliqstr free?</strong><br />We offer a free trial and sponsored access for approved families. Paid plans are flat-rate and ad-free.</li>
-              <li><strong>What happens when my trial ends?</strong><br />You can choose a paid plan or request sponsored access if you're part of a partner group or special invite.</li>
-              <li><strong>Can I delete my account?</strong><br />Yes, anytime. Parents can also remove or suspend a child account directly from the Parent HQ.</li>
-            </ul>
+    <main className="max-w-4xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h1>
+      
+      <div className="space-y-4">
+        {faqs.map((faq, index) => (
+          <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <button
+              onClick={() => toggleItem(index)}
+              className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
+            >
+              <span className="font-medium text-gray-900">{faq.question}</span>
+              <svg
+                className={`w-5 h-5 text-gray-500 transition-transform ${
+                  openItems.includes(index) ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {openItems.includes(index) && (
+              <div className="px-6 pb-4">
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-gray-600 leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* For Parents */}
-          <div className="space-y-6">
-            <h2 className="info-section-title">For Parents</h2>
-            <ul className="info-list">
-              <li><strong>How do I approve my child’s account?</strong><br />When your child signs up, you'll receive an approval link by email. You create their username and password, select a plan, and confirm access.</li>
-              <li><strong>Why do kids 13–17 need parent approval?</strong><br />Although COPPA only applies to children under 13, we extended the policy based on parent feedback. In our early testing, the overwhelming majority of moms preferred to keep oversight until age 18.</li>
-              <li><strong>Can I monitor without my child knowing?</strong><br />Yes. Cliqstr allows silent monitoring by default, which can be adjusted from your Parent HQ.</li>
-              <li><strong>Can I manage more than one child?</strong><br />Absolutely. Parent HQ supports multiple linked child accounts.</li>
-              <li><strong>What controls do I have?</strong><br />You can toggle permissions for public cliq creation, invites, posting images, YouTube/game links, and suspend or reset access at any time.</li>
-            </ul>
-          </div>
-
-          {/* For Youth */}
-          <div className="space-y-6">
-            <h2 className="info-section-title">For Youth</h2>
-            <ul className="info-list">
-              <li><strong>Who can see my posts?</strong><br />Only members of your cliq. There’s no global timeline or public profile browsing.</li>
-              <li><strong>Can I block someone?</strong><br />Yes. Blocking removes access to your cliqs and content. Parents can view this in Parent HQ.</li>
-              <li><strong>How do I invite a friend?</strong><br />Use the Invite feature in your cliq. If you’re under 18, your parent may need to approve outgoing invites first.</li>
-              <li><strong>Can I customize my profile?</strong><br />Yes. Username, avatar, banner, and bio are all yours — unless your parent disables avatar uploads.</li>
-            </ul>
-          </div>
-
-          {/* AI + Privacy */}
-          <div className="space-y-6">
-            <h2 className="info-section-title">AI + Privacy</h2>
-            <ul className="info-list">
-              <li><strong>What is Pip or Pippy?</strong><br />They’re your friendly AI guides who help with safe behavior, cliq creation, and navigating the platform.</li>
-              <li><strong>Does Cliqstr use AI to monitor posts?</strong><br />Yes — but always privately and ethically. We use AI and human review to flag bullying, stalking, or unsafe content.</li>
-              <li><strong>Do you sell my data?</strong><br />Never. Cliqstr is 100% ad-free and does not share personal data.</li>
-              <li><strong>Will the AI message me?</strong><br />Only if you ask. Pip and Pippy are friendly, opt-in assistants — never intrusive.</li>
-            </ul>
-          </div>
-
-          {/* Feedback & Help */}
-          <div className="space-y-6">
-            <h2 className="info-section-title">Feedback & Help</h2>
-            <ul className="info-list">
-              <li><strong>How do I submit feedback?</strong><br />Use the Feedback button on any dashboard page. All submissions are reviewed by our team.</li>
-              <li><strong>What do I do if I see something unsafe?</strong><br />Click the Red Alert button to flag the issue immediately. Our moderation team is notified in real-time.</li>
-              <li><strong>Is there live support?</strong><br />Not yet — but email support is fast and personal. Write to inquiry@cliqstr.com for any help.</li>
-              <li><strong>Where is the Cliqstr Safety Page?</strong><br />Linked in the footer of every page, or visit <code>/safety</code> directly.</li>
-            </ul>
-          </div>
+        ))}
       </div>
-    </InfoPageLayout>
+    </main>
   );
 }
