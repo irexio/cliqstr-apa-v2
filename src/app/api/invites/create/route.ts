@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
         friendLastName: friendLastName,
         childBirthdate: childBirthdate,
         inviteNote: inviteNote,
-        inviteType: inviteType,
+        inviteType: 'adult', // Ensure adult invites are marked as 'adult'
         parentAccountExists: targetState === 'existing_parent',
       });
     }
@@ -197,11 +197,32 @@ export async function POST(request: NextRequest) {
         console.log(`[INVITE_CREATE] Child invite email sent to ${targetEmail} for ${friendFirstName} ${friendLastName}`);
       } else {
         // Adult invite - use regular invite email
-        const cliq = cliqId ? await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: cliqId as any }) : null;
-        const cliqName = cliq?.name || 'a Cliq';
+        let cliqName = 'a Cliq';
+        let inviterName = user.email?.split('@')[0] || 'Someone';
         
-        const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
-        const inviterName = inviterProfile ? `${inviterProfile.firstName} ${inviterProfile.lastName}`.trim() : user.email?.split('@')[0] || 'Someone';
+        try {
+          // Get cliq name with error handling
+          if (cliqId) {
+            const cliq = await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: cliqId as any });
+            cliqName = cliq?.name || 'a Cliq';
+          }
+        } catch (cliqError) {
+          console.error('[INVITE_CREATE] Error getting cliq name:', cliqError);
+          // Continue with default cliq name
+        }
+        
+        try {
+          // Get inviter profile with error handling
+          const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
+          if (inviterProfile?.account?.firstName && inviterProfile?.account?.lastName) {
+            inviterName = `${inviterProfile.account.firstName} ${inviterProfile.account.lastName}`.trim();
+          } else if (inviterProfile?.username) {
+            inviterName = inviterProfile.username;
+          }
+        } catch (profileError) {
+          console.error('[INVITE_CREATE] Error getting inviter profile:', profileError);
+          // Continue with default inviter name
+        }
         
         const inviteLink = `${BASE_URL}/invite/accept?code=${inviteToken}`;
         
@@ -213,7 +234,7 @@ export async function POST(request: NextRequest) {
           inviteCode: joinCode
         });
         
-        console.log(`[INVITE_CREATE] Adult invite email sent to ${targetEmail}`);
+        console.log(`[INVITE_CREATE] Adult invite email sent to ${targetEmail} for ${cliqName} by ${inviterName}`);
       }
     } catch (emailError) {
       console.error('[INVITE_CREATE] Failed to send email:', emailError);
