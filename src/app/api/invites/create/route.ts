@@ -98,30 +98,79 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 4: Create invite using Convex
-    const inviteToken = crypto.randomUUID();
-    const joinCode = generateJoinCode();
+    // Step 4: Create invite or parent approval based on type
+    let inviteId;
+    let approvalToken;
     
-    const inviteId = await convexHttp.mutation(api.invites.createInvite, {
-      token: inviteToken,
-      joinCode: joinCode,
-      targetEmailNormalized: emailNorm,
-      targetUserId: targetUserId as any,
-      targetState,
-      status: 'pending',
-      used: false,
-      inviterId: user.id as any,
-      inviteeEmail: targetEmail, // Keep original casing
-      cliqId: cliqId ? cliqId as any : undefined, // Use cliqId if provided
-      isApproved: false,
-      // Child invite specific fields
-      friendFirstName: friendFirstName,
-      friendLastName: friendLastName,
-      childBirthdate: childBirthdate,
-      inviteNote: inviteNote,
-      inviteType: inviteType,
-      parentAccountExists: targetState === 'existing_parent',
-    });
+    if (inviteType === 'child') {
+      // For child invites, create a parent approval record
+      approvalToken = crypto.randomUUID();
+      const expiresAt = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 days
+      
+      await convexHttp.mutation(api.parentApprovals.createParentApproval, {
+        childFirstName: friendFirstName || '',
+        childLastName: friendLastName || '',
+        childBirthdate: childBirthdate || '',
+        parentEmail: targetEmail,
+        context: 'child_invite',
+        inviteId: undefined, // Will be set after invite creation
+        cliqId: cliqId ? cliqId as any : undefined,
+        inviterName: undefined, // Will be set when sending email
+        cliqName: undefined, // Will be set when sending email
+        parentState: targetState,
+        existingParentId: targetState === 'existing_parent' ? targetUserId as any : undefined,
+        approvalToken: approvalToken,
+        expiresAt: expiresAt,
+      });
+      
+      // Also create a regular invite record for tracking
+      const inviteToken = crypto.randomUUID();
+      const joinCode = generateJoinCode();
+      
+      inviteId = await convexHttp.mutation(api.invites.createInvite, {
+        token: inviteToken,
+        joinCode: joinCode,
+        targetEmailNormalized: emailNorm,
+        targetUserId: targetUserId as any,
+        targetState,
+        status: 'pending',
+        used: false,
+        inviterId: user.id as any,
+        inviteeEmail: targetEmail,
+        cliqId: cliqId ? cliqId as any : undefined,
+        isApproved: false,
+        friendFirstName: friendFirstName,
+        friendLastName: friendLastName,
+        childBirthdate: childBirthdate,
+        inviteNote: inviteNote,
+        inviteType: inviteType,
+        parentAccountExists: targetState === 'existing_parent',
+      });
+    } else {
+      // For adult invites, create regular invite
+      const inviteToken = crypto.randomUUID();
+      const joinCode = generateJoinCode();
+      
+      inviteId = await convexHttp.mutation(api.invites.createInvite, {
+        token: inviteToken,
+        joinCode: joinCode,
+        targetEmailNormalized: emailNorm,
+        targetUserId: targetUserId as any,
+        targetState,
+        status: 'pending',
+        used: false,
+        inviterId: user.id as any,
+        inviteeEmail: targetEmail,
+        cliqId: cliqId ? cliqId as any : undefined,
+        isApproved: false,
+        friendFirstName: friendFirstName,
+        friendLastName: friendLastName,
+        childBirthdate: childBirthdate,
+        inviteNote: inviteNote,
+        inviteType: inviteType,
+        parentAccountExists: targetState === 'existing_parent',
+      });
+    }
 
     // Step 5: Send appropriate email based on invite type
     try {
@@ -134,13 +183,14 @@ export async function POST(request: NextRequest) {
         const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
         const inviterName = inviterProfile ? `${inviterProfile.firstName} ${inviterProfile.lastName}`.trim() : user.email?.split('@')[0] || 'Someone';
         
-        const inviteLink = `${BASE_URL}/invite/accept?code=${inviteToken}`;
+        // Use parent approval URL instead of old invite flow
+        const approvalLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken!)}`;
         
         await sendChildInviteEmail({
           to: targetEmail,
           cliqName: cliqName,
           inviterName: inviterName,
-          inviteLink: inviteLink,
+          inviteLink: approvalLink, // Now points to parent approval flow
           friendFirstName: friendFirstName || '',
           friendLastName: friendLastName || '',
           inviteNote: inviteNote,
