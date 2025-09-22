@@ -185,6 +185,13 @@ export default defineSchema({
     childId: v.id("users"),
     type: v.string(),
     inviteContext: v.optional(v.string()),
+    role: v.optional(v.union(v.literal("primary"), v.literal("secondary"), v.literal("guardian"))), // New: parent role
+    permissions: v.optional(v.object({ // New: granular permissions
+      canManageChild: v.boolean(),
+      canChangeSettings: v.boolean(),
+      canViewActivity: v.boolean(),
+      receivesNotifications: v.boolean(),
+    })),
     createdAt: v.number(),
   })
     .index("by_parent_id", ["parentId"])

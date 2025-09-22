@@ -20,6 +20,7 @@ import type * as invites from "../invites.js";
 import type * as memberships from "../memberships.js";
 import type * as migrate from "../migrate.js";
 import type * as parentApprovals from "../parentApprovals.js";
+import type * as parentLinks from "../parentLinks.js";
 import type * as posts from "../posts.js";
 import type * as profiles from "../profiles.js";
 import type * as scrapbook from "../scrapbook.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   memberships: typeof memberships;
   migrate: typeof migrate;
   parentApprovals: typeof parentApprovals;
+  parentLinks: typeof parentLinks;
   posts: typeof posts;
   profiles: typeof profiles;
   scrapbook: typeof scrapbook;

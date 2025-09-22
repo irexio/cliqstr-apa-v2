@@ -28,6 +28,7 @@
 import { useEffect, useState } from 'react';
 import { fetchJson } from '@/lib/fetchJson';
 import ChildPermissionManager from './ChildPermissionManager';
+import MultipleParentsManager from './MultipleParentsManager';
 
 
 // 🧠 Local definition of child structure
@@ -167,7 +168,15 @@ export default function ParentDashboard() {
       )}
 
       {selectedChildId && (
-        <ChildPermissionManager childId={selectedChildId} />
+        <>
+          <ChildPermissionManager childId={selectedChildId} />
+          <div className="mt-6">
+            <MultipleParentsManager 
+              childId={selectedChildId} 
+              childName={children.find(c => c.id === selectedChildId)?.name || 'Child'} 
+            />
+          </div>
+        </>
       )}
     </div>
   );

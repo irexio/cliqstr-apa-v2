@@ -36,7 +36,7 @@ export default function FAQPage() {
     },
     {
       question: "Can children access public groups?",
-      answer: "No. Children are limited to private cliqs that parents approve. Semi-private and public cliqs are restricted to adults only."
+      answer: "Children may access age-appropriate public cliqs if permitted by their designated parent/guardian. Parents can control this permission in their Parent HQ dashboard."
     },
     {
       question: "What about custody or abuse situations?",
