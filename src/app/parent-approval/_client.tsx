@@ -64,6 +64,10 @@ export default function ParentApprovalContent() {
 
     try {
       if (action === 'approve') {
+        if (!approvalData) {
+          throw new Error('Approval data not loaded');
+        }
+
         // Create the parent account (don't mark as approved yet)
         const signupResponse = await fetch('/api/parent-approval/signup', {
           method: 'POST',
