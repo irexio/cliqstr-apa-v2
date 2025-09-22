@@ -89,11 +89,11 @@ export async function POST(request: NextRequest) {
         targetState = 'existing_parent';
         targetUserId = existingUser._id;
       } else if (account?.role === 'Adult') {
-        targetState = 'existing_adult';
+        targetState = 'existing_user_non_parent';
         targetUserId = existingUser._id;
       } else {
         // Handle any other role or missing role
-        targetState = 'existing_adult';
+        targetState = 'existing_user_non_parent';
         targetUserId = existingUser._id;
       }
     }
@@ -101,6 +101,8 @@ export async function POST(request: NextRequest) {
     // Step 4: Create invite or parent approval based on type
     let inviteId;
     let approvalToken;
+    const inviteToken = crypto.randomUUID();
+    const joinCode = generateJoinCode();
     
     if (inviteType === 'child') {
       // For child invites, create a parent approval record
@@ -117,16 +119,13 @@ export async function POST(request: NextRequest) {
         cliqId: cliqId ? cliqId as any : undefined,
         inviterName: undefined, // Will be set when sending email
         cliqName: undefined, // Will be set when sending email
-        parentState: targetState,
+        parentState: targetState === 'existing_user_non_parent' ? 'existing_adult' : targetState,
         existingParentId: targetState === 'existing_parent' ? targetUserId as any : undefined,
         approvalToken: approvalToken,
         expiresAt: expiresAt,
       });
       
       // Also create a regular invite record for tracking
-      const inviteToken = crypto.randomUUID();
-      const joinCode = generateJoinCode();
-      
       inviteId = await convexHttp.mutation(api.invites.createInvite, {
         token: inviteToken,
         joinCode: joinCode,
@@ -148,9 +147,6 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // For adult invites, create regular invite
-      const inviteToken = crypto.randomUUID();
-      const joinCode = generateJoinCode();
-      
       inviteId = await convexHttp.mutation(api.invites.createInvite, {
         token: inviteToken,
         joinCode: joinCode,
