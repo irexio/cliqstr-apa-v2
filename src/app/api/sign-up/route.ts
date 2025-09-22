@@ -179,6 +179,8 @@ export async function POST(req: NextRequest) {
         isApproved: context === 'parent_invite' ? true : !isChild,
         plan: context === 'parent_invite' ? 'test' : undefined,
         isVerified: preVerified || false,
+        firstName: firstName,
+        lastName: lastName,
       });
 
       console.log('[SIGNUP_DEBUG] Convex mutation returned userId:', newUserId);

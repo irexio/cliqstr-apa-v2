@@ -86,6 +86,8 @@ export async function POST(req: NextRequest) {
       isApproved: true,
       plan: undefined, // No plan set yet - will be selected during plan selection
       isVerified: true, // Skip email verification for parent approval flow
+      firstName: firstName,
+      lastName: lastName,
     });
 
     // Note: Parent will create their own social media profile later
