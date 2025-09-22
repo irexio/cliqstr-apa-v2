@@ -80,7 +80,35 @@ export default function MyCliqsPageConvex() {
 
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto">
-      <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">My Cliqs</h1>
+      {/* Header Section */}
+      <div className="mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">My Cliqs</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p className="text-sm sm:text-base text-gray-600">
+            Manage your cliqs and invite friends to join.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link href="/profile/edit">
+              <Button variant="outline" className="w-full sm:w-auto">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Edit Profile
+              </Button>
+            </Link>
+            <Link href="/cliqs/build">
+              <Button className="w-full sm:w-auto">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create New Cliq
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+      
+      {/* Cliqs Grid */}
       <CliqsGrid initialCliqs={formattedCliqs} currentUserId={user.id} />
     </div>
   );
