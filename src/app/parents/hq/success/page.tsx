@@ -63,6 +63,33 @@ function ParentsHQSuccessContent() {
             Go to Home Page
           </Button>
         </div>
+
+        {/* Parent FAQs Section */}
+        <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6 text-left">
+          <h3 className="font-semibold text-gray-900 mb-4">📚 Parent FAQs</h3>
+          <div className="space-y-4 text-sm text-gray-700">
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">How do I monitor my child's activity?</h4>
+              <p>Visit your Parents HQ dashboard to see activity summaries, friend requests, and any safety alerts. You'll receive notifications for important events.</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">What if my child wants to add friends?</h4>
+              <p>All friend requests require your approval through the Parents HQ. You can review each request and approve or decline as appropriate.</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">Can I change my child's permissions later?</h4>
+              <p>Yes! You can modify your child's permissions, privacy settings, and safety controls anytime through the Parents HQ dashboard.</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">What should I do if I see concerning content?</h4>
+              <p>Use the Red Alert button on any concerning post. This immediately suspends the content and notifies our moderation team and other parents.</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">How do I add another parent or guardian?</h4>
+              <p>In your Parents HQ, select your child and scroll to the "Parents & Guardians" section to add additional parents with different permission levels.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

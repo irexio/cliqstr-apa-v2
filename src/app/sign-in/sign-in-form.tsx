@@ -226,6 +226,16 @@ export default function SignInForm() {
       <button type="submit" disabled={loading} className="bg-black text-white py-2 px-4 rounded hover:bg-gray-800 text-sm w-full hover:text-[#c032d1]">
         {loading ? 'Signing in…' : 'Sign In'}
       </button>
+      
+      <div className="text-center">
+        <button 
+          type="button" 
+          onClick={() => router.push('/auth/magic')}
+          className="text-sm text-blue-600 hover:text-blue-800 underline"
+        >
+          🪄 Sign in with Magic Link (No Password)
+        </button>
+      </div>
     </form>
   );
 }

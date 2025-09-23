@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 const createChildSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  childEmail: z.string().email('Valid child email is required'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   birthdate: z.number(),
@@ -27,6 +28,7 @@ const createChildSchema = z.object({
   }),
   redAlertAccepted: z.boolean(),
   silentMonitoring: z.boolean(),
+  secondParentEmail: z.string().email().optional(),
   inviteCode: z.string().optional(),
   approvalToken: z.string().optional(),
 }).refine(
@@ -116,7 +118,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const { username, password, firstName, lastName, birthdate, permissions, redAlertAccepted, silentMonitoring, inviteCode, approvalToken } = parsed.data;
+    const { username, password, childEmail, firstName, lastName, birthdate, permissions, redAlertAccepted, silentMonitoring, secondParentEmail, inviteCode, approvalToken } = parsed.data;
 
     console.log(`[PARENT-CHILDREN] Creating child account: ${username} for parent ${user.email}`);
 
@@ -141,9 +143,9 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
     }
 
-    // Create child user account
+    // Create child user account with real email
     const childUserId = await convexHttp.mutation(api.users.createUserWithAccount, {
-      email: `${username}@temp.cliqstr.local`, // Temporary email - will be updated later
+      email: childEmail, // Use real child email for magic links
       password: password,
       birthdate: birthdate,
       role: 'Child',

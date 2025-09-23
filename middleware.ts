@@ -14,6 +14,11 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow magic link authentication routes
+  if (pathname.startsWith('/auth/magic')) {
+    return NextResponse.next();
+  }
+
   // Special handling for Parents HQ access
   if (pathname.startsWith('/parents/hq')) {
     const pendingInviteCookie = req.cookies.get('pending_invite');

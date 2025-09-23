@@ -57,6 +57,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [childEmail, setChildEmail] = useState('');
   const [redAlertAccepted, setRedAlertAccepted] = useState(false);
   const [silentMonitoring, setSilentMonitoring] = useState(true);
   const [secondParentEmail, setSecondParentEmail] = useState('');
@@ -81,6 +82,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
         username,
         password: '', // Don't save password for security
         confirmPassword: '', // Don't save password for security
+        childEmail,
         redAlertAccepted,
         silentMonitoring,
         secondParentEmail,
@@ -104,6 +106,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
         // Only restore if data is less than 1 hour old
         if (Date.now() - parsed.timestamp < 3600000) {
           setUsername(parsed.username || '');
+          setChildEmail(parsed.childEmail || '');
           setRedAlertAccepted(parsed.redAlertAccepted || false);
           setSilentMonitoring(parsed.silentMonitoring !== false); // Default to true
           setSecondParentEmail(parsed.secondParentEmail || '');
@@ -192,6 +195,11 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       return;
     }
 
+    if (!childEmail.trim()) {
+      setError('Child email address is required for magic link authentication');
+      return;
+    }
+
     setSubmitting(true);
     setError('');
 
@@ -220,6 +228,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
           // Account details
           username: username.trim(),
           password,
+          childEmail: childEmail.trim(),
           redAlertAccepted,
           silentMonitoring,
           permissions,
@@ -393,6 +402,24 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
                 required
                 minLength={6}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="childEmail">Child's Email Address</Label>
+              <Input
+                id="childEmail"
+                type="email"
+                value={childEmail}
+                onChange={(e) => setChildEmail(e.target.value)}
+                placeholder="child@example.com"
+                required
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                {childAge && childAge < 13 
+                  ? "Magic links will be sent to your email for forwarding to your child"
+                  : "Magic links will be sent directly to your child for easy login"
+                }
+              </p>
             </div>
 
             {/* Additional Parent/Guardian Email */}

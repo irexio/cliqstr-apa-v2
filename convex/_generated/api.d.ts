@@ -17,6 +17,7 @@ import type * as accounts from "../accounts.js";
 import type * as cliqNotices from "../cliqNotices.js";
 import type * as cliqs from "../cliqs.js";
 import type * as invites from "../invites.js";
+import type * as magicLinks from "../magicLinks.js";
 import type * as memberships from "../memberships.js";
 import type * as migrate from "../migrate.js";
 import type * as parentApprovals from "../parentApprovals.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   cliqNotices: typeof cliqNotices;
   cliqs: typeof cliqs;
   invites: typeof invites;
+  magicLinks: typeof magicLinks;
   memberships: typeof memberships;
   migrate: typeof migrate;
   parentApprovals: typeof parentApprovals;

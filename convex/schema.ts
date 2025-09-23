@@ -309,4 +309,19 @@ export default defineSchema({
     .index("by_expires_at", ["expiresAt"])
     .index("by_context", ["context"])
     .index("by_invite_id", ["inviteId"]),
+
+  // Magic Links for passwordless authentication
+  magicLinks: defineTable({
+    userId: v.id("users"),
+    tokenHash: v.string(), // Hashed token for security
+    email: v.string(), // Email address for the magic link
+    expiresAt: v.number(), // Expiration timestamp (15 minutes from creation)
+    usedAt: v.optional(v.number()), // When the link was used (null if unused)
+    createdAt: v.number(),
+  })
+    .index("by_user_id", ["userId"])
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_email", ["email"])
+    .index("by_expires_at", ["expiresAt"])
+    .index("by_used_at", ["usedAt"]),
 });

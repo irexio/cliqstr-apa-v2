@@ -150,24 +150,21 @@ export default function ChoosePlanForm() {
       
       if (isParent) {
         setMessage(`${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! Redirecting to Parents HQ...`);
-        // Refresh Next.js router cache before redirect
-        router.refresh();
         
-        // Redirect to Parents HQ for parents
+        // Redirect to Parents HQ for parents (no refresh to avoid flash)
         setTimeout(() => {
           console.log('[PARENT] Redirecting to Parents HQ');
           if (approvalToken) {
-            router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(approvalToken)}`);
+            // For parent approval flow, go directly to child creation
+            router.push(`/parents/hq?approvalToken=${encodeURIComponent(approvalToken)}`);
           } else {
             router.push('/parents/hq/dashboard');
           }
         }, 2000);
       } else {
         setMessage(`${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! Redirecting to your dashboard...`);
-        // Refresh Next.js router cache before redirect
-        router.refresh();
         
-        // For adults, redirect to My Cliqs dashboard
+        // For adults, redirect to My Cliqs dashboard (no refresh to avoid flash)
         setTimeout(() => {
           console.log('[ADULT] Redirecting to My Cliqs dashboard');
           router.push('/my-cliqs-dashboard');
