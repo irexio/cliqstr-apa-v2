@@ -3,7 +3,6 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ParentDashboard from './ParentDashboard';
-import ChildInviteApprovalFlow from './ChildInviteApprovalFlow';
 import ChildSignupApprovalFlow from './ChildSignupApprovalFlow';
 
 type InviteStatus = 'valid' | 'used' | 'invalid' | 'loading';
@@ -250,7 +249,7 @@ export default function ParentsHQContent() {
           <h1 className="text-2xl font-bold text-gray-900">🛡️ Parents HQ</h1>
           <p className="text-gray-600">Child Invite Approval</p>
         </div>
-        <ChildInviteApprovalFlow inviteCode={inviteCode} />
+        <ChildSignupApprovalFlow inviteCode={inviteCode} />
       </div>
     );
   }

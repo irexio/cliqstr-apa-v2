@@ -17,8 +17,18 @@ interface ApprovalDetails {
   context: string;
 }
 
+interface InviteDetails {
+  friendFirstName: string;
+  friendLastName: string;
+  childBirthdate: string;
+  parentEmail: string;
+  cliqName: string;
+  inviterName: string;
+}
+
 interface ChildSignupApprovalFlowProps {
-  approvalToken: string;
+  approvalToken?: string;
+  inviteCode?: string;
 }
 
 /**
@@ -35,12 +45,13 @@ interface ChildSignupApprovalFlowProps {
  *   - Every child MUST have parents complete these permissions
  *   - Approval is NOT marked as completed until final Parent HQ approval
  */
-export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupApprovalFlowProps) {
+export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: ChildSignupApprovalFlowProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null);
+  const [inviteDetails, setInviteDetails] = useState<InviteDetails | null>(null);
   
   // Form state
   const [username, setUsername] = useState('');
@@ -48,6 +59,7 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
   const [confirmPassword, setConfirmPassword] = useState('');
   const [redAlertAccepted, setRedAlertAccepted] = useState(false);
   const [silentMonitoring, setSilentMonitoring] = useState(true);
+  const [secondParentEmail, setSecondParentEmail] = useState('');
   const [permissions, setPermissions] = useState({
     canPost: true,
     canComment: true,
@@ -62,37 +74,62 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
     invitesRequireParentApproval: true, // Default to true for safety, but parent can change
   });
 
-  // Fetch approval details
+  // Fetch approval details or invite details
   useEffect(() => {
-    const fetchApprovalDetails = async () => {
+    const fetchDetails = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`,
-          { cache: 'no-store' }
-        );
-        const data = await response.json();
+        
+        if (approvalToken) {
+          // Handle direct child signup approval
+          const response = await fetch(
+            `/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`,
+            { cache: 'no-store' }
+          );
+          const data = await response.json();
 
-        if (!response.ok || !data.approval) {
-          throw new Error('Failed to load approval details');
+          if (!response.ok || !data.approval) {
+            throw new Error('Failed to load approval details');
+          }
+
+          setApprovalDetails({
+            childFirstName: data.approval.childFirstName,
+            childLastName: data.approval.childLastName,
+            childBirthdate: data.approval.childBirthdate,
+            parentEmail: data.approval.parentEmail,
+            context: data.approval.context,
+          });
+        } else if (inviteCode) {
+          // Handle child invite approval
+          const response = await fetch(
+            `/api/invites/validate?code=${encodeURIComponent(inviteCode)}`,
+            { cache: 'no-store' }
+          );
+          const data = await response.json();
+
+          if (!response.ok || data?.valid === false) {
+            const reason = data?.reason || data?.error || 'invalid_invite';
+            throw new Error(typeof reason === 'string' ? reason : 'Failed to load invite details');
+          }
+
+          setInviteDetails({
+            friendFirstName: data.childInfo?.firstName || data.invite?.friendFirstName || 'Child',
+            friendLastName: data.childInfo?.lastName || data.invite?.friendLastName || '',
+            childBirthdate: data.childInfo?.birthdate || data.invite?.childBirthdate || '',
+            parentEmail: data.invite?.parentEmail || '',
+            cliqName: data.cliqName || data.invite?.cliq?.name || 'Unknown Cliq',
+            inviterName: data.inviterName || data.invite?.inviterName || 'Unknown',
+          });
         }
-
-        setApprovalDetails({
-          childFirstName: data.approval.childFirstName,
-          childLastName: data.approval.childLastName,
-          childBirthdate: data.approval.childBirthdate,
-          parentEmail: data.approval.parentEmail,
-          context: data.approval.context,
-        });
       } catch (err: any) {
-        setError(err.message || 'Failed to load approval details');
+        setError(err.message || 'Failed to load details');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchApprovalDetails();
-  }, [approvalToken]);
+    fetchDetails();
+  }, [approvalToken, inviteCode]);
 
   const handleSubmitApproval = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,15 +162,25 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          // For direct signup approval
           approvalToken: approvalToken,
-          firstName: approvalDetails?.childFirstName,
-          lastName: approvalDetails?.childLastName,
-          birthdate: approvalDetails?.childBirthdate ? new Date(approvalDetails.childBirthdate).getTime() : 0,
+          // For child invite approval
+          code: inviteCode,
+          // Child details (from either source)
+          firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName,
+          lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName,
+          birthdate: approvalDetails?.childBirthdate 
+            ? new Date(approvalDetails.childBirthdate).getTime() 
+            : inviteDetails?.childBirthdate 
+            ? new Date(inviteDetails.childBirthdate).getTime() 
+            : 0,
+          // Account details
           username: username.trim(),
           password,
           redAlertAccepted,
           silentMonitoring,
           permissions,
+          secondParentEmail: secondParentEmail.trim() || undefined,
         }),
       });
 
@@ -156,7 +203,7 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
 
       // Success - redirect to success page
       console.log('[PARENTS_HQ][signup-approval] success');
-      router.replace(`/parents/hq/success?childName=${encodeURIComponent(approvalDetails?.childFirstName || '')}`);
+      router.replace(`/parents/hq/success?childName=${encodeURIComponent(childFirstName)}`);
       
     } catch (err: any) {
       console.error('[PARENTS_HQ][signup-approval] error', err);
@@ -177,11 +224,11 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
     );
   }
 
-  if (error && !approvalDetails) {
+  if (error && !approvalDetails && !inviteDetails) {
     return (
       <Card className="border-red-200 bg-red-50">
         <CardContent className="pt-6">
-          <p className="text-red-800 font-medium">Error Loading Approval</p>
+          <p className="text-red-800 font-medium">Error Loading Details</p>
           <p className="text-red-600 text-sm mt-1">{error}</p>
           <Button 
             variant="outline" 
@@ -195,9 +242,13 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
     );
   }
 
-  const childName = `${approvalDetails?.childFirstName} ${approvalDetails?.childLastName}`;
-  const childAge = approvalDetails?.childBirthdate 
-    ? new Date().getFullYear() - new Date(approvalDetails.childBirthdate).getFullYear()
+  // Get child details from either source
+  const childFirstName = approvalDetails?.childFirstName || inviteDetails?.friendFirstName || 'Child';
+  const childLastName = approvalDetails?.childLastName || inviteDetails?.friendLastName || '';
+  const childName = `${childFirstName} ${childLastName}`.trim();
+  const childBirthdate = approvalDetails?.childBirthdate || inviteDetails?.childBirthdate;
+  const childAge = childBirthdate 
+    ? new Date().getFullYear() - new Date(childBirthdate).getFullYear()
     : null;
 
   return (
@@ -212,8 +263,18 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
           <div className="space-y-2 text-blue-800">
             <p><strong>Child:</strong> {childName}</p>
             {childAge && <p><strong>Age:</strong> {childAge} years old</p>}
-            <p><strong>Request Type:</strong> Direct Signup</p>
-            <p><strong>Context:</strong> {approvalDetails?.context}</p>
+            {approvalDetails ? (
+              <>
+                <p><strong>Request Type:</strong> Direct Signup</p>
+                <p><strong>Context:</strong> {approvalDetails.context === 'direct_signup' ? 'Direct Signup' : approvalDetails.context === 'child_invite' ? 'Child Invite' : approvalDetails.context || 'Not specified'}</p>
+              </>
+            ) : inviteDetails ? (
+              <>
+                <p><strong>Request Type:</strong> Child Invite</p>
+                <p><strong>Invited by:</strong> {inviteDetails.inviterName}</p>
+                <p><strong>To join:</strong> {inviteDetails.cliqName}</p>
+              </>
+            ) : null}
           </div>
         </CardContent>
       </Card>
@@ -230,7 +291,7 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
               AI moderation and parents are both instantly notified. This is a critical safety feature.
             </p>
             <p className="text-red-800 text-sm">
-              By approving this signup, you understand that {approvalDetails?.childFirstName}'s activity 
+              By approving this signup, you understand that {childFirstName}'s activity 
               will be monitored for safety and you will receive instant alerts for any concerning behavior.
             </p>
             <div className="flex items-center space-x-2">
@@ -240,7 +301,7 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
                 onCheckedChange={(checked) => setRedAlertAccepted(checked as boolean)}
               />
               <Label htmlFor="redAlert" className="text-red-800 font-medium">
-                I understand the Red Alert system is critical for {approvalDetails?.childFirstName}'s safety
+                I understand the Red Alert system is critical for {childFirstName}'s safety
               </Label>
             </div>
           </div>
@@ -255,7 +316,7 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
         <CardContent>
           <form onSubmit={handleSubmitApproval} className="space-y-4">
             <div>
-              <Label htmlFor="username">Username for {approvalDetails?.childFirstName}</Label>
+              <Label htmlFor="username">Username for {childFirstName}</Label>
               <Input
                 id="username"
                 value={username}
@@ -290,6 +351,22 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
               />
             </div>
 
+            {/* Additional Parent/Guardian Email */}
+            <div>
+              <Label htmlFor="secondParentEmail">Additional Parent/Guardian Email (Optional)</Label>
+              <input
+                id="secondParentEmail"
+                type="email"
+                value={secondParentEmail}
+                onChange={(e) => setSecondParentEmail(e.target.value)}
+                placeholder="Enter additional parent or guardian email"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Add another parent or guardian who should also receive notifications about {childFirstName}.
+              </p>
+            </div>
+
             {/* Silent Monitoring Toggle */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -303,15 +380,15 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
                 </Label>
               </div>
               <p className="text-gray-600 text-sm mt-1">
-                Monitor {approvalDetails?.childFirstName}'s activity without them knowing
+                Monitor {childFirstName}'s activity without them knowing
               </p>
             </div>
 
             {/* Parent HQ: Child Permissions */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium mb-3">🛡️ Parent HQ: Set Permissions for {approvalDetails?.childFirstName}</h4>
+              <h4 className="font-medium mb-3">🛡️ Parent HQ: Set Permissions for {childFirstName}</h4>
               <p className="text-gray-600 text-xs mb-3">Select which features you want activated on your child's account</p>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="canCreateCliqs"
@@ -491,7 +568,7 @@ export default function ChildSignupApprovalFlow({ approvalToken }: ChildSignupAp
                 disabled={submitting || !redAlertAccepted}
                 className="flex-1"
               >
-                {submitting ? 'Creating Account...' : `🛡️ Parent HQ: Complete Setup for ${approvalDetails?.childFirstName}`}
+                {submitting ? 'Creating Account...' : `🛡️ Parent HQ: Complete Setup for ${childFirstName}`}
               </Button>
             </div>
           </form>
