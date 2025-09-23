@@ -94,8 +94,8 @@ export default function CliqCard({ cliq, currentUserId, onDelete }: CliqCardProp
         )}
 
         {/* Manage/Members Button */}
-        <button
-          onClick={() => setManageModalOpen(true)}
+        <Link
+          href={`/cliqs/${cliq.id}/members`}
           className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
         >
           {isOwner ? (
@@ -117,7 +117,7 @@ export default function CliqCard({ cliq, currentUserId, onDelete }: CliqCardProp
               <span className="text-sm font-medium">Members</span>
             </>
           )}
-        </button>
+        </Link>
       </div>
       {canInvite && (
         <InviteModal

@@ -281,6 +281,7 @@ export default defineSchema({
     childLastName: v.string(),
     childBirthdate: v.string(),
     parentEmail: v.string(),
+    secondParentEmail: v.optional(v.string()), // Additional parent/guardian email
     
     // Approval tracking
     approvalToken: v.string(),

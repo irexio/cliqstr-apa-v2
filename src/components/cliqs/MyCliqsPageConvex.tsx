@@ -80,11 +80,10 @@ export default function MyCliqsPageConvex() {
 
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto">
-      {/* Header Section */}
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">My Cliqs</h1>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-sm sm:text-base text-gray-600">
+        {/* Header Section */}
+        <div className="mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">My Cliqs</h1>
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
             Manage your cliqs and invite friends to join.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -106,7 +105,6 @@ export default function MyCliqsPageConvex() {
             </Link>
           </div>
         </div>
-      </div>
       
       {/* Cliqs Grid */}
       <CliqsGrid initialCliqs={formattedCliqs} currentUserId={user.id} />

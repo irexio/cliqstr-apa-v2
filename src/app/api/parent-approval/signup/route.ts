@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`[PARENT-APPROVAL-SIGNUP] Successfully created parent account`);
 
+
     // Create a session for the parent
     const now = Date.now();
     const timeoutMins = Number(process.env.SESSION_TIMEOUT_MINUTES || 180);
