@@ -38,7 +38,11 @@ interface Child {
   email?: string;
 }
 
-export default function ParentDashboard() {
+interface ParentDashboardProps {
+  hideCreateForm?: boolean; // Hide the create form when in approval flow
+}
+
+export default function ParentDashboard({ hideCreateForm = false }: ParentDashboardProps) {
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -90,9 +94,10 @@ export default function ParentDashboard() {
 
   return (
     <div className="space-y-4">
-      {/* Create Child Account Section */}
-      <div className="border border-black rounded p-4 bg-black text-white">
-        <h3 className="font-semibold mb-2 text-white">Create New Child Account</h3>
+      {/* Create Child Account Section - Only show if not in approval flow */}
+      {!hideCreateForm && (
+        <div className="border border-black rounded p-4 bg-black text-white">
+          <h3 className="font-semibold mb-2 text-white">Create New Child Account</h3>
         
         {!showCreateForm ? (
           <button
@@ -146,7 +151,8 @@ export default function ParentDashboard() {
             </div>
           </form>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Existing Children Section */}
       {children.length > 0 && (

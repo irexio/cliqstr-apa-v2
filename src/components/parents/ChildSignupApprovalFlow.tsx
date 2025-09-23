@@ -74,6 +74,49 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
     invitesRequireParentApproval: true, // Default to true for safety, but parent can change
   });
 
+  // Auto-save form data to localStorage
+  useEffect(() => {
+    const saveFormData = () => {
+      const formData = {
+        username,
+        password: '', // Don't save password for security
+        confirmPassword: '', // Don't save password for security
+        redAlertAccepted,
+        silentMonitoring,
+        secondParentEmail,
+        permissions,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem('parentHQ_formData', JSON.stringify(formData));
+    };
+
+    // Save every 3 seconds
+    const interval = setInterval(saveFormData, 3000);
+    return () => clearInterval(interval);
+  }, [username, redAlertAccepted, silentMonitoring, secondParentEmail, permissions]);
+
+  // Load saved form data on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('parentHQ_formData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        // Only restore if data is less than 1 hour old
+        if (Date.now() - parsed.timestamp < 3600000) {
+          setUsername(parsed.username || '');
+          setRedAlertAccepted(parsed.redAlertAccepted || false);
+          setSilentMonitoring(parsed.silentMonitoring !== false); // Default to true
+          setSecondParentEmail(parsed.secondParentEmail || '');
+          if (parsed.permissions) {
+            setPermissions(prev => ({ ...prev, ...parsed.permissions }));
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to restore form data:', err);
+      }
+    }
+  }, []);
+
   // Fetch approval details or invite details
   useEffect(() => {
     const fetchDetails = async () => {
@@ -201,8 +244,9 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
         return;
       }
 
-      // Success - redirect to success page
+      // Success - clear saved form data and redirect to success page
       console.log('[PARENTS_HQ][signup-approval] success');
+      localStorage.removeItem('parentHQ_formData'); // Clear saved form data
       router.replace(`/parents/hq/success?childName=${encodeURIComponent(childFirstName)}`);
       
     } catch (err: any) {

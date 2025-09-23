@@ -262,7 +262,7 @@ export default function ParentsHQContent() {
         <p className="text-gray-600 mt-2">Comprehensive child management and safety controls</p>
         <p className="text-sm text-blue-600">Every child on Cliqstr requires parent approval through this interface</p>
       </div>
-      <ParentDashboard />
+      <ParentDashboard hideCreateForm={false} />
     </div>
   );
 }
