@@ -3,6 +3,7 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/auth/session-config';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
+import { invalidateUser } from '@/lib/cache/userCache';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -66,6 +67,9 @@ export async function POST(req: NextRequest) {
         isApproved: true,
       },
     });
+
+    // Invalidate user cache to ensure fresh data is fetched
+    await invalidateUser(session.userId);
 
     console.log(`[PLAN-UPDATE] Successfully updated plan to: ${plan}`);
 

@@ -160,8 +160,6 @@ export async function POST(req: NextRequest) {
     await convexHttp.mutation(api.profiles.createProfile, {
       userId: childUserId,
       username: username,
-      firstName: firstName,
-      lastName: lastName,
       showYear: false, // Children: always false (enforced by policy)
       showMonthDay: true, // Default: show birthday to cliq members
     });
@@ -206,10 +204,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[PARENT-CHILDREN] Error creating child:', error);
+    console.error('[PARENT-CHILDREN] Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name
+    });
     return NextResponse.json({ 
-      error: 'Failed to create child account' 
+      error: 'Failed to create child account',
+      details: error?.message || 'Unknown error'
     }, { status: 500 });
   }
 }

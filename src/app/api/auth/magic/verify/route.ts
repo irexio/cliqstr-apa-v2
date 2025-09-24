@@ -4,6 +4,7 @@ import { api } from 'convex/_generated/api';
 import { z } from 'zod';
 import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/auth/session-config';
+import { invalidateUser } from '@/lib/cache/userCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +46,10 @@ export async function POST(req: NextRequest) {
       NextResponse.next(),
       sessionOptions
     );
+
+    // Clear any existing cache for this user to ensure fresh data
+    console.log('[MAGIC-LINK-VERIFY] Clearing user cache for fresh sign-in:', userData.userId);
+    await invalidateUser(userData.userId);
 
     // Set session data
     session.userId = userData.userId;

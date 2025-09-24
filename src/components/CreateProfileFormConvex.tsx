@@ -52,8 +52,6 @@ export default function CreateProfileFormConvex() {
       const profileId = await createProfile({
         userId: user.id as Id<"users">,
         username: username.toLowerCase(),
-        firstName,
-        lastName,
         about: about || undefined,
         image: avatarUrl || undefined,
         bannerImage: bannerUrl || undefined,

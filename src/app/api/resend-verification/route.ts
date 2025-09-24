@@ -37,9 +37,9 @@ export async function POST(req: Request) {
       });
     }
     
-    // Get user profile for name
-    const profile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user._id });
-    const name = profile?.firstName || email.split('@')[0];
+    // Get user account for name
+    const account = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user._id });
+    const name = account?.firstName || email.split('@')[0];
     
     // Send verification email
     const result = await sendVerificationEmail({

@@ -32,12 +32,21 @@ export default function PlanBanner() {
             // Check if user has any valid plan
             const userPlan = data.user.plan || data.user.account?.plan;
             const hasPlan = userPlan && userPlan !== null && userPlan !== '';
+            
+            console.log('[PlanBanner] Plan check details:', {
+              userPlan: data.user.plan,
+              accountPlan: data.user.account?.plan,
+              finalPlan: userPlan,
+              hasPlan: hasPlan,
+              userApproved: data.user.approved,
+              accountApproved: data.user.account?.isApproved
+            });
               
             if (!hasPlan) {
               console.log('[PlanBanner] User needs to select a plan');
               setNeedsPlan(true);
             } else {
-              console.log('[PlanBanner] User has a plan:', data.user.plan || data.user.account?.plan);
+              console.log('[PlanBanner] User has a plan:', userPlan);
               setNeedsPlan(false);
             }
           } else {
@@ -75,6 +84,15 @@ export default function PlanBanner() {
   // Check if this is a parent approval flow (has approvalToken in localStorage)
   const isParentApprovalFlow = typeof window !== 'undefined' && 
     (localStorage.getItem('parentApprovalToken') || window.location.search.includes('approvalToken'));
+  
+  console.log('[PlanBanner] Page check:', {
+    needsPlan,
+    isOnDashboard,
+    isOnVerificationPage,
+    isOnSignupFlow,
+    isParentApprovalFlow,
+    currentPath: typeof window !== 'undefined' ? window.location.pathname : 'server'
+  });
   
   // Don't show banner on dashboard, verification pages, signup flow, or parent approval flow
   if (!needsPlan || isOnDashboard || isOnVerificationPage || isOnSignupFlow || isParentApprovalFlow) return null;

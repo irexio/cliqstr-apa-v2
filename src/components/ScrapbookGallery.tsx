@@ -76,6 +76,9 @@ export default function ScrapbookGallery({
         }),
       });
 
+      console.log('[SCRAPBOOK] API Response status:', response.status);
+      console.log('[SCRAPBOOK] API Response ok:', response.ok);
+
       if (!response.ok) {
         const error = await response.json();
         console.error('[SCRAPBOOK] API Error:', error);

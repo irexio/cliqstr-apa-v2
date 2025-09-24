@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { getIronSession } from 'iron-session';
+import { sessionOptions, SessionData } from '@/lib/auth/session-config';
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Always allow static and API
@@ -12,6 +14,26 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/api/')
   ) {
     return NextResponse.next();
+  }
+
+  // 🚫 CRITICAL: Plan validation for My Cliqs Dashboard
+  if (pathname === '/my-cliqs-dashboard') {
+    try {
+      const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
+      
+      if (!session.userId) {
+        console.log('[MIDDLEWARE] No session for dashboard access, redirecting to sign-in');
+        return NextResponse.redirect(new URL('/sign-in', req.url));
+      }
+
+      // We can't easily check the plan here without a database call,
+      // so we'll let the page-level enforcement handle it
+      // This is just a basic session check
+      console.log('[MIDDLEWARE] Session found for dashboard access');
+    } catch (error) {
+      console.error('[MIDDLEWARE] Error checking session:', error);
+      return NextResponse.redirect(new URL('/sign-in', req.url));
+    }
   }
 
   // Allow magic link authentication routes

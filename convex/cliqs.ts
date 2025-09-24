@@ -194,6 +194,11 @@ export const getCliqMembers = query({
           .withIndex("by_user_id", (q) => q.eq("userId", membership.userId))
           .first();
 
+        const account = await ctx.db
+          .query("accounts")
+          .withIndex("by_user_id", (q) => q.eq("userId", membership.userId))
+          .first();
+
         return user ? {
           id: user._id,
           email: user.email,
@@ -201,8 +206,8 @@ export const getCliqMembers = query({
           joinedAt: membership.joinedAt,
           profile: profile ? {
             username: profile.username,
-            firstName: profile.firstName,
-            lastName: profile.lastName,
+            firstName: account?.firstName,
+            lastName: account?.lastName,
             image: profile.image,
           } : null,
         } : null;

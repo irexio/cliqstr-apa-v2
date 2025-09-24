@@ -56,7 +56,6 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
   // Form state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [childEmail, setChildEmail] = useState('');
   const [redAlertAccepted, setRedAlertAccepted] = useState(false);
   const [silentMonitoring, setSilentMonitoring] = useState(true);
@@ -81,7 +80,6 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       const formData = {
         username,
         password: '', // Don't save password for security
-        confirmPassword: '', // Don't save password for security
         childEmail,
         redAlertAccepted,
         silentMonitoring,
@@ -179,11 +177,6 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
 
   const handleSubmitApproval = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
 
     if (!redAlertAccepted) {
       setError('You must accept the Red Alert monitoring agreement');
@@ -238,31 +231,53 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
 
       const data = await response.json();
 
+      console.log('[PARENTS_HQ][signup-approval] API response:', { 
+        status: response.status, 
+        ok: response.ok, 
+        data 
+      });
+
       if (!response.ok) {
         const reason = data?.error || 'server_error';
-        console.warn('[PARENTS_HQ][signup-approval] failure', { reason });
+        const details = data?.details || '';
+        console.warn('[PARENTS_HQ][signup-approval] failure', { 
+          reason, 
+          details, 
+          status: response.status,
+          fullResponse: data
+        });
         
         // For critical errors, redirect to help page
         if (reason.includes('Invalid or expired') || reason.includes('Failed to create') || reason.includes('server_error')) {
+          console.log('[PARENTS_HQ][signup-approval] redirecting to help page due to critical error');
           router.push('/parents/hq/help');
           return;
         }
         
-        setError(reason);
+        // Show detailed error to user
+        const errorMessage = details ? `${reason}: ${details}` : reason;
+        setError(errorMessage);
         setSubmitting(false);
         return;
       }
 
       // Success - clear saved form data and redirect to success page
-      console.log('[PARENTS_HQ][signup-approval] success');
+      console.log('[PARENTS_HQ][signup-approval] success - redirecting to success page');
       localStorage.removeItem('parentHQ_formData'); // Clear saved form data
       router.replace(`/parents/hq/success?childName=${encodeURIComponent(childFirstName)}`);
       
     } catch (err: any) {
-      console.error('[PARENTS_HQ][signup-approval] error', err);
+      console.error('[PARENTS_HQ][signup-approval] catch block error', err);
+      console.error('[PARENTS_HQ][signup-approval] error details:', {
+        message: err?.message,
+        stack: err?.stack,
+        name: err?.name
+      });
       
-      // For critical errors, redirect to help page
-      router.push('/parents/hq/help');
+      // Show the specific error to the user instead of redirecting to help page
+      setError(`Network error: ${err?.message || 'Failed to create child account. Please try again.'}`);
+      setSubmitting(false);
+      return;
     } finally {
       setSubmitting(false);
     }
@@ -381,30 +396,6 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
-              <PasswordInput
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a secure password"
-                required
-                minLength={6}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <PasswordInput
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm the password"
-                required
-                minLength={6}
-              />
-            </div>
-
-            <div>
               <Label htmlFor="childEmail">Child's Email Address</Label>
               <Input
                 id="childEmail"
@@ -420,6 +411,18 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
                   : "Magic links will be sent directly to your child for easy login"
                 }
               </p>
+            </div>
+
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <PasswordInput
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a secure password"
+                required
+                minLength={6}
+              />
             </div>
 
             {/* Additional Parent/Guardian Email */}

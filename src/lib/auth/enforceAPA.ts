@@ -7,10 +7,25 @@ export function enforceAPA(user: any, approvalToken?: string) {
   }
   
   if (!user) redirect('/sign-in');
+  
   const role = user.account?.role;
   const approved = !!user.account?.isApproved;
-  if (role === 'Child' && !approved) redirect('/awaiting-approval');
-  if (!user.account?.plan) redirect('/choose-plan');
+  const plan = user.account?.plan;
+  
+  // 🚫 CRITICAL: Block unapproved children
+  if (role === 'Child' && !approved) {
+    console.log('[ENFORCE-APA] Blocking unapproved child');
+    redirect('/awaiting-approval');
+  }
+  
+  // 🚫 CRITICAL: Block users without a plan - NO EXCEPTIONS
+  if (!plan || plan === null || plan === '') {
+    console.log('[ENFORCE-APA] Blocking user without plan:', { plan, role, approved });
+    redirect('/choose-plan');
+  }
+  
+  // ✅ User has valid plan - allow access
+  console.log('[ENFORCE-APA] User has valid plan:', { plan, role, approved });
 }
 
 export function clearAuthTokens(headers: Headers): void {

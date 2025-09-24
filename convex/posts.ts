@@ -44,6 +44,11 @@ export const getCliqPosts = query({
           .withIndex("by_user_id", (q) => q.eq("userId", post.authorId))
           .first();
 
+        const authorAccount = await ctx.db
+          .query("accounts")
+          .withIndex("by_user_id", (q) => q.eq("userId", post.authorId))
+          .first();
+
         const replies = await ctx.db
           .query("replies")
           .withIndex("by_post_id", (q) => q.eq("postId", post._id))
@@ -62,8 +67,8 @@ export const getCliqPosts = query({
             email: author.email,
             profile: authorProfile ? {
               username: authorProfile.username,
-              firstName: authorProfile.firstName,
-              lastName: authorProfile.lastName,
+              firstName: authorAccount?.firstName,
+              lastName: authorAccount?.lastName,
               image: authorProfile.image,
             } : null,
           } : null,
@@ -242,6 +247,11 @@ export const getPostReplies = query({
           .withIndex("by_user_id", (q) => q.eq("userId", reply.authorId))
           .first();
 
+        const authorAccount = await ctx.db
+          .query("accounts")
+          .withIndex("by_user_id", (q) => q.eq("userId", reply.authorId))
+          .first();
+
         return {
           id: reply._id,
           content: reply.content,
@@ -252,8 +262,8 @@ export const getPostReplies = query({
             email: author.email,
             profile: authorProfile ? {
               username: authorProfile.username,
-              firstName: authorProfile.firstName,
-              lastName: authorProfile.lastName,
+              firstName: authorAccount?.firstName,
+              lastName: authorAccount?.lastName,
               image: authorProfile.image,
             } : null,
           } : null,

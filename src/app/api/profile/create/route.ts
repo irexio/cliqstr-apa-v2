@@ -78,8 +78,6 @@ export async function POST(req: NextRequest) {
     const profileId = await convexHttp.mutation(api.profiles.createProfile, {
       userId: user.id as any,
       username,
-      firstName,
-      lastName,
       about: about || '',
       image: image || '',
       bannerImage: bannerImage || '',

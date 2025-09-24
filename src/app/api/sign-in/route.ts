@@ -18,6 +18,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
 import { compare } from 'bcryptjs';
+import { invalidateUser } from '@/lib/cache/userCache';
 import { clearAuthTokens } from '@/lib/auth/enforceAPA';
 import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/auth/session-config';
@@ -155,6 +156,11 @@ export async function POST(req: NextRequest) {
       const timeoutMins = Number(process.env.SESSION_TIMEOUT_MINUTES || 180);
       const refreshIntervalMins = Number(process.env.SESSION_REFRESH_INTERVAL_MINUTES || 20);
       const idleCutoffMins = Number(process.env.SESSION_IDLE_CUTOFF_MINUTES || 60);
+      
+      // Clear any existing cache for this user to ensure fresh data
+      console.log('[SIGN-IN] Clearing user cache for fresh sign-in:', user._id.toString());
+      await invalidateUser(user._id.toString());
+      
       session.userId = user._id.toString();
       session.createdAt = now; // legacy
       session.issuedAt = now;
@@ -193,6 +199,11 @@ export async function POST(req: NextRequest) {
     const timeoutMins = Number(process.env.SESSION_TIMEOUT_MINUTES || 180);
     const refreshIntervalMins = Number(process.env.SESSION_REFRESH_INTERVAL_MINUTES || 20);
     const idleCutoffMins = Number(process.env.SESSION_IDLE_CUTOFF_MINUTES || 60);
+    
+    // Clear any existing cache for this user to ensure fresh data
+    console.log('[SIGN-IN] Clearing user cache for fresh sign-in:', user._id.toString());
+    await invalidateUser(user._id.toString());
+    
     session.userId = user._id.toString();
     session.createdAt = now; // legacy
     session.issuedAt = now;

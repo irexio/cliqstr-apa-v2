@@ -74,8 +74,6 @@ export const createProfile = mutation({
   args: {
     userId: v.id("users"),
     username: v.string(),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
     about: v.optional(v.string()),
     image: v.optional(v.string()),
     bannerImage: v.optional(v.string()),
@@ -111,8 +109,6 @@ export const createProfile = mutation({
       createdAt: now,
       updatedAt: now,
       userId: args.userId,
-      firstName: args.firstName,
-      lastName: args.lastName,
       about: args.about,
       image: args.image,
       bannerImage: args.bannerImage,
@@ -133,8 +129,6 @@ export const updateProfile = mutation({
     profileId: v.id("myProfiles"),
     updates: v.object({
       username: v.optional(v.string()),
-      firstName: v.optional(v.string()),
-      lastName: v.optional(v.string()),
       about: v.optional(v.string()),
       image: v.optional(v.string()),
       bannerImage: v.optional(v.string()),

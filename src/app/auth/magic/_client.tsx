@@ -101,8 +101,29 @@ export default function MagicLinkClient() {
         description: 'You have been signed in successfully.',
       });
 
-      // Redirect to appropriate dashboard
-      router.push('/my-cliqs-dashboard');
+      // Check user plan before redirecting
+      const userData = await fetch('/api/auth/status', {
+        method: 'GET',
+        cache: 'no-store',
+        credentials: 'include',
+      });
+
+      if (userData.ok) {
+        const user = await userData.json();
+        const plan = user.user?.account?.plan || user.user?.plan;
+        
+        if (!plan || plan === null || plan === '') {
+          console.log('[MAGIC-LINK] User has no plan, redirecting to choose-plan');
+          router.push('/choose-plan');
+          return;
+        }
+        
+        console.log('[MAGIC-LINK] User has plan, redirecting to dashboard');
+        router.push('/my-cliqs-dashboard');
+      } else {
+        console.log('[MAGIC-LINK] Failed to get user data, redirecting to sign-in');
+        router.push('/sign-in');
+      }
     } catch (err: any) {
       setError(err.message);
       toast({

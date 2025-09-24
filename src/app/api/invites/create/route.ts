@@ -204,8 +204,8 @@ export async function POST(request: NextRequest) {
         const cliqName = cliq?.name || 'a Cliq';
         
         // Get inviter name for the email
-        const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
-        const inviterName = inviterProfile ? `${inviterProfile.firstName} ${inviterProfile.lastName}`.trim() : user.email?.split('@')[0] || 'Someone';
+        const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
+        const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : user.email?.split('@')[0] || 'Someone';
         
         // Use parent approval URL instead of old invite flow
         const approvalLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken!)}`;

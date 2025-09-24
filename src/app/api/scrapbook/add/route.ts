@@ -40,12 +40,31 @@ export async function POST(req: NextRequest) {
 
     const { imageUrl, caption, profileId } = parsed.data;
 
+    console.log('[SCRAPBOOK_ADD] Request data:', {
+      userId: user.id,
+      profileId,
+      imageUrl,
+      caption
+    });
+
     // Verify the profile belongs to the current user using Convex
     const profile = await convexHttp.query(api.profiles.getProfileByUserId, {
       userId: user.id as any,
     });
 
+    console.log('[SCRAPBOOK_ADD] Profile lookup result:', {
+      profileFound: !!profile,
+      profileId: profile?._id,
+      requestedProfileId: profileId,
+      userId: user.id
+    });
+
     if (!profile || profile._id !== profileId) {
+      console.log('[SCRAPBOOK_ADD] Profile validation failed:', {
+        profileId: profile?._id,
+        requestedProfileId: profileId,
+        userId: user.id
+      });
       return NextResponse.json({ 
         error: 'You can only add items to your own scrapbook' 
       }, { status: 403 });

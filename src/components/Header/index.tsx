@@ -102,6 +102,12 @@ export function HeaderComponent() {
       return true;
     }
     
+    // Special case: Skip auth checks on signup page to prevent dashboard flash
+    if (pathname === '/sign-up') {
+      console.log('[Header] Skipping auth check - signup page (prevents dashboard flash)');
+      return true;
+    }
+    
     console.log('[Header] NOT skipping auth check');
     return false;
   };
@@ -327,6 +333,15 @@ export function HeaderComponent() {
       }, 10 * 60 * 1000);
       
       return () => clearInterval(interval);
+    } else {
+      // If we're on a public page (like signup), ensure we show unauthenticated state
+      // This prevents any lingering authenticated state from causing redirects
+      if (pathname === '/sign-up') {
+        console.log('[Header] On signup page - ensuring unauthenticated state');
+        setIsLoggedIn(false);
+        setIsApproved(false);
+        setUserData(null);
+      }
     }
   }, [pathname, searchParams]); // Re-run when pathname or searchParams change
 
