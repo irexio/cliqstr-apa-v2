@@ -35,9 +35,6 @@ export default defineSchema({
     // Birthday visibility controls (computed from accounts.birthdate)
     showMonthDay: v.boolean(), // Show birthday month/day to cliq members
     birthdayMonthDay: v.optional(v.string()), // Cache: "MM-DD" for performance
-    // TEMPORARY: Allow old fields during migration (will be removed after cleanup)
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
   })
     .index("by_username", ["username"])
     .index("by_user_id", ["userId"]),
