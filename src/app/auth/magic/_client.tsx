@@ -141,11 +141,11 @@ export default function MagicLinkClient() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">📧 Check Your Email</CardTitle>
+          <CardTitle className="text-center">⚡ Check Your Email</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center">
-            <div className="text-6xl mb-4">📬</div>
+            <div className="text-6xl mb-4">⚡</div>
             <p className="text-gray-600 mb-4">
               We've sent a magic link to <strong>{email}</strong>
             </p>
@@ -235,7 +235,7 @@ export default function MagicLinkClient() {
         </form>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-medium text-blue-900 mb-2">🔒 How Magic Links Work</h3>
+          <h3 className="font-medium text-blue-900 mb-2">⚡ How Magic Links Work</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• No password required</li>
             <li>• Link expires in 15 minutes</li>

@@ -29,7 +29,7 @@ function ParentsHQSuccessContent() {
         </p>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-          <h3 className="font-semibold text-blue-900 mb-3">📋 Next Steps - Please Help Your Child:</h3>
+          <h3 className="font-semibold text-blue-900 mb-3">⚡ Next Steps - Please Help Your Child:</h3>
           <ol className="text-blue-800 text-sm space-y-2 list-decimal list-inside">
             <li><strong>Sign Out:</strong> You can sign out and let your child sign in with their new username and password</li>
             <li><strong>Child Sign In:</strong> Help your child sign in to Cliqstr using their new username and password</li>
@@ -66,7 +66,7 @@ function ParentsHQSuccessContent() {
 
         {/* Parent FAQs Section */}
         <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6 text-left">
-          <h3 className="font-semibold text-gray-900 mb-4">📚 Parent FAQs</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">⚡ Parent FAQs</h3>
           <div className="space-y-4 text-sm text-gray-700">
             <div>
               <h4 className="font-medium text-gray-900 mb-1">How do I monitor my child's activity?</h4>

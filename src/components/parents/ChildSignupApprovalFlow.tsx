@@ -324,7 +324,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       {/* Parent HQ Header */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="text-blue-900">🛡️ Parent HQ - Child Permission Setup</CardTitle>
+          <CardTitle className="text-blue-900">⚡ Parent HQ - Child Permission Setup</CardTitle>
           <p className="text-blue-700 text-sm">Every child must have parents complete these permissions before account creation</p>
         </CardHeader>
         <CardContent>
@@ -460,7 +460,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
 
             {/* Parent HQ: Child Permissions */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium mb-3">🛡️ Parent HQ: Set Permissions for {childFirstName}</h4>
+              <h4 className="font-medium mb-3">⚡ Parent HQ: Set Permissions for {childFirstName}</h4>
               <p className="text-gray-600 text-xs mb-3">Select which features you want activated on your child's account</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex items-center space-x-2">
@@ -642,7 +642,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
                 disabled={submitting || !redAlertAccepted}
                 className="flex-1"
               >
-                {submitting ? 'Creating Account...' : `🛡️ Parent HQ: Complete Setup for ${childFirstName}`}
+                {submitting ? 'Creating Account...' : `⚡ Parent HQ: Complete Setup for ${childFirstName}`}
               </Button>
             </div>
           </form>
