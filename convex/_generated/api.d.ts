@@ -20,6 +20,7 @@ import type * as invites from "../invites.js";
 import type * as magicLinks from "../magicLinks.js";
 import type * as memberships from "../memberships.js";
 import type * as migrate from "../migrate.js";
+import type * as migrations_removeNameFields from "../migrations/removeNameFields.js";
 import type * as parentApprovals from "../parentApprovals.js";
 import type * as parentLinks from "../parentLinks.js";
 import type * as posts from "../posts.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   magicLinks: typeof magicLinks;
   memberships: typeof memberships;
   migrate: typeof migrate;
+  "migrations/removeNameFields": typeof migrations_removeNameFields;
   parentApprovals: typeof parentApprovals;
   parentLinks: typeof parentLinks;
   posts: typeof posts;
