@@ -17,7 +17,16 @@
     "kill-node": "taskkill /F /IM node.exe || echo 'No node processes found'",
     "kill-port": "npx kill-port 3000",
     "clean": "npm run kill-node && npm run kill-port",
-    "reset": "npm run clean && rm -rf .next && npm run dev"
+    "reset": "npm run clean && rm -rf .next && npm run dev",
+    "test": "npx playwright test",
+    "test:auth-flows": "tsx tests/run-tests.ts all",
+    "test:signup": "tsx tests/run-tests.ts signup-flows",
+    "test:invites": "tsx tests/run-tests.ts invite-flows",
+    "test:edge-cases": "tsx tests/run-tests.ts edge-cases",
+    "test:ui": "npx playwright test --ui",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.3",

@@ -231,7 +231,7 @@ export default function SignInForm() {
         <button 
           type="button" 
           onClick={() => router.push('/auth/magic')}
-          className="text-sm text-blue-600 hover:text-blue-800 underline"
+          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-sm font-medium"
         >
           🪄 Sign in with Magic Link (No Password)
         </button>

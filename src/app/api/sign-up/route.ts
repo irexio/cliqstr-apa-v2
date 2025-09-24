@@ -209,14 +209,8 @@ export async function POST(req: NextRequest) {
     // Log signup activity
     await logSignup(newUserId, inviteCode, req);
 
-    // Add membership if invited to a cliq
-    if (invitedCliqId) {
-      await convexHttp.mutation(api.memberships.createMembership, {
-        userId: newUserId,
-        cliqId: invitedCliqId,
-        role: 'Member',
-      });
-    }
+    // NOTE: Removed auto-join logic - adults must select plan before joining cliqs
+    // This fixes the documented issue where adults were auto-joined without plan selection
 
     // Send parent approval email if child
     if (isChild && parentEmail) {

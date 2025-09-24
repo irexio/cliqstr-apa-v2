@@ -71,6 +71,12 @@ export default defineSchema({
     suspended: v.boolean(),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
+    // Quota tracking fields
+    maxCliqs: v.optional(v.number()), // Maximum cliqs allowed
+    maxChildren: v.optional(v.number()), // Maximum children allowed (for parents)
+    maxInvites: v.optional(v.number()), // Maximum invites per month
+    invitesUsedThisMonth: v.optional(v.number()), // Invites used this month
+    lastInviteReset: v.optional(v.number()), // Last time invite quota was reset
   })
     .index("by_user_id", ["userId"])
     .index("by_stripe_customer_id", ["stripeCustomerId"]),

@@ -60,6 +60,34 @@ export async function POST(request: NextRequest) {
     // Step 1: Normalize email
     const emailNorm = targetEmail.trim().toLowerCase();
 
+    // Step 1.5: Validate child invite requirements
+    if (inviteType === 'child') {
+      // For child invites, validate required fields
+      if (!friendFirstName || !friendLastName || !childBirthdate) {
+        return NextResponse.json({ 
+          error: 'Child invites require child first name, last name, and birthdate' 
+        }, { status: 400 });
+      }
+      
+      // Validate that the target email is not a direct child email
+      // This prevents children from inviting other children directly
+      const existingUser = await convexHttp.query(api.users.getUserByEmail, {
+        email: emailNorm,
+      });
+      
+      if (existingUser) {
+        const account = await convexHttp.query(api.accounts.getAccountByUserId, {
+          userId: existingUser._id as any
+        });
+        
+        if (account?.role === 'Child') {
+          return NextResponse.json({ 
+            error: 'Child invites must use parent email addresses, not child email addresses directly' 
+          }, { status: 400 });
+        }
+      }
+    }
+
     // Step 2: Look up existing user using Convex
     const existingUser = await convexHttp.query(api.users.getUserByEmail, {
       email: emailNorm,
