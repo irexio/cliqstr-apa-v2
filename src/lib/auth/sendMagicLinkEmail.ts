@@ -11,7 +11,7 @@ interface SendMagicLinkEmailProps {
 }
 
 /**
- * 🪄 Send Magic Link Email
+ * ⚡ Send Magic Link Email
  * 
  * Sends a passwordless authentication link via email
  * Supports age-based routing for children
@@ -66,9 +66,9 @@ function generateDirectMagicLinkEmailHTML(name: string, magicLink: string): stri
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .header { background: #000000; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .content { background: white; padding: 40px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .button { display: inline-block; background: #000000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
         .button:hover { opacity: 0.9; }
         .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
         .security-note { background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin: 20px 0; border-radius: 4px; }
@@ -77,7 +77,7 @@ function generateDirectMagicLinkEmailHTML(name: string, magicLink: string): stri
     <body>
       <div class="container">
         <div class="header">
-          <h1>🪄 Your Magic Link is Ready!</h1>
+          <h1>⚡ Your Magic Link is Ready!</h1>
           <p>Sign in to Cliqstr without a password</p>
         </div>
         
@@ -122,9 +122,9 @@ function generateParentForwardEmailHTML(parentName: string, childName: string, m
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .header { background: #000000; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .content { background: white; padding: 40px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .button { display: inline-block; background: #000000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
         .button:hover { opacity: 0.9; }
         .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
         .parent-note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px; }
@@ -134,7 +134,7 @@ function generateParentForwardEmailHTML(parentName: string, childName: string, m
     <body>
       <div class="container">
         <div class="header">
-          <h1>🪄 Password Reset for ${childName}</h1>
+          <h1>⚡ Password Reset for ${childName}</h1>
           <p>Your child forgot their password</p>
         </div>
         

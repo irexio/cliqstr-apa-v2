@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       await sendMagicLinkEmail({
         to: recipientEmail,
         name: recipientName,
-        magicLink: `${process.env.NEXT_PUBLIC_APP_URL}/auth/magic/verify?token=${magicLinkData.token}&email=${encodeURIComponent(normalizedEmail)}`,
+        magicLink: `https://cliqstr.com/auth/magic/verify?token=${magicLinkData.token}&email=${encodeURIComponent(normalizedEmail)}`,
         isParentForward,
         childName: user.role === 'Child' ? childName : undefined,
       });
