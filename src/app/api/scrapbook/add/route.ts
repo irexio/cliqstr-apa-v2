@@ -56,12 +56,20 @@ export async function POST(req: NextRequest) {
       profileFound: !!profile,
       profileId: profile?._id,
       requestedProfileId: profileId,
-      userId: user.id
+      userId: user.id,
+      profileUserId: profile?.userId
     });
 
-    if (!profile || profile._id !== profileId) {
-      console.log('[SCRAPBOOK_ADD] Profile validation failed:', {
-        profileId: profile?._id,
+    if (!profile) {
+      console.log('[SCRAPBOOK_ADD] No profile found for user:', user.id);
+      return NextResponse.json({ 
+        error: 'Profile not found. Please create a profile first.' 
+      }, { status: 404 });
+    }
+
+    if (profile._id !== profileId) {
+      console.log('[SCRAPBOOK_ADD] Profile ID mismatch:', {
+        foundProfileId: profile._id,
         requestedProfileId: profileId,
         userId: user.id
       });

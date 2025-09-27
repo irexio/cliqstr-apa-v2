@@ -30,10 +30,10 @@ export default function ScrapbookGallery({
   layoutStyle = 'inline',
   onItemAdded,
 }: ScrapbookGalleryProps) {
-  const [caption, setCaption] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [showCaptionInput, setShowCaptionInput] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
+  const [caption, setCaption] = useState('');
 
   // Check for expired items (90 days unless pinned)
   const validItems = items.filter((item) => {
