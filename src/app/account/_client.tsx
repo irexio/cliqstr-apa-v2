@@ -1,8 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import FeedbackModal from '@/components/FeedbackModal';
 
 export default function AccountClient({ user }: { user: any }) {
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+
   return (
     <main className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h1>
@@ -99,6 +103,34 @@ export default function AccountClient({ user }: { user: any }) {
           {/* TODO: Implement parent controls section */}
         </div>
       )}
+
+      {/* Support & Feedback */}
+      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Support & Feedback</h3>
+        <div className="space-y-3">
+          <button
+            onClick={() => setIsFeedbackModalOpen(true)}
+            className="block w-full p-3 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+          >
+            <div className="font-medium text-gray-900">Send Feedback</div>
+            <div className="text-sm text-gray-600">Report bugs, share ideas, or send general comments</div>
+          </button>
+          
+          <Link
+            href="/parents/hq/help"
+            className="block p-3 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            <div className="font-medium text-gray-900">Help Center</div>
+            <div className="text-sm text-gray-600">Find answers to common questions</div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Feedback Modal */}
+      <FeedbackModal 
+        isOpen={isFeedbackModalOpen} 
+        onClose={() => setIsFeedbackModalOpen(false)} 
+      />
     </main>
   );
 }

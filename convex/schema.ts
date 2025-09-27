@@ -322,4 +322,21 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_expires_at", ["expiresAt"])
     .index("by_used_at", ["usedAt"]),
+
+  // User feedback submissions
+  feedback: defineTable({
+    userId: v.id("users"),
+    userEmail: v.string(), // User's email for context
+    category: v.union(v.literal("Bug"), v.literal("Idea"), v.literal("General Comment")),
+    message: v.string(),
+    status: v.union(v.literal("new"), v.literal("reviewed"), v.literal("resolved")),
+    createdAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+    reviewedBy: v.optional(v.string()), // Admin who reviewed it
+    adminNotes: v.optional(v.string()),
+  })
+    .index("by_user_id", ["userId"])
+    .index("by_category", ["category"])
+    .index("by_status", ["status"])
+    .index("by_created_at", ["createdAt"]),
 });

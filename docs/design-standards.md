@@ -45,6 +45,27 @@ _Last updated: 2025-09-25_
 - Footer: About, FAQ, Privacy, Safety, What’s New
 - Dropdown: Profile, Parent HQ, Settings, Feedback, Logout
 
+## 📏 Spacing & Layout
+- Grid System: 8px base unit
+- Common Spacing: 8px, 16px, 24px, 32px, 48px
+- Component Padding: 16px (mobile), 24px (desktop)
+- Section Margins: 32px (mobile), 48px (desktop)
+- Button Padding: 12px vertical, 24px horizontal
+
+## 🎭 Animations & Transitions
+- Duration: 200ms for micro-interactions, 300ms for page transitions
+- Easing: ease-in-out for most transitions
+- Hover States: 150ms ease-in-out
+- Loading States: Subtle pulse or spin animations
+- Page Transitions: Fade in/out, avoid jarring movements
+
+## 🚨 Error States & Feedback
+- Error Text: Red (#dc2626) for validation errors
+- Error Borders: Red border on form fields with errors
+- Success States: Green (#16a34a) for confirmations
+- Warning States: Amber (#d97706) for cautions
+- Info States: Blue (#2563eb) for informational messages
+
 ## ✨ Brand Feel
 - Tone: Mature but friendly
 - Vibe: Calm, safe, private

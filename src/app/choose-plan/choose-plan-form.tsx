@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import BaseCard from '@/components/cliqs/BaseCard';
+import PromoCodeInput from '@/components/PromoCodeInput';
 
 // TEMPORARY: Only showing Test Plan during pre-Stripe beta phase
 // Force hardcode the plan to ensure it always displays
@@ -37,6 +38,8 @@ export default function ChoosePlanForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const [approvalToken, setApprovalToken] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discount, setDiscount] = useState<any>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,6 +55,18 @@ export default function ChoosePlanForm() {
       console.log('[PARENT-APPROVAL] No approval token found in URL');
     }
   }, [searchParams]);
+
+  const handlePromoApplied = (promoCode: string, discountInfo: any) => {
+    setAppliedPromo(promoCode);
+    setDiscount(discountInfo);
+    console.log(`Promo code applied: ${promoCode}`, discountInfo);
+  };
+
+  const handlePromoRemoved = () => {
+    setAppliedPromo(null);
+    setDiscount(null);
+    console.log('Promo code removed');
+  };
 
   const savePlanToProfile = async (planKey: string) => {
     try {
@@ -208,6 +223,15 @@ export default function ChoosePlanForm() {
       </div>
       
       <form onSubmit={handleSubmit} className="w-full">
+      
+      {/* Promo Code Input */}
+      <PromoCodeInput
+        onPromoApplied={handlePromoApplied}
+        onPromoRemoved={handlePromoRemoved}
+        appliedPromo={appliedPromo}
+        discount={discount}
+      />
+      
       <div className="flex justify-center mb-6 sm:mb-8">
         {PLANS.map((plan) => (
           <div key={plan.key} className="relative w-full max-w-md">
