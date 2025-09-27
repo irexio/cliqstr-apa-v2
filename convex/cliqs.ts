@@ -226,3 +226,49 @@ export const getAllCliqs = query({
   },
 });
 
+// Get cliqs for parent monitoring (cliqs where child is a member)
+export const getChildCliqsForParentMonitoring = query({
+  args: { 
+    parentId: v.id("users"),
+    childId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // Verify parent-child relationship
+    const parentLink = await ctx.db
+      .query("parentLinks")
+      .withIndex("by_parent_child", (q) => 
+        q.eq("parentId", args.parentId).eq("childId", args.childId)
+      )
+      .first();
+
+    if (!parentLink) {
+      throw new Error("Not authorized to monitor this child");
+    }
+
+    // Get child's memberships
+    const childMemberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_id", (q) => q.eq("userId", args.childId))
+      .collect();
+
+    // Get cliq details for each membership
+    const cliqs = await Promise.all(
+      childMemberships.map(async (membership) => {
+        const cliq = await ctx.db.get(membership.cliqId);
+        return cliq && !cliq.deleted ? {
+          id: cliq._id,
+          name: cliq.name,
+          description: cliq.description,
+          privacy: cliq.privacy,
+          createdAt: cliq.createdAt,
+          ownerId: cliq.ownerId,
+          coverImage: cliq.coverImage,
+          membership: membership,
+        } : null;
+      })
+    );
+
+    return cliqs.filter(Boolean);
+  },
+});
+

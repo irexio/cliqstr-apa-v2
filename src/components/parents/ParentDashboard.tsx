@@ -30,6 +30,7 @@ import { fetchJson } from '@/lib/fetchJson';
 import ChildPermissionManager from './ChildPermissionManager';
 import MultipleParentsManager from './MultipleParentsManager';
 import ChildActivityLogs from './ChildActivityLogs';
+import LiveCliqMonitoring from './LiveCliqMonitoring';
 
 
 // 🧠 Local definition of child structure
@@ -185,6 +186,12 @@ export default function ParentDashboard({ hideCreateForm = false }: ParentDashbo
           </div>
           <div className="mt-6">
             <ChildActivityLogs 
+              childId={selectedChildId} 
+              childName={children.find(c => c.id === selectedChildId)?.name || 'Child'} 
+            />
+          </div>
+          <div className="mt-6">
+            <LiveCliqMonitoring 
               childId={selectedChildId} 
               childName={children.find(c => c.id === selectedChildId)?.name || 'Child'} 
             />

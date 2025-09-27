@@ -469,3 +469,118 @@ export const restorePost = mutation({
     return args.postId;
   },
 });
+
+// Get posts for parent monitoring (bypasses membership checks for parents)
+export const getPostsForParentMonitoring = query({
+  args: { 
+    cliqId: v.id("cliqs"),
+    parentId: v.id("users"),
+    childId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // Verify parent-child relationship
+    const parentLink = await ctx.db
+      .query("parentLinks")
+      .withIndex("by_parent_child", (q) => 
+        q.eq("parentId", args.parentId).eq("childId", args.childId)
+      )
+      .first();
+
+    if (!parentLink) {
+      throw new Error("Not authorized to monitor this child");
+    }
+
+    // Verify child is a member of this cliq
+    const childMembership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_cliq", (q) => 
+        q.eq("userId", args.childId).eq("cliqId", args.cliqId)
+      )
+      .first();
+
+    if (!childMembership) {
+      throw new Error("Child is not a member of this cliq");
+    }
+
+    // Get all posts from this cliq (parent can see everything)
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
+      .filter((q) => q.eq(q.field("deleted"), false))
+      .order("desc")
+      .collect();
+
+    // Get replies for each post
+    const postsWithReplies = await Promise.all(
+      posts.map(async (post) => {
+        const replies = await ctx.db
+          .query("replies")
+          .withIndex("by_post_id", (q) => q.eq("postId", post._id))
+          .order("asc")
+          .collect();
+
+        // Get author info for replies
+        const repliesWithAuthors = await Promise.all(
+          replies.map(async (reply) => {
+            const author = await ctx.db.get(reply.authorId);
+            const account = author ? await ctx.db
+              .query("accounts")
+              .withIndex("by_user_id", (q) => q.eq("userId", author._id))
+              .first() : null;
+            const profile = author ? await ctx.db
+              .query("myProfiles")
+              .withIndex("by_user_id", (q) => q.eq("userId", author._id))
+              .first() : null;
+
+            return {
+              ...reply,
+              author: {
+                id: author?._id,
+                email: author?.email,
+                account: account ? {
+                  firstName: account.firstName,
+                  lastName: account.lastName,
+                } : null,
+                profile: profile ? {
+                  username: profile.username,
+                  image: profile.image,
+                } : null,
+              },
+            };
+          })
+        );
+
+        // Get author info for post
+        const author = await ctx.db.get(post.authorId);
+        const account = author ? await ctx.db
+          .query("accounts")
+          .withIndex("by_user_id", (q) => q.eq("userId", author._id))
+          .first() : null;
+        const profile = author ? await ctx.db
+          .query("myProfiles")
+          .withIndex("by_user_id", (q) => q.eq("userId", author._id))
+          .first() : null;
+
+        return {
+          ...post,
+          id: post._id,
+          replies: repliesWithAuthors,
+          author: {
+            id: author?._id,
+            email: author?.email,
+            account: account ? {
+              firstName: account.firstName,
+              lastName: account.lastName,
+            } : null,
+            profile: profile ? {
+              username: profile.username,
+              image: profile.image,
+            } : null,
+          },
+        };
+      })
+    );
+
+    return postsWithReplies;
+  },
+});
