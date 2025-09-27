@@ -309,6 +309,7 @@ export const getUserByResetToken = query({
     return await ctx.db
       .query("users")
       .withIndex("by_reset_token", (q) => q.eq("resetToken", args.token))
+      .filter((q) => q.gt(q.field("resetTokenExpires"), Date.now()))
       .first();
   },
 });
