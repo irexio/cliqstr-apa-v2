@@ -26,6 +26,20 @@ export const getParentLinkByEmailAndChild = query({
   },
 });
 
+// Get parent link by parent and child
+export const getParentLinkByParentAndChild = query({
+  args: {
+    parentId: v.id("users"),
+    childId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("parentLinks")
+      .withIndex("by_parent_child", (q) => q.eq("parentId", args.parentId).eq("childId", args.childId))
+      .first();
+  },
+});
+
 // Create a new parent link
 export const createParentLink = mutation({
   args: {

@@ -19,11 +19,12 @@ export default function SignInForm() {
   const [error, setError] = useState('');
   const [securityMessage, setSecurityMessage] = useState<string | null>(null);
 
-  // Check for security-related message in URL parameters
+  // Check for security-related message in URL parameters and pre-fill email
   useEffect(() => {
     const message = searchParams.get('message');
     const resetSuccess = searchParams.get('reset');
     const verified = searchParams.get('verified');
+    const emailParam = searchParams.get('email');
     
     if (message) {
       setSecurityMessage(decodeURIComponent(message));
@@ -32,7 +33,12 @@ export default function SignInForm() {
     } else if (verified === 'true') {
       setSecurityMessage('Your email has been verified successfully! Please sign in to continue.');
     }
-  }, [searchParams]);
+    
+    // Pre-fill email if provided in URL
+    if (emailParam && !identifier) {
+      setIdentifier(emailParam);
+    }
+  }, [searchParams, identifier]);
 
   const hardNavigate = (url: string) => {
     // Force a full page load so the server sees the session cookie on first paint
@@ -172,6 +178,21 @@ export default function SignInForm() {
           const { inviteCode } = JSON.parse(parentInviteContext);
           sessionStorage.removeItem('parentInviteContext');
           hardNavigate(`/invite/parent?code=${inviteCode}`);
+          return;
+        } catch {}
+      }
+
+      // Check for general invite context
+      const inviteContext = sessionStorage.getItem('inviteContext');
+      if (inviteContext) {
+        try {
+          const { inviteCode, returnTo } = JSON.parse(inviteContext);
+          sessionStorage.removeItem('inviteContext');
+          if (returnTo) {
+            hardNavigate(returnTo);
+          } else {
+            hardNavigate(`/invite/accept?code=${inviteCode}`);
+          }
           return;
         } catch {}
       }

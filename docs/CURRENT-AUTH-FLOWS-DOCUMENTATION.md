@@ -36,7 +36,7 @@
 9. User clicks verification email
 10. **Account verified** → can access platform
 
-**Plan Check**: No plan required for adults (plan=null)
+**Plan Check**: No plan required for adults (plan=null)  //WRONG!!!!
 
 ---
 

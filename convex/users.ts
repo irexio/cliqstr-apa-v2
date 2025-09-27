@@ -893,6 +893,56 @@ export const createChildSettings = mutation({
   },
 });
 
+// Update child settings for a profile
+export const updateChildSettings = mutation({
+  args: {
+    profileId: v.id("myProfiles"),
+    canSendInvites: v.optional(v.boolean()),
+    inviteRequiresApproval: v.optional(v.boolean()),
+    canCreatePublicCliqs: v.optional(v.boolean()),
+    canCreateCliqs: v.optional(v.boolean()),
+    canPostImages: v.optional(v.boolean()),
+    canJoinPublicCliqs: v.optional(v.boolean()),
+    canInviteChildren: v.optional(v.boolean()),
+    canInviteAdults: v.optional(v.boolean()),
+    isSilentlyMonitored: v.optional(v.boolean()),
+    aiModerationLevel: v.optional(v.string()),
+    canAccessGames: v.optional(v.boolean()),
+    canShareYouTube: v.optional(v.boolean()),
+    visibilityLevel: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Find the existing child settings
+    const existingSettings = await ctx.db
+      .query("childSettings")
+      .withIndex("by_profile_id", (q) => q.eq("profileId", args.profileId))
+      .first();
+
+    if (!existingSettings) {
+      throw new Error("Child settings not found");
+    }
+
+    // Update the settings
+    await ctx.db.patch(existingSettings._id, {
+      canCreatePublicCliqs: args.canCreatePublicCliqs ?? existingSettings.canCreatePublicCliqs,
+      canJoinPublicCliqs: args.canJoinPublicCliqs ?? existingSettings.canJoinPublicCliqs,
+      canCreateCliqs: args.canCreateCliqs ?? existingSettings.canCreateCliqs,
+      canSendInvites: args.canSendInvites ?? existingSettings.canSendInvites,
+      canInviteChildren: args.canInviteChildren ?? existingSettings.canInviteChildren,
+      canInviteAdults: args.canInviteAdults ?? existingSettings.canInviteAdults,
+      isSilentlyMonitored: args.isSilentlyMonitored ?? existingSettings.isSilentlyMonitored,
+      aiModerationLevel: args.aiModerationLevel ?? existingSettings.aiModerationLevel,
+      canAccessGames: args.canAccessGames ?? existingSettings.canAccessGames,
+      canPostImages: args.canPostImages ?? existingSettings.canPostImages,
+      canShareYouTube: args.canShareYouTube ?? existingSettings.canShareYouTube,
+      visibilityLevel: args.visibilityLevel ?? existingSettings.visibilityLevel,
+      inviteRequiresApproval: args.inviteRequiresApproval ?? existingSettings.inviteRequiresApproval,
+    });
+
+    return existingSettings._id;
+  },
+});
+
 // Get parent emails for a child (CRITICAL for child safety)
 export const getParentEmailsForChild = query({
   args: { childId: v.id("users") },

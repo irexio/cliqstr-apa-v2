@@ -72,11 +72,36 @@ function InviteAcceptContent() {
         inviteType: inviteData.inviteType || 'adult',
         cliqName: inviteData.cliqName,
         inviterName: inviteData.inviterName,
+        recipientEmail: inviteData.recipientEmail,
         method: 'email'
       }));
 
-      // Route based on invite type
+      // For any invite with a recipient email, check if user needs to authenticate
       const inviteType = inviteData.inviteType || 'adult';
+      if (inviteData.recipientEmail) {
+        console.log('[INVITE_ACCEPT] Invite with email, checking if user needs authentication');
+        
+        // Check if this email belongs to an existing user
+        try {
+          const userCheckResponse = await fetch(`/api/auth/check-user?email=${encodeURIComponent(inviteData.recipientEmail)}`);
+          const userCheckData = await userCheckResponse.json();
+          
+          if (userCheckData.exists) {
+            console.log('[INVITE_ACCEPT] Email belongs to existing user, showing auth options');
+            setLoading(false);
+            setError(null);
+            // Store the email and invite code for the auth options screen
+            sessionStorage.setItem('invitedEmail', inviteData.recipientEmail);
+            sessionStorage.setItem('inviteCode', token);
+            router.push(`/invite/auth-options?email=${encodeURIComponent(inviteData.recipientEmail)}&code=${encodeURIComponent(token)}`);
+            return;
+          }
+        } catch (error) {
+          console.error('[INVITE_ACCEPT] Error checking if user exists:', error);
+        }
+      }
+
+      // Route based on invite type
       
       if (inviteType === 'adult') {
         console.log('[INVITE_ACCEPT] Routing adult to choose-plan');
