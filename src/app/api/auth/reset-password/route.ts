@@ -43,8 +43,12 @@ export async function POST(req: NextRequest) {
 
       const { code, newPassword } = parsed.data;
       
+      console.log('🔐 [RESET-PASSWORD] Processing reset for token:', code.substring(0, 8) + '...');
+      console.log('🔐 [RESET-PASSWORD] Token length:', code.length);
+      
       // Hash the token to match what's stored in the database
       const hashedToken = crypto.createHash('sha256').update(code).digest('hex');
+      console.log('🔐 [RESET-PASSWORD] Hashed token:', hashedToken.substring(0, 16) + '...');
       
       // Use the existing Convex function to reset the password
       const result = await convexHttp.mutation(api.users.resetUserPassword, {

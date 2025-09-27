@@ -18,9 +18,11 @@ export async function GET(req: NextRequest) {
     }
 
     console.log('🔐 [VALIDATE-RESET-TOKEN] Validating token:', code.substring(0, 8) + '...');
+    console.log('🔐 [VALIDATE-RESET-TOKEN] Full token length:', code.length);
 
     // Hash the token to match what's stored in the database
     const hashedToken = crypto.createHash('sha256').update(code).digest('hex');
+    console.log('🔐 [VALIDATE-RESET-TOKEN] Hashed token:', hashedToken.substring(0, 16) + '...');
 
     // Check if token exists and is not expired
     const user = await convexHttp.query(api.users.getUserByResetToken, {
@@ -28,7 +30,8 @@ export async function GET(req: NextRequest) {
     });
 
     if (!user) {
-      console.log('🔐 [VALIDATE-RESET-TOKEN] Invalid or expired token');
+      console.log('🔐 [VALIDATE-RESET-TOKEN] Invalid or expired token - no user found');
+      console.log('🔐 [VALIDATE-RESET-TOKEN] Searched for hashed token:', hashedToken.substring(0, 16) + '...');
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
     }
 

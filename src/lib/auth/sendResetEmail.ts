@@ -44,6 +44,9 @@ export async function sendResetEmail(email: string): Promise<SendResetEmailRespo
 
     const resetUrl = `${BASE_URL}/reset-password?code=${token}`
     console.log('🔗 Reset URL:', resetUrl)
+    console.log('🔗 BASE_URL:', BASE_URL)
+    console.log('🔗 Token (first 8 chars):', token.substring(0, 8) + '...')
+    console.log('🔗 Token length:', token.length)
 
     const emailResult = await sendEmail({
       to: email,
