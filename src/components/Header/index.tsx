@@ -66,7 +66,6 @@ export function HeaderComponent() {
       '/join-invalid',
       '/invite/declined',
       '/invite/invalid',
-      '/invite/sent',
       '/invite/manual',
       '/not-authorized',
       '/suspended',
@@ -75,9 +74,9 @@ export function HeaderComponent() {
       '/parent-approval'
     ];
     
-    // Check exact matches and invite pages
+    // Check exact matches and invite pages (but exclude /invite/sent which requires auth)
     return publicPaths.includes(path) || 
-           path.startsWith('/invite/') ||
+           (path.startsWith('/invite/') && path !== '/invite/sent') ||
            path.startsWith('/auth/') ||
            path.startsWith('/verify-');
   };

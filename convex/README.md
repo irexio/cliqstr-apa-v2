@@ -84,6 +84,17 @@ function handleButtonPress() {
   );
 }
 ```
+# 📂 Cliqstr Design Standards Package v1
+_Last updated: 2025-09-25_
+
+This package includes:
+
+1. `design-standards.md` → full design rules (for developers/designers)
+2. `dev-do-list.md` → feature/bug/research/compliance templates + roadmap entries (for dev team)
+3. `release-notes.md` → tester-facing “What’s New” doc (for families/testers)
+4. `visual-standards-quick-guide.pdf` → one-page cheat sheet (for quick reference)
+
+Use this package as the single source of truth for design, development, and tester communications.
 
 Use the Convex CLI to push your functions to a deployment. See everything
 the Convex CLI can do by running `npx convex -h` in your project root
