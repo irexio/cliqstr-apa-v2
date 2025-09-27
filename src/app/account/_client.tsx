@@ -94,13 +94,12 @@ export default function AccountClient({ user }: { user: any }) {
         <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Parent Features</h3>
           <Link
-            href="/parent-controls"
+            href="/parents/hq"
             className="block p-3 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
           >
-            <div className="font-medium text-gray-900">Parent Controls</div>
-            <div className="text-sm text-gray-600">Manage your children's accounts and permissions</div>
+            <div className="font-medium text-gray-900">⚡ Parents HQ</div>
+            <div className="text-sm text-gray-600">Manage your children's accounts, safety settings, and monitor activity</div>
           </Link>
-          {/* TODO: Implement parent controls section */}
         </div>
       )}
 

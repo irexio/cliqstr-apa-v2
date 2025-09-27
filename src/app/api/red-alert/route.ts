@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            // Send Red Alert email
+            // Send Red Alert notifications (email + future SMS via Twilio)
             const subject = '🚨 RED ALERT: Immediate Attention Required';
             const html = `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -197,18 +197,29 @@ export async function POST(request: NextRequest) {
             `;
 
             try {
-              const result = await sendEmail({
+              // Send email notification
+              const emailResult = await sendEmail({
                 to: parentEmail,
                 subject,
                 html,
               });
 
-              if (result.success) {
+              if (emailResult.success) {
+                console.log(`✅ Red Alert email sent to ${parentName} (${parentEmail})`);
+              } else {
+                console.error(`❌ Failed to send Red Alert email to ${parentEmail}:`, emailResult.error);
+              }
+
+              // TODO: Add Twilio SMS notification when implemented
+              // const smsResult = await sendSMS({
+              //   to: parentPhoneNumber, // Get from parent profile
+              //   message: `🚨 RED ALERT: Safety concern reported in ${cliq.name}. Check your email immediately.`
+              // });
+
+              if (emailResult.success) {
                 notifiedParents.add(parentLink.email);
                 totalNotifications++;
-                console.log(`✅ Red Alert sent to ${parentName} (${parentEmail})`);
-              } else {
-                console.error(`❌ Failed to send Red Alert to ${parentEmail}:`, result.error);
+                console.log(`✅ Red Alert notifications sent to ${parentName} (${parentEmail})`);
               }
             } catch (error) {
               console.error(`❌ Error sending Red Alert to ${parentEmail}:`, error);
@@ -219,6 +230,61 @@ export async function POST(request: NextRequest) {
     } else {
       // Adult report - log for AI moderator review (to be implemented later)
       console.log(`🤖 Adult Red Alert reported in cliq ${cliq.name} - will be reviewed by AI moderator`);
+    }
+
+    // Always notify Cliqstr moderation team
+    try {
+      const moderationSubject = '🚨 RED ALERT: Content Reported for Review';
+      const moderationHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background-color: #ff0000; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h1 style="margin: 0; font-size: 24px;">🚨 RED ALERT - MODERATION REQUIRED</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">Content has been reported and requires immediate review</p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #333; margin-top: 0;">Alert Details</h2>
+            <p><strong>Cliq ID:</strong> ${cliqId}</p>
+            <p><strong>Cliq Name:</strong> ${cliq.name}</p>
+            <p><strong>Triggered By:</strong> ${cliq.ownerId}</p>
+            <p><strong>Reason:</strong> ${reason || 'Safety concern reported'}</p>
+            <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+            <p><strong>Report Type:</strong> ${isChildReport ? 'Child Report' : 'Adult Report'}</p>
+            <p><strong>Suspended Content Count:</strong> ${suspendedContentCount}</p>
+            <p><strong>Parents Notified:</strong> ${totalNotifications}</p>
+          </div>
+          
+          <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #856404; margin-top: 0;">Required Actions:</h3>
+            <ul style="color: #856404; margin: 0; padding-left: 20px;">
+              <li>Review the reported content and context</li>
+              <li>Analyze AI moderation results (if available)</li>
+              <li>Determine if content violates Cliqstr conduct rules</li>
+              <li>Take appropriate action (restore, permanently delete, or escalate)</li>
+              <li>Notify user of violation if applicable</li>
+            </ul>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
+            <p>This is an automated alert from the Cliqstr Red Alert system.</p>
+            <p>Red Alert ID: ${redAlertId}</p>
+          </div>
+        </div>
+      `;
+
+      const moderationResult = await sendEmail({
+        to: 'redalert@cliqstr.com',
+        subject: moderationSubject,
+        html: moderationHtml,
+      });
+
+      if (moderationResult.success) {
+        console.log(`✅ Red Alert notification sent to moderation team`);
+      } else {
+        console.error(`❌ Failed to send Red Alert to moderation team:`, moderationResult.error);
+      }
+    } catch (error) {
+      console.error(`❌ Error sending Red Alert to moderation team:`, error);
     }
 
     return NextResponse.json({

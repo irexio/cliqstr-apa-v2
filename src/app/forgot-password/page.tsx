@@ -28,7 +28,12 @@ export default function ForgotPasswordPage() {
 
       setStatus('sent');
     } catch (err: any) {
-      console.error(err);
+      console.error('🔐 [FORGOT-PASSWORD] Error:', err);
+      console.error('🔐 [FORGOT-PASSWORD] Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response
+      });
       setError(err.message || 'Something went wrong.');
       setStatus('error');
     }
