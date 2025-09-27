@@ -13,7 +13,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'solid', ...props }, ref) => {
-    const baseStyles = 'px-4 py-2 rounded-md font-semibold transition'
+    const baseStyles = 'px-4 py-2 rounded-md font-semibold text-lg transition'
 
     const variantStyles = {
       solid: 'bg-[#202020] text-white hover:bg-[#c032d1]',

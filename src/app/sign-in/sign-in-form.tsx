@@ -211,19 +211,19 @@ export default function SignInForm() {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium">Email or Username</label>
-        <input type="text" autoComplete="username email" required value={identifier} onChange={(e) => setIdentifier(e.target.value)} className="w-full border px-3 py-2 rounded text-sm" />
+        <label className="block text-base font-medium">Email or Username</label>
+        <input type="text" autoComplete="username email" required value={identifier} onChange={(e) => setIdentifier(e.target.value)} className="w-full border px-3 py-2 rounded text-base" />
       </div>
       <div>
-        <label className="block text-sm font-medium">Password</label>
-        <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className="text-sm" autoComplete="current-password" required />
+        <label className="block text-base font-medium">Password</label>
+        <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className="text-base" autoComplete="current-password" required />
       </div>
       {error && (
         <div className="p-3 rounded bg-red-50 border border-red-100">
           <p className="text-sm text-red-600 whitespace-pre-wrap">{error}</p>
         </div>
       )}
-      <button type="submit" disabled={loading} className="bg-black text-white py-2 px-4 rounded hover:bg-gray-800 text-sm w-full hover:text-[#c032d1]">
+      <button type="submit" disabled={loading} className="bg-black text-white py-2 px-4 rounded hover:bg-gray-800 text-lg w-full hover:text-[#c032d1]">
         {loading ? 'Signing in…' : 'Sign In'}
       </button>
       
@@ -232,7 +232,7 @@ export default function SignInForm() {
         <button 
           type="button" 
           onClick={() => router.push('/forgot-password')}
-          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-sm font-medium"
+          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-lg font-medium"
         >
           Reset Password
         </button>
@@ -249,7 +249,7 @@ export default function SignInForm() {
               router.push('/auth/magic');
             }
           }}
-          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-sm font-medium"
+          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-lg font-medium"
         >
           ⚡ Sign in with Email Link
         </button>

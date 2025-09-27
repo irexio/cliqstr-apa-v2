@@ -20,7 +20,7 @@ export function Hero({ showCTAs = true }: HeroProps) {
             <span className="text-gray-200">Privacy</span> at Its Core
           </span>
         </h1>
-        <p className="text-base sm:text-lg md:text-lg max-w-2xl mx-auto opacity-90">
+        <p className="text-lg sm:text-xl md:text-xl max-w-2xl mx-auto opacity-90">
           No stalkers, No Hawkers. Just your cliqs. Connect privately with the people who matter most to you, without all the noise.
         </p>
         {showCTAs && (
