@@ -1057,3 +1057,20 @@ export const getParentAuditLogs = query({
     return logs;
   },
 });
+
+// Get child activity logs for parent monitoring
+export const getChildActivityLogs = query({
+  args: { 
+    childId: v.id("users"),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const logs = await ctx.db
+      .query("userActivityLogs")
+      .withIndex("by_user_id", (q) => q.eq("userId", args.childId))
+      .order("desc")
+      .take(args.limit ?? 50); // Default to 50 logs
+
+    return logs;
+  },
+});
