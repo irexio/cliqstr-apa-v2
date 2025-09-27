@@ -897,6 +897,7 @@ export const createChildSettings = mutation({
 export const updateChildSettings = mutation({
   args: {
     profileId: v.id("myProfiles"),
+    parentId: v.optional(v.id("users")), // Who is making the change (for audit logging)
     canSendInvites: v.optional(v.boolean()),
     inviteRequiresApproval: v.optional(v.boolean()),
     canCreatePublicCliqs: v.optional(v.boolean()),
@@ -922,8 +923,31 @@ export const updateChildSettings = mutation({
       throw new Error("Child settings not found");
     }
 
+    // Get the child's user ID for audit logging
+    const profile = await ctx.db.get(args.profileId);
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // Store old settings for audit logging
+    const oldSettings = {
+      canCreatePublicCliqs: existingSettings.canCreatePublicCliqs,
+      canJoinPublicCliqs: existingSettings.canJoinPublicCliqs,
+      canCreateCliqs: existingSettings.canCreateCliqs,
+      canSendInvites: existingSettings.canSendInvites,
+      canInviteChildren: existingSettings.canInviteChildren,
+      canInviteAdults: existingSettings.canInviteAdults,
+      isSilentlyMonitored: existingSettings.isSilentlyMonitored,
+      aiModerationLevel: existingSettings.aiModerationLevel,
+      canAccessGames: existingSettings.canAccessGames,
+      canPostImages: existingSettings.canPostImages,
+      canShareYouTube: existingSettings.canShareYouTube,
+      visibilityLevel: existingSettings.visibilityLevel,
+      inviteRequiresApproval: existingSettings.inviteRequiresApproval,
+    };
+
     // Update the settings
-    await ctx.db.patch(existingSettings._id, {
+    const newSettings = {
       canCreatePublicCliqs: args.canCreatePublicCliqs ?? existingSettings.canCreatePublicCliqs,
       canJoinPublicCliqs: args.canJoinPublicCliqs ?? existingSettings.canJoinPublicCliqs,
       canCreateCliqs: args.canCreateCliqs ?? existingSettings.canCreateCliqs,
@@ -937,7 +961,23 @@ export const updateChildSettings = mutation({
       canShareYouTube: args.canShareYouTube ?? existingSettings.canShareYouTube,
       visibilityLevel: args.visibilityLevel ?? existingSettings.visibilityLevel,
       inviteRequiresApproval: args.inviteRequiresApproval ?? existingSettings.inviteRequiresApproval,
-    });
+    };
+
+    await ctx.db.patch(existingSettings._id, newSettings);
+
+    // Log the parent action if parentId is provided
+    if (args.parentId) {
+      await ctx.db.insert("parentAuditLogs", {
+        parentId: args.parentId,
+        childId: profile.userId,
+        action: "updated_child_settings",
+        oldValue: JSON.stringify(oldSettings),
+        newValue: JSON.stringify(newSettings),
+        createdAt: Date.now(),
+      });
+      
+      console.log(`[PARENT_AUDIT] Parent ${args.parentId} updated settings for child ${profile.userId}`);
+    }
 
     return existingSettings._id;
   },
@@ -974,5 +1014,46 @@ export const logUserActivity = mutation({
     });
 
     return logId;
+  },
+});
+
+// Log parent actions for audit trail
+export const logParentAction = mutation({
+  args: {
+    parentId: v.id("users"),
+    childId: v.id("users"),
+    action: v.string(), // e.g., "updated_settings", "enabled_monitoring", "changed_permissions"
+    oldValue: v.optional(v.string()), // JSON string of old settings
+    newValue: v.optional(v.string()), // JSON string of new settings
+  },
+  handler: async (ctx, args) => {
+    const logId = await ctx.db.insert("parentAuditLogs", {
+      parentId: args.parentId,
+      childId: args.childId,
+      action: args.action,
+      oldValue: args.oldValue,
+      newValue: args.newValue,
+      createdAt: Date.now(),
+    });
+
+    console.log(`[PARENT_AUDIT] Logged action: ${args.action} by parent ${args.parentId} for child ${args.childId}`);
+    return logId;
+  },
+});
+
+// Get parent audit logs for a specific child
+export const getParentAuditLogs = query({
+  args: { 
+    childId: v.id("users"),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const logs = await ctx.db
+      .query("parentAuditLogs")
+      .withIndex("by_child_id", (q) => q.eq("childId", args.childId))
+      .order("desc")
+      .take(args.limit ?? 50); // Default to 50 logs
+
+    return logs;
   },
 });

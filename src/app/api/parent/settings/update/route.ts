@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
     // Update the child settings
     await convexHttp.mutation(api.users.updateChildSettings, {
       profileId: childProfile._id,
+      parentId: session.userId as any, // Pass parent ID for audit logging
       canCreatePublicCliqs: settings.canCreatePublicCliqs,
       canJoinPublicCliqs: settings.canJoinPublicCliqs,
       canCreateCliqs: settings.canCreateCliqs,
