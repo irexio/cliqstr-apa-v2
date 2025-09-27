@@ -1,28 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendResetEmail } from '@/lib/auth/sendResetEmail';
+import { convexHttp } from '@/lib/convex-server';
+import { api } from 'convex/_generated/api';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-const schema = z.object({
+// Schema for sending reset email
+const sendResetSchema = z.object({
   email: z.string().email(),
 });
 
+// Schema for actually resetting password
+const resetPasswordSchema = z.object({
+  code: z.string(),
+  newPassword: z.string().min(8),
+});
+
 /**
- * API route handler for initiating password reset
- * Uses the consolidated sendResetEmail helper from lib/auth
+ * API route handler for password reset
+ * Handles both:
+ * 1. Sending reset email (when only email is provided)
+ * 2. Actually resetting password (when code and newPassword are provided)
  */
 export async function POST(req: NextRequest) {
   try {
     console.log('🔐 [RESET-PASSWORD] API route called');
     
     const body = await req.json();
-    console.log('🔐 [RESET-PASSWORD] Request body:', { email: body.email });
+    console.log('🔐 [RESET-PASSWORD] Request body keys:', Object.keys(body));
     
-    const parsed = schema.safeParse(body);
+    // Check if this is a password reset request (has code and newPassword)
+    if (body.code && body.newPassword) {
+      console.log('🔐 [RESET-PASSWORD] Processing password reset with code');
+      
+      const parsed = resetPasswordSchema.safeParse(body);
+      if (!parsed.success) {
+        console.log('🔐 [RESET-PASSWORD] Password reset validation failed:', parsed.error);
+        return NextResponse.json({ error: 'Invalid reset data' }, { status: 400 });
+      }
 
+      const { code, newPassword } = parsed.data;
+      
+      // Hash the token to match what's stored in the database
+      const hashedToken = crypto.createHash('sha256').update(code).digest('hex');
+      
+      // Use the existing Convex function to reset the password
+      const result = await convexHttp.mutation(api.users.resetUserPassword, {
+        resetToken: hashedToken,
+        newPassword: newPassword,
+      });
+      
+      console.log('🔐 [RESET-PASSWORD] Password reset successful for user:', result);
+      return NextResponse.json({ success: true });
+    }
+    
+    // Otherwise, this is a request to send a reset email
+    console.log('🔐 [RESET-PASSWORD] Processing reset email request');
+    
+    const parsed = sendResetSchema.safeParse(body);
     if (!parsed.success) {
-      console.log('🔐 [RESET-PASSWORD] Validation failed:', parsed.error);
+      console.log('🔐 [RESET-PASSWORD] Email validation failed:', parsed.error);
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
