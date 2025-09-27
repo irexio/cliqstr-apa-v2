@@ -227,13 +227,31 @@ export default function SignInForm() {
         {loading ? 'Signing in…' : 'Sign In'}
       </button>
       
-      <div className="text-center">
+      {/* Password Reset and Magic Link Options */}
+      <div className="space-y-2">
         <button 
           type="button" 
-          onClick={() => router.push('/auth/magic')}
+          onClick={() => router.push('/forgot-password')}
           className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-sm font-medium"
         >
-          🪄 Sign in with Magic Link (No Password)
+          Reset Password
+        </button>
+        
+        <button 
+          type="button" 
+          onClick={() => {
+            const confirmed = window.confirm(
+              'Email Link Sign-In:\n\n' +
+              'We\'ll send you a secure link to your email. Click the link to sign in without entering your password.\n\n' +
+              'This is faster and more secure than typing your password.'
+            );
+            if (confirmed) {
+              router.push('/auth/magic');
+            }
+          }}
+          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-sm font-medium"
+        >
+          ⚡ Sign in with Email Link
         </button>
       </div>
     </form>

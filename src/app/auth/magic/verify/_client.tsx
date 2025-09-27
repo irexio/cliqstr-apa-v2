@@ -45,10 +45,19 @@ export default function MagicLinkVerifyClient() {
           setStatus('success');
           setMessage('Successfully signed in! Redirecting...');
           
-          // Redirect to dashboard after a brief delay
-          setTimeout(() => {
-            router.push('/my-cliqs-dashboard');
-          }, 2000);
+          // Check if user has a plan before redirecting
+          const user = data.user;
+          if (!user?.account?.plan) {
+            console.log('[MAGIC-LINK-VERIFY] User has no plan, redirecting to choose-plan');
+            setTimeout(() => {
+              router.push('/choose-plan');
+            }, 1500);
+          } else {
+            // Redirect to dashboard after a brief delay
+            setTimeout(() => {
+              router.push('/my-cliqs-dashboard');
+            }, 1500);
+          }
         } else {
           console.error('[MAGIC-LINK-VERIFY] Error:', data);
           setStatus('error');

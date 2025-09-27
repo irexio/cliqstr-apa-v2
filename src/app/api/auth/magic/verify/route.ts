@@ -61,10 +61,15 @@ export async function POST(req: NextRequest) {
 
     console.log(`✅ Magic link verified and session created for user ${userData.userId}`);
 
-    // Return success with user data
+    // Get full user data including account info for proper redirect logic
+    const fullUserData = await convexHttp.query(api.users.getCurrentUser, {
+      userId: userData.userId,
+    });
+
+    // Return success with full user data
     return NextResponse.json({ 
       success: true,
-      user: {
+      user: fullUserData || {
         id: userData.userId,
         email: userData.email,
         role: userData.role,

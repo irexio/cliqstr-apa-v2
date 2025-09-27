@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      await fetchJson('/api/send-reset-email', {
+      await fetchJson('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
