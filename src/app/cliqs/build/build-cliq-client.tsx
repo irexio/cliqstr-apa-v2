@@ -156,7 +156,7 @@ export default function BuildCliqClient() {
         <div>
           <Label>Banner Image</Label>
           <p className="text-xs text-neutral-500 italic mb-2">
-            Recommended size: 1200×400px (landscape). Max file size: 4MB.
+            Ideal size: 1200 x 630 pixels for best results. Max file size: 4MB.
           </p>
           {uploading && (
             <div className="mb-4 p-3 bg-black border border-black rounded-lg">

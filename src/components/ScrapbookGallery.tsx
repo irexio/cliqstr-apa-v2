@@ -118,6 +118,7 @@ export default function ScrapbookGallery({
 
       {isOwner && isUploading && (
         <div className="mb-6 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center">
+          <p className="text-xs text-gray-500 mb-3">Maximum size: 4MB. Recommended: 1200 x 1200 pixels or smaller</p>
           <UploadButton
             endpoint="postImage"
             onClientUploadComplete={(res) => {

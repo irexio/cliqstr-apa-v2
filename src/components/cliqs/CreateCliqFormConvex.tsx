@@ -135,6 +135,7 @@ export default function CreateCliqFormConvex() {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Cover Image
         </label>
+        <p className="text-xs text-gray-500 mb-2">Ideal size: 1200 x 630 pixels for best results</p>
         {coverImage ? (
           <div className="space-y-2">
             <img

@@ -72,6 +72,7 @@ export default function AvatarUploader({
 
         {/* Upload Button */}
         <div className="flex justify-center mb-4">
+          <p className="text-xs text-gray-500 mb-3">Ideal size: 400 x 400 pixels (square image works best)</p>
           <UploadButton
             endpoint="avatar"
             config={{ mode: 'auto' }}

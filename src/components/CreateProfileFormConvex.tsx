@@ -198,6 +198,7 @@ export default function CreateProfileFormConvex() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Profile Picture (Optional)
           </label>
+          <p className="text-xs text-gray-500 mb-2">Ideal size: 400 x 400 pixels (square image works best)</p>
           <p className="text-xs text-gray-500 mb-3">
             Choose a fun photo of yourself or something that represents you. This will be shown to your cliq members. You can skip this — we'll give you a fun avatar if you don't pick one!
           </p>
@@ -262,6 +263,7 @@ export default function CreateProfileFormConvex() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Cover Photo (Optional)
           </label>
+          <p className="text-xs text-gray-500 mb-2">Ideal size: 1200 x 630 pixels for best results</p>
           {bannerUrl && (
             <img
               src={bannerUrl}

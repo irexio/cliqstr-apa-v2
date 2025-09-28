@@ -179,7 +179,7 @@ export default function SetUpProfileClientConvex({
         {/* Banner Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Upload Banner</label>
-          <p className="text-xs text-neutral-500 italic mb-2">Recommended: wide landscape, 1200×400px</p>
+          <p className="text-xs text-neutral-500 italic mb-2">Ideal size: 1200 x 630 pixels for best results</p>
           <UploadDropzone
             endpoint="banner"
             appearance={{

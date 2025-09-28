@@ -82,6 +82,7 @@ export default function BannerUploader({
 
         {/* Upload Button */}
         <div className="flex justify-center mb-4">
+          <p className="text-xs text-gray-500 mb-3">Ideal size: 1200 x 630 pixels for best results</p>
           <UploadButton
             endpoint="banner"
             config={{ mode: 'auto' }}
