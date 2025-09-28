@@ -21,6 +21,7 @@ const updateChildSettingsSchema = z.object({
     canPostImages: z.boolean(),
     canShareYouTube: z.boolean(),
     inviteRequiresApproval: z.boolean(),
+    receiveAiAlerts: z.boolean(),
   }),
 });
 
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest) {
       canPostImages: settings.canPostImages,
       canShareYouTube: settings.canShareYouTube,
       inviteRequiresApproval: settings.inviteRequiresApproval,
+      receiveAiAlerts: settings.receiveAiAlerts,
     });
 
     console.log(`[PARENT-SETTINGS-UPDATE] Successfully updated settings for child ${childId}`);

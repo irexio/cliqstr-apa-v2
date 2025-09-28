@@ -7,6 +7,7 @@ export const createRedAlert = mutation({
     cliqId: v.id("cliqs"),
     triggeredById: v.id("users"),
     reason: v.optional(v.string()),
+    triggerType: v.union(v.literal("child"), v.literal("adult"), v.literal("ai")),
   },
   handler: async (ctx, args) => {
     const redAlertId = await ctx.db.insert("redAlerts", {
@@ -14,6 +15,7 @@ export const createRedAlert = mutation({
       triggeredById: args.triggeredById,
       reason: args.reason || 'Safety concern reported',
       triggeredAt: Date.now(),
+      triggerType: args.triggerType,
     });
 
     return redAlertId;

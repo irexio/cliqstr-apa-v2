@@ -870,6 +870,7 @@ export const createChildSettings = mutation({
     canAccessGames: v.optional(v.boolean()),
     canShareYouTube: v.optional(v.boolean()),
     visibilityLevel: v.optional(v.string()),
+    receiveAiAlerts: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const settingsId = await ctx.db.insert("childSettings", {
@@ -887,6 +888,7 @@ export const createChildSettings = mutation({
       canShareYouTube: args.canShareYouTube ?? false,
       visibilityLevel: args.visibilityLevel,
       inviteRequiresApproval: args.inviteRequiresApproval ?? true,
+      receiveAiAlerts: args.receiveAiAlerts ?? true, // Default: parents receive AI alerts
     });
 
     return settingsId;
@@ -911,6 +913,7 @@ export const updateChildSettings = mutation({
     canAccessGames: v.optional(v.boolean()),
     canShareYouTube: v.optional(v.boolean()),
     visibilityLevel: v.optional(v.string()),
+    receiveAiAlerts: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Find the existing child settings
@@ -944,6 +947,7 @@ export const updateChildSettings = mutation({
       canShareYouTube: existingSettings.canShareYouTube,
       visibilityLevel: existingSettings.visibilityLevel,
       inviteRequiresApproval: existingSettings.inviteRequiresApproval,
+      receiveAiAlerts: existingSettings.receiveAiAlerts,
     };
 
     // Update the settings
@@ -961,6 +965,7 @@ export const updateChildSettings = mutation({
       canShareYouTube: args.canShareYouTube ?? existingSettings.canShareYouTube,
       visibilityLevel: args.visibilityLevel ?? existingSettings.visibilityLevel,
       inviteRequiresApproval: args.inviteRequiresApproval ?? existingSettings.inviteRequiresApproval,
+      receiveAiAlerts: args.receiveAiAlerts ?? existingSettings.receiveAiAlerts,
     };
 
     await ctx.db.patch(existingSettings._id, newSettings);

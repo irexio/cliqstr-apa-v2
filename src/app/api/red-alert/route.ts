@@ -43,11 +43,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine trigger type based on user role
+    // For now, we'll need to get the user's role to determine if it's child or adult
+    // This will be updated when we have proper user context
+    // TODO: Get actual user role from session/context
+    const getTriggerType = (): "child" | "adult" | "ai" => {
+      // For now, default to child - this will be updated with proper user context
+      return "child";
+    };
+    const triggerType = getTriggerType();
+
     // Create Red Alert record first
     const redAlertId = await convexHttp.mutation(api.redAlerts.createRedAlert, {
       cliqId: cliqId as any,
       triggeredById: cliq.ownerId, // For now, use cliq owner as trigger
       reason: reason || 'Safety concern reported',
+      triggerType: triggerType as any,
     });
 
     // Handle content suspension if specified
@@ -106,23 +117,39 @@ export async function POST(request: NextRequest) {
       cliqId: cliqId as any,
     });
 
-    // Determine if this is a child or adult report
-    const reporterMembership = memberships.find(m => m.userId === cliq.ownerId); // For now, use cliq owner as reporter
-    const isChildReport = reporterMembership?.role === 'Child';
-    
-    // Find all child members and get their parents (only for child reports)
+    // Find all child members and get their parents
     const childMembers = memberships.filter(m => m.role === 'Child');
     const notifiedParents = new Set<string>(); // Track notified parents to avoid duplicates
 
     let totalNotifications = 0;
 
-    // Only notify parents if this is a child report
-    if (isChildReport) {
+    // Notify parents based on trigger type
+    if (triggerType === "child" || triggerType === "ai") {
       for (const childMember of childMembers) {
         // Get all parent links for this child
         const parentLinks = await convexHttp.query(api.parentLinks.getParentLinksByChildId, {
           childId: childMember.userId,
         });
+
+        // For AI-triggered alerts, check if parents want to receive them
+        if (triggerType === "ai") {
+          // Get child settings to check receiveAiAlerts
+          const childProfile = await convexHttp.query(api.profiles.getProfileByUserId, {
+            userId: childMember.userId,
+          });
+          
+          if (childProfile) {
+            const childSettings = await convexHttp.query(api.users.getChildSettings, {
+              profileId: childProfile._id,
+            });
+            
+            // Skip if parents don't want AI alerts
+            if (childSettings && !childSettings.receiveAiAlerts) {
+              console.log(`Skipping AI alert notification for child ${childMember.userId} - parents disabled AI alerts`);
+              continue;
+            }
+          }
+        }
 
         // Notify all parents who have notification permissions
         for (const parentLink of parentLinks) {
@@ -156,45 +183,97 @@ export async function POST(request: NextRequest) {
             }
 
             // Send Red Alert notifications (email + future SMS via Twilio)
-            const subject = '🚨 RED ALERT: Immediate Attention Required';
-            const html = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background-color: #ff0000; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <h1 style="margin: 0; font-size: 24px;">🚨 RED ALERT</h1>
-                  <p style="margin: 10px 0 0 0; font-size: 16px;">Immediate attention required for your child's safety</p>
+            const subject = triggerType === "ai" ? '🚨 AI Red Alert' : '🚨 Red Alert';
+            
+            // Get child name for display
+            const childProfile = await convexHttp.query(api.profiles.getProfileByUserId, {
+              userId: childMember.userId,
+            });
+            const childName = childProfile?.username || childMember.userId;
+            
+            let html = '';
+            
+            if (triggerType === "ai") {
+              // AI-triggered alert template
+              html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background-color: #ff0000; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h1 style="margin: 0; font-size: 24px;">🚨 AI Red Alert</h1>
+                    <p style="margin: 10px 0 0 0; font-size: 16px;">
+                      Cliqstr's AI system flagged and suspended content in a cliq.
+                    </p>
+                  </div>
+                  
+                  <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h2 style="color: #333; margin-top: 0;">Alert Details</h2>
+                    <p><strong>Cliq:</strong> ${cliq.name}</p>
+                    <p><strong>Reason flagged:</strong> ${reason || 'Content flagged by AI'}</p>
+                    <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+                  </div>
+                  
+                  <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #856404; margin-top: 0;">What this means:</h3>
+                    <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                      <li>AI Moderation can sometimes be over-sensitive</li>
+                      <li>Our moderation team is reviewing this alert now</li>
+                      <li>You may wish to check in with your child and review the cliq</li>
+                    </ul>
+                  </div>
+                  
+                  <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://cliqstr.com/parents/hq" 
+                       style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                      Review in Parent HQ
+                    </a>
+                  </div>
+                  
+                  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
+                    <p>This alert was triggered automatically by Cliqstr's AI moderation system. Our moderators will confirm whether this content requires further action.</p>
+                  </div>
                 </div>
-                
-                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <h2 style="color: #333; margin-top: 0;">Alert Details</h2>
-                  <p><strong>Cliq:</strong> ${cliq.name}</p>
-                  <p><strong>Child:</strong> ${childMember.userId}</p>
-                  <p><strong>Reason:</strong> ${reason || 'Safety concern reported'}</p>
-                  <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+              `;
+            } else {
+              // Child-triggered alert template
+              html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background-color: #ff0000; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h1 style="margin: 0; font-size: 24px;">🚨 Red Alert</h1>
+                    <p style="margin: 10px 0 0 0; font-size: 16px;">
+                      Your child just activated Red Alert in a cliq.
+                    </p>
+                  </div>
+                  
+                  <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h2 style="color: #333; margin-top: 0;">Alert Details</h2>
+                    <p><strong>Cliq:</strong> ${cliq.name}</p>
+                    <p><strong>Child:</strong> ${childName}</p>
+                    <p><strong>Reason:</strong> ${reason || 'Safety concern reported'}</p>
+                    <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+                  </div>
+                  
+                  <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #856404; margin-top: 0;">What to do next:</h3>
+                    <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                      <li>Check in with your child as soon as possible</li>
+                      <li>Review suspended content in Parent HQ</li>
+                      <li>Decide together if this was a misunderstanding or a real concern</li>
+                      <li>Reach out to Cliqstr support if you need further help</li>
+                    </ul>
+                  </div>
+                  
+                  <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://cliqstr.com/parents/hq" 
+                       style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                      Review in Parent HQ
+                    </a>
+                  </div>
+                  
+                  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
+                    <p>This alert was triggered by your child pressing the Red Alert button. Our goal is to keep you informed and give you tools to respond quickly and confidently.</p>
+                  </div>
                 </div>
-                
-                <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                  <h3 style="color: #856404; margin-top: 0;">What to do next:</h3>
-                  <ul style="color: #856404; margin: 0; padding-left: 20px;">
-                    <li>Log into your Cliqstr Parent HQ immediately</li>
-                    <li>Review your child's recent activity</li>
-                    <li>Contact your child if appropriate</li>
-                    <li>Report any additional concerns to Cliqstr support</li>
-                  </ul>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px;">
-                  <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://cliqstr.com'}/parents/hq" 
-                     style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-                    Go to Parent HQ
-                  </a>
-                </div>
-                
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
-                  <p>This is an automated safety alert from Cliqstr. If you have multiple children, you may receive multiple alerts.</p>
-                  <p>For immediate assistance, contact: support@cliqstr.com</p>
-                </div>
-              </div>
-            `;
+              `;
+            }
 
             try {
               // Send email notification
@@ -239,35 +318,33 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background-color: #ff0000; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h1 style="margin: 0; font-size: 24px;">🚨 RED ALERT - MODERATION REQUIRED</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px;">Content has been reported and requires immediate review</p>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">
+              An adult user has reported content. Review required.
+            </p>
           </div>
           
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h2 style="color: #333; margin-top: 0;">Alert Details</h2>
             <p><strong>Cliq ID:</strong> ${cliqId}</p>
             <p><strong>Cliq Name:</strong> ${cliq.name}</p>
-            <p><strong>Triggered By:</strong> ${cliq.ownerId}</p>
+            <p><strong>Reported By:</strong> ${cliq.ownerId}</p>
             <p><strong>Reason:</strong> ${reason || 'Safety concern reported'}</p>
             <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-            <p><strong>Report Type:</strong> ${isChildReport ? 'Child Report' : 'Adult Report'}</p>
             <p><strong>Suspended Content Count:</strong> ${suspendedContentCount}</p>
-            <p><strong>Parents Notified:</strong> ${totalNotifications}</p>
           </div>
           
           <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: #856404; margin-top: 0;">Required Actions:</h3>
             <ul style="color: #856404; margin: 0; padding-left: 20px;">
               <li>Review the reported content and context</li>
-              <li>Analyze AI moderation results (if available)</li>
-              <li>Determine if content violates Cliqstr conduct rules</li>
-              <li>Take appropriate action (restore, permanently delete, or escalate)</li>
-              <li>Notify user of violation if applicable</li>
+              <li>Check AI moderation results (if available)</li>
+              <li>Decide if this violates Cliqstr conduct rules</li>
+              <li>Take appropriate action (restore, delete, escalate)</li>
             </ul>
           </div>
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
-            <p>This is an automated alert from the Cliqstr Red Alert system.</p>
-            <p>Red Alert ID: ${redAlertId}</p>
+            <p>This alert was sent to the Cliqstr moderation team (<strong>redalert@cliqstr.com</strong>). Do not forward outside of authorized staff.</p>
           </div>
         </div>
       `;
@@ -289,14 +366,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: isChildReport 
+      message: triggerType === "child" || triggerType === "ai"
         ? 'Red Alert processed successfully - parents notified' 
         : 'Content reported and suspended - will be reviewed by moderation',
       notified: totalNotifications,
       totalParents: notifiedParents.size,
       suspendedContent: suspendedContentCount,
       redAlertId: redAlertId,
-      isChildReport: isChildReport,
+      triggerType: triggerType,
     });
 
   } catch (error) {

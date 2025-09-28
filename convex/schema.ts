@@ -54,6 +54,7 @@ export default defineSchema({
     canShareYouTube: v.boolean(),
     visibilityLevel: v.optional(v.string()),
     inviteRequiresApproval: v.boolean(),
+    receiveAiAlerts: v.boolean(), // New: Whether parents receive AI-triggered Red Alerts
   })
     .index("by_profile_id", ["profileId"]),
 
@@ -223,6 +224,7 @@ export default defineSchema({
     triggeredById: v.id("users"),
     reason: v.optional(v.string()),
     triggeredAt: v.number(),
+    triggerType: v.union(v.literal("child"), v.literal("adult"), v.literal("ai")),
     status: v.optional(v.union(v.literal("pending"), v.literal("reviewed"), v.literal("resolved"), v.literal("dismissed"))),
     moderatorNotes: v.optional(v.string()),
     reviewedAt: v.optional(v.number()),

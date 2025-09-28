@@ -26,6 +26,7 @@ interface ChildSettings {
   canPostImages: boolean;
   canShareYouTube: boolean;
   inviteRequiresApproval: boolean;
+  receiveAiAlerts: boolean;
 }
 
 interface ChildInfo {
@@ -357,6 +358,25 @@ export default function ChildPermissionManager({ childId }: ChildPermissionManag
               onCheckedChange={(checked) => handlePermissionChange('isSilentlyMonitored', checked as boolean)}
             />
             <Label htmlFor="isSilentlyMonitored">Enable silent monitoring (recommended)</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="receiveAiAlerts"
+              checked={childInfo.settings.receiveAiAlerts}
+              onCheckedChange={(checked) => handlePermissionChange('receiveAiAlerts', checked as boolean)}
+            />
+            <Label htmlFor="receiveAiAlerts">Receive AI-triggered alerts</Label>
+          </div>
+          
+          <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-md">
+            <p><strong>About Red Alerts</strong></p>
+            <p>Red Alerts can be activated by your child or by Cliqstr's AI moderation system.</p>
+            <ul className="mt-2 space-y-1">
+              <li>• <strong>Child-activated:</strong> Your child clicked the Red Alert button in a cliq.</li>
+              <li>• <strong>AI-activated:</strong> Our system flagged content automatically. AI can sometimes be over-sensitive, but our moderators review every case.</li>
+            </ul>
+            <p className="mt-2">By default, you'll be notified of both. If you'd prefer to only receive alerts your child activates, you can change that above.</p>
           </div>
         </CardContent>
       </Card>

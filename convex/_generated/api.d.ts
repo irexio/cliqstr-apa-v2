@@ -14,7 +14,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as accounts from "../accounts.js";
-import type * as cleanup_test_data from "../cleanup-test-data.js";
 import type * as cliqNotices from "../cliqNotices.js";
 import type * as cliqs from "../cliqs.js";
 import type * as feedback from "../feedback.js";
@@ -41,7 +40,6 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
-  "cleanup-test-data": typeof cleanup_test_data;
   cliqNotices: typeof cliqNotices;
   cliqs: typeof cliqs;
   feedback: typeof feedback;
