@@ -141,13 +141,13 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
                 setIsUploadingBanner(true);
               }}
               appearance={{
-                button: 'bg-gray-100 text-black rounded-lg px-3 py-2 text-sm font-semibold hover:bg-gray-200 transition flex items-center gap-2',
+                button: 'bg-black text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2',
                 allowedContent: 'hidden',
               }}
               content={{
                 button: isUploadingBanner ? (
                   <>
-                    <div className="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></div>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                     Uploading...
                   </>
                 ) : (
@@ -198,12 +198,12 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
                   setIsUploadingAvatar(true);
                 }}
                 appearance={{
-                  button: 'bg-gray-100 text-black rounded-full p-2 shadow hover:bg-gray-200 transition text-xs font-semibold flex items-center justify-center w-8 h-8',
+                  button: 'bg-black text-white rounded-full p-2 shadow hover:bg-gray-800 transition text-xs font-semibold flex items-center justify-center w-8 h-8',
                   allowedContent: 'hidden',
                 }}
                 content={{
                   button: isUploadingAvatar ? (
-                    <div className="animate-spin w-3 h-3 border-2 border-black border-t-transparent rounded-full"></div>
+                    <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></div>
                   ) : (
                     <>Edit</>
                   ),

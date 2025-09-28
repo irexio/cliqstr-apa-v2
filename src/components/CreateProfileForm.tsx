@@ -229,8 +229,8 @@ export default function CreateProfileForm() {
                   setError('');
                 }}
                 appearance={{
-                  container: 'border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#c032d1] transition-colors',
-                  button: 'bg-[#c032d1] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#a02ba8] transition-colors text-base',
+                  container: 'border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-black transition-colors',
+                  button: 'bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors text-base',
                   label: 'text-gray-600 text-sm mb-2 block',
                   allowedContent: 'text-xs text-gray-500 mt-2'
                 }}
