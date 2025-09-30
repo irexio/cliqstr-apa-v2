@@ -289,7 +289,7 @@ export async function POST(request: NextRequest) {
           // Continue with default inviter name
         }
         
-        const inviteLink = `${BASE_URL}/invite/accept?code=${inviteToken}`;
+        const inviteLink = `${BASE_URL}/invite/accept?code=${joinCode}`;
         
         await sendInviteEmail({
           to: targetEmail,
