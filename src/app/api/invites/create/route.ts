@@ -20,8 +20,10 @@ import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
 import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
+  console.log("[INVITE_CREATE] ROUTE VERSION v2");
   const requestId = crypto.randomUUID();
   console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
+  console.log(`[INVITE_CREATE] DEPLOYMENT TEST - ${new Date().toISOString()}`);
   
   try {
     // Test basic functionality first
