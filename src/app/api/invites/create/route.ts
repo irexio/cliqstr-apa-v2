@@ -20,12 +20,18 @@ import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
 import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
+  const requestId = crypto.randomUUID();
+  console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
+  
   try {
     // Auth: inviter must be authenticated
+    console.log(`[INVITE_CREATE] Checking authentication...`);
     const user = await getCurrentUser();
     if (!user?.id) {
+      console.log(`[INVITE_CREATE] Authentication failed - no user ID`);
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    console.log(`[INVITE_CREATE] User authenticated: ${user.id} (${user.email})`);
 
     // Check user account using Convex
     const account = await convexHttp.query(api.accounts.getAccountByUserId, {
@@ -37,7 +43,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Adult or Parent role required' }, { status: 403 });
     }
 
+    console.log(`[INVITE_CREATE] Parsing request body...`);
     const body = await request.json();
+    console.log(`[INVITE_CREATE] Request body:`, JSON.stringify(body, null, 2));
+    
     const { 
       email, 
       inviteeEmail, 
@@ -58,7 +67,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 1: Normalize email
+    console.log(`[INVITE_CREATE] Normalizing email: ${targetEmail}`);
     const emailNorm = targetEmail.trim().toLowerCase();
+    console.log(`[INVITE_CREATE] Normalized email: ${emailNorm}`);
 
     // Step 1.5: Validate child invite requirements
     if (inviteType === 'child') {
@@ -89,9 +100,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 2: Look up existing user using Convex
+    console.log(`[INVITE_CREATE] Looking up existing user with email: ${emailNorm}`);
     const existingUser = await convexHttp.query(api.users.getUserByEmail, {
       email: emailNorm,
     });
+    console.log(`[INVITE_CREATE] Existing user found:`, existingUser ? 'Yes' : 'No');
 
     // Step 3: Determine targetState
     let targetState: 'new' | 'existing_parent' | 'existing_user_non_parent' | 'invalid_child';
@@ -301,6 +314,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ 
       error: errorMessage,
+      requestId: requestId,
       details: process.env.NODE_ENV === 'development' ? error : undefined
     }, { status: 500 });
   }
