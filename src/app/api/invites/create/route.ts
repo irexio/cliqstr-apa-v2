@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
   console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
   
   try {
+    // Test basic functionality first
+    console.log(`[INVITE_CREATE] Basic test - function is executing`);
     // Auth: inviter must be authenticated
     console.log(`[INVITE_CREATE] Checking authentication...`);
     const user = await getCurrentUser();
