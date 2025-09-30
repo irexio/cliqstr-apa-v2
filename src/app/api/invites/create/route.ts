@@ -66,7 +66,18 @@ export async function POST(request: NextRequest) {
     const targetEmail = inviteeEmail || email;
     
     if (!targetEmail || typeof targetEmail !== 'string') {
+      console.log(`[INVITE_CREATE] Email validation failed - targetEmail: ${targetEmail}`);
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+    
+    if (!inviteType || typeof inviteType !== 'string') {
+      console.log(`[INVITE_CREATE] Invite type validation failed - inviteType: ${inviteType}`);
+      return NextResponse.json({ error: 'Invite type is required' }, { status: 400 });
+    }
+    
+    if (!cliqId || typeof cliqId !== 'string') {
+      console.log(`[INVITE_CREATE] Cliq ID validation failed - cliqId: ${cliqId}`);
+      return NextResponse.json({ error: 'Cliq ID is required' }, { status: 400 });
     }
 
     // Step 1: Normalize email
@@ -316,19 +327,25 @@ export async function POST(request: NextRequest) {
     
     // Provide more specific error messages for debugging
     let errorMessage = 'Internal server error';
+    let errorDetails = {};
+    
     if (error instanceof Error) {
       errorMessage = error.message;
-      console.error('[INVITE_CREATE] Error details:', {
+      errorDetails = {
         message: error.message,
         stack: error.stack,
         name: error.name
-      });
+      };
+      console.error('[INVITE_CREATE] Error details:', errorDetails);
     }
     
+    // Return detailed error information for debugging
     return NextResponse.json({ 
       error: errorMessage,
       requestId: requestId,
-      details: process.env.NODE_ENV === 'development' ? error : undefined
+      errorType: error?.constructor?.name || 'Unknown',
+      details: errorDetails,
+      timestamp: new Date().toISOString()
     }, { status: 500 });
   }
 }
