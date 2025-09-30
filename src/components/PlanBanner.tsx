@@ -15,8 +15,8 @@ export default function PlanBanner() {
   useEffect(() => {
     async function checkUserPlan() {
       try {
-        // Try to fetch user status
-        const res = await fetch('/api/auth/status', {
+        // Try to fetch user status with cache busting
+        const res = await fetch(`/api/auth/status?t=${Date.now()}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
@@ -62,6 +62,13 @@ export default function PlanBanner() {
     }
     
     checkUserPlan();
+    
+    // Also check again after a short delay to catch any cache issues
+    const timeoutId = setTimeout(() => {
+      checkUserPlan();
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Don't render anything while loading to avoid flash of content

@@ -70,14 +70,21 @@ export async function POST(req: NextRequest) {
 
     // Invalidate user cache to ensure fresh data is fetched
     await invalidateUser(session.userId);
-
+    
     console.log(`[PLAN-UPDATE] Successfully updated plan to: ${plan}`);
 
-    return NextResponse.json({
+    // Return response with cache-busting headers
+    const response = NextResponse.json({
       success: true,
       message: 'Plan updated successfully',
       plan: plan,
     });
+    
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
 
   } catch (error) {
     console.error('[PLAN-UPDATE] Error updating plan:', error);
