@@ -34,12 +34,15 @@ export async function POST(request: NextRequest) {
     console.log(`[INVITE_CREATE] User authenticated: ${user.id} (${user.email})`);
 
     // Check user account using Convex
+    console.log(`[INVITE_CREATE] Getting account for user: ${user.id}`);
     const account = await convexHttp.query(api.accounts.getAccountByUserId, {
       userId: user.id as any,
     });
+    console.log(`[INVITE_CREATE] Account found:`, account ? `Role: ${account.role}` : 'Not found');
 
     // Allow both adults and parents to send invites
     if (!account || (account.role !== 'Adult' && account.role !== 'Parent')) {
+      console.log(`[INVITE_CREATE] Access denied - account: ${account ? account.role : 'none'}`);
       return NextResponse.json({ error: 'Adult or Parent role required' }, { status: 403 });
     }
 
@@ -254,14 +257,22 @@ export async function POST(request: NextRequest) {
         
         try {
           // Get inviter profile with error handling
+          console.log(`[INVITE_CREATE] Getting inviter profile for user: ${user.id}`);
           const inviterProfile = await convexHttp.query(api.profiles.getProfileByUserId, { userId: user.id as any });
+          console.log(`[INVITE_CREATE] Inviter profile result:`, inviterProfile ? 'Found' : 'Not found');
+          
           if (inviterProfile?.account?.firstName && inviterProfile?.account?.lastName) {
             inviterName = `${inviterProfile.account.firstName} ${inviterProfile.account.lastName}`.trim();
+            console.log(`[INVITE_CREATE] Using full name: ${inviterName}`);
           } else if (inviterProfile?.username) {
             inviterName = inviterProfile.username;
+            console.log(`[INVITE_CREATE] Using username: ${inviterName}`);
+          } else {
+            console.log(`[INVITE_CREATE] Using default name: ${inviterName}`);
           }
         } catch (profileError) {
           console.error('[INVITE_CREATE] Error getting inviter profile:', profileError);
+          console.log(`[INVITE_CREATE] Continuing with default inviter name: ${inviterName}`);
           // Continue with default inviter name
         }
         
@@ -292,10 +303,12 @@ export async function POST(request: NextRequest) {
     }
     
     // Step 6: Response (safe for authenticated inviter UI)
+    console.log(`[INVITE_CREATE] Invite created successfully - ID: ${inviteId}, State: ${targetState}`);
     return NextResponse.json({
       ok: true,
       inviteId,
-      targetState
+      targetState,
+      requestId: requestId
     });
 
   } catch (error) {
