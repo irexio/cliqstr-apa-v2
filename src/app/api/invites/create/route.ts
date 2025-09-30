@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Handle both old and new payload formats
-    const targetEmail = inviteeEmail || email;
+    // For child invites, use parentEmail; for adult invites, use inviteeEmail or email
+    const targetEmail = inviteType === 'child' ? parentEmail : (inviteeEmail || email);
     console.log(`[INVITE_CREATE] Target email resolved to:`, targetEmail);
     
     if (!targetEmail || typeof targetEmail !== 'string') {
