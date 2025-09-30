@@ -267,6 +267,10 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       console.error('[INVITE_CREATE] Failed to send email:', emailError);
       // Don't fail the entire request if email fails - invite was still created
+      // Log the specific error for debugging
+      if (emailError instanceof Error) {
+        console.error('[INVITE_CREATE] Email error details:', emailError.message);
+      }
     }
     
     // Step 6: Response (safe for authenticated inviter UI)
@@ -278,8 +282,21 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[INVITE_CREATE] Error:', error);
+    
+    // Provide more specific error messages for debugging
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      console.error('[INVITE_CREATE] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
     return NextResponse.json({ 
-      error: 'Internal server error' 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error : undefined
     }, { status: 500 });
   }
 }
