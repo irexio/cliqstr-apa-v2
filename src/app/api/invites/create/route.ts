@@ -46,9 +46,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Adult or Parent role required' }, { status: 403 });
     }
 
-    console.log(`[INVITE_CREATE] Parsing request body...`);
-    const body = await request.json();
-    console.log(`[INVITE_CREATE] Request body:`, JSON.stringify(body, null, 2));
+             console.log(`[INVITE_CREATE] Parsing request body...`);
+             const body = await request.json();
+             console.log(`[INVITE_CREATE] Request body:`, JSON.stringify(body, null, 2));
+             console.log(`[INVITE_CREATE] Request body type:`, typeof body);
+             console.log(`[INVITE_CREATE] Request body keys:`, Object.keys(body));
     
     const { 
       email, 
@@ -62,8 +64,21 @@ export async function POST(request: NextRequest) {
       parentEmail
     } = body;
 
+    console.log(`[INVITE_CREATE] Destructured values:`, {
+      email,
+      inviteeEmail,
+      inviteType,
+      cliqId,
+      inviteNote,
+      friendFirstName,
+      friendLastName,
+      childBirthdate,
+      parentEmail
+    });
+
     // Handle both old and new payload formats
     const targetEmail = inviteeEmail || email;
+    console.log(`[INVITE_CREATE] Target email resolved to:`, targetEmail);
     
     if (!targetEmail || typeof targetEmail !== 'string') {
       console.log(`[INVITE_CREATE] Email validation failed - targetEmail: ${targetEmail}`);
