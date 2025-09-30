@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
       inviteId = await convexHttp.mutation(api.invites.createInvite, {
         token: inviteToken,
         joinCode: joinCode,
+        code: joinCode, // Use joinCode as the code
         targetEmailNormalized: emailNorm,
         targetUserId: targetUserId as any,
         targetState,
@@ -205,6 +206,7 @@ export async function POST(request: NextRequest) {
       inviteId = await convexHttp.mutation(api.invites.createInvite, {
         token: inviteToken,
         joinCode: joinCode,
+        code: joinCode, // Use joinCode as the code
         targetEmailNormalized: emailNorm,
         targetUserId: targetUserId as any,
         targetState,
