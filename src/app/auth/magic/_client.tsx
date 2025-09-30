@@ -234,9 +234,9 @@ export default function MagicLinkClient() {
           </div>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-medium text-blue-900 mb-2">⚡ How Magic Links Work</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-900 mb-2">How Magic Links Work</h3>
+          <ul className="text-sm text-gray-700 space-y-1">
             <li>• No password required</li>
             <li>• Link expires in 15 minutes</li>
             <li>• Can only be used once</li>

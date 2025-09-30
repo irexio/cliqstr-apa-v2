@@ -77,10 +77,10 @@ export default function MagicLinkVerifyClient() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">⚡ Verifying Magic Link</CardTitle>
+          <CardTitle className="text-center">Verifying Magic Link</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-gray-600">Please wait while we verify your magic link...</p>
         </CardContent>
       </Card>
@@ -91,10 +91,10 @@ export default function MagicLinkVerifyClient() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-center text-green-600">⚡ Success!</CardTitle>
+          <CardTitle className="text-center text-gray-900">Success!</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <div className="text-6xl mb-4">✅</div>
+          <div className="text-6xl mb-4">✓</div>
           <p className="text-gray-600 mb-4">{message}</p>
           <p className="text-sm text-gray-500">You will be redirected to your dashboard shortly.</p>
         </CardContent>
@@ -105,10 +105,10 @@ export default function MagicLinkVerifyClient() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-center text-red-600">⚡ Verification Failed</CardTitle>
+        <CardTitle className="text-center text-gray-900">Verification Failed</CardTitle>
       </CardHeader>
       <CardContent className="text-center">
-        <div className="text-6xl mb-4">❌</div>
+        <div className="text-6xl mb-4">✗</div>
         <p className="text-gray-600 mb-4">{message}</p>
         <div className="space-y-2">
           <Button 
