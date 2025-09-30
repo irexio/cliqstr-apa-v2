@@ -30,8 +30,8 @@ export async function sendInviteEmail({
   const subject = `${inviterName} invited you to join ${cliqName} on Cliqstr!`;
 
   const html = `
-    <div style="font-family: sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-      <h2 style="margin: 0 0 8px;">${inviterName} has invited you to join their cliq on <strong>Cliqstr</strong>.</h2>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto; font-size: 16px;">
+      <h2 style="margin: 0 0 8px; font-size: 24px;">${inviterName} has invited you to join their cliq on <strong>Cliqstr</strong>.</h2>
       <p style="margin: 0 0 16px; color: #555;">Group: <strong>${cliqName}</strong></p>
       <p><strong>${inviterName}</strong> thinks you'd love it.</p>
       <p>
@@ -39,17 +39,17 @@ export async function sendInviteEmail({
         No ads. No tracking. Just your people.
       </p>
       <div style="margin: 30px 0;">
-        <a href="${inviteLink}" style="display:inline-block; padding:12px 24px; background:#000000; color:white; border-radius:5px; text-decoration:none; font-weight: bold; font-size: 16px;">
+        <a href="${inviteLink}" style="display:inline-block; padding:16px 32px; background:#000000; color:white; border-radius:8px; text-decoration:none; font-weight: 600; font-size: 18px;">
           Accept Invite
         </a>
       </div>
       
       <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 5px;">
         <p style="margin: 0 0 8px; font-weight: bold; color: #333;">Your Cliq Code: <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 3px;">${inviteCode}</span></p>
-        <p style="margin: 0; font-size: 14px; color: #666;">Joining from another device? Visit <a href="https://cliqstr.com/invite/manual" style="color: #000;">cliqstr.com/invite/manual</a> and enter this code.</p>
+        <p style="margin: 0; font-size: 16px; color: #666;">Joining from another device? Visit <a href="https://cliqstr.com/invite/manual" style="color: #000;">cliqstr.com/invite/manual</a> and enter this code.</p>
       </div>
       
-      <p style="font-size: 12px; color: #888;">This invite link is valid for 36 hours.</p>
+      <p style="font-size: 16px; color: #888;">This invite link is valid for 36 hours.</p>
     </div>
   `;
 

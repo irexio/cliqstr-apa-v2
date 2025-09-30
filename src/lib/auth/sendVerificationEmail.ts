@@ -49,14 +49,14 @@ export async function sendVerificationEmail({ to, userId, name }: SendVerificati
       to,
       subject: 'Verify your Cliqstr account',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #000;">Welcome to Cliqstr!</h2>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; font-size: 16px; line-height: 1.6;">
+          <h2 style="color: #000; font-size: 24px;">Welcome to Cliqstr!</h2>
           <p>Hi ${displayName},</p>
           <p>Thanks for signing up! Please verify your email address to complete your account setup.</p>
           <p>This step is <strong>required</strong> to activate your account and continue to plan selection.</p>
           
           <div style="margin: 30px 0;">
-            <a href="${verificationLink}" style="background-color: #000; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            <a href="${verificationLink}" style="background-color: #000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 18px; display: inline-block;">
               Verify My Email
             </a>
           </div>
@@ -64,7 +64,7 @@ export async function sendVerificationEmail({ to, userId, name }: SendVerificati
           <p>This link will expire in 24 hours.</p>
           <p>If you didn't create an account on Cliqstr, please ignore this email.</p>
           <hr style="border: 1px solid #eee; margin: 30px 0;">
-          <p style="color: #666; font-size: 12px;">© ${new Date().getFullYear()} Cliqstr - The private social platform for friends, family and safe online communities</p>
+          <p style="color: #666; font-size: 16px;">© ${new Date().getFullYear()} Cliqstr - The private social platform for friends, family and safe online communities</p>
         </div>
       `
     });

@@ -270,7 +270,12 @@ export async function POST(request: NextRequest) {
       // Log the specific error for debugging
       if (emailError instanceof Error) {
         console.error('[INVITE_CREATE] Email error details:', emailError.message);
+        console.error('[INVITE_CREATE] Email error stack:', emailError.stack);
       }
+      
+      // For now, we'll continue even if email fails due to Resend issues
+      // The invite was still created successfully in the database
+      console.log('[INVITE_CREATE] Continuing despite email failure - invite created successfully');
     }
     
     // Step 6: Response (safe for authenticated inviter UI)

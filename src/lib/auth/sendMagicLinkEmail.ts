@@ -64,20 +64,20 @@ function generateDirectMagicLinkEmailHTML(name: string, magicLink: string): stri
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Your Magic Link - Cliqstr</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; font-size: 16px; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background: #000000; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .content { background: white; padding: 40px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .button { display: inline-block; background: #000000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .button { display: inline-block; background: #000000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; font-size: 18px; }
         .button:hover { opacity: 0.9; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-        .security-note { background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin: 20px 0; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 16px; }
+        .security-note { background: #f8f9fa; border-left: 4px solid #000000; padding: 16px; margin: 20px 0; border-radius: 4px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>⚡ Your Magic Link is Ready!</h1>
+          <h1>Your Magic Link is Ready!</h1>
           <p>Sign in to Cliqstr without a password</p>
         </div>
         
@@ -91,7 +91,7 @@ function generateDirectMagicLinkEmailHTML(name: string, magicLink: string): stri
           </div>
           
           <div class="security-note">
-            <strong>🔒 Security Note:</strong> This link will expire in 15 minutes and can only be used once. If you didn't request this link, please ignore this email.
+            <strong>Security Note:</strong> This link will expire in 15 minutes and can only be used once. If you didn't request this link, please ignore this email.
           </div>
           
           <p><strong>Having trouble?</strong> If the button doesn't work, copy and paste this link into your browser:</p>
@@ -120,21 +120,21 @@ function generateParentForwardEmailHTML(parentName: string, childName: string, m
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Magic Link for ${childName} - Cliqstr</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; font-size: 16px; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background: #000000; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .content { background: white; padding: 40px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .button { display: inline-block; background: #000000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .button { display: inline-block; background: #000000; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; font-size: 18px; }
         .button:hover { opacity: 0.9; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-        .parent-note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px; }
-        .security-note { background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin: 20px 0; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 16px; }
+        .parent-note { background: #f8f9fa; border-left: 4px solid #000000; padding: 16px; margin: 20px 0; border-radius: 4px; }
+        .security-note { background: #f8f9fa; border-left: 4px solid #000000; padding: 16px; margin: 20px 0; border-radius: 4px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>⚡ Password Reset for ${childName}</h1>
+          <h1>Password Reset for ${childName}</h1>
           <p>Your child forgot their password</p>
         </div>
         
@@ -144,9 +144,9 @@ function generateParentForwardEmailHTML(parentName: string, childName: string, m
           <p>Your child ${childName} forgot their password and requested a magic link to sign in to their Cliqstr account. Since they're under 13, we're sending this link to you for safety.</p>
           
           <div class="parent-note">
-            <strong>👨‍👩‍👧‍👦 For Parents:</strong> Please share this magic link with your child so they can sign in. The link will work on any device and expires in 15 minutes.
+            <strong>For Parents:</strong> Please share this magic link with your child so they can sign in. The link will work on any device and expires in 15 minutes.
             <br><br>
-            <strong>💡 Tip:</strong> If you're on a different computer than your child, you can copy the link below and send it to them via text, email, or any messaging app. They can then click it on their device to sign in.
+            <strong>Tip:</strong> If you're on a different computer than your child, you can copy the link below and send it to them via text, email, or any messaging app. They can then click it on their device to sign in.
           </div>
           
           <div style="text-align: center;">
@@ -154,7 +154,7 @@ function generateParentForwardEmailHTML(parentName: string, childName: string, m
           </div>
           
           <div class="security-note">
-            <strong>🔒 Security Note:</strong> This link will expire in 15 minutes and can only be used once. If your child didn't request this link, please ignore this email.
+            <strong>Security Note:</strong> This link will expire in 15 minutes and can only be used once. If your child didn't request this link, please ignore this email.
           </div>
           
           <p><strong>Having trouble?</strong> If the button doesn't work, copy and paste this link into your browser:</p>
