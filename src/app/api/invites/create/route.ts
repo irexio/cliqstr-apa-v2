@@ -169,13 +169,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 4: Create invite or parent approval based on type
-    let inviteId;
-    let approvalToken;
-    const inviteToken = crypto.randomUUID();
-    const joinCode = generateJoinCode();
-    
-    if (inviteType === 'child') {
+             // Step 4: Create invite or parent approval based on type
+             let inviteId;
+             let approvalToken;
+             const inviteToken = crypto.randomUUID();
+             const joinCode = generateJoinCode();
+             
+             console.log(`[INVITE_CREATE] About to create invite with:`, {
+               inviteType,
+               targetEmail,
+               emailNorm,
+               targetState,
+               targetUserId,
+               cliqId,
+               friendFirstName,
+               friendLastName,
+               childBirthdate,
+               inviteNote
+             });
+             
+             if (inviteType === 'child') {
       // For child invites, create a parent approval record
       approvalToken = crypto.randomUUID();
       const expiresAt = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 days
@@ -197,17 +210,17 @@ export async function POST(request: NextRequest) {
       });
       
       // Also create a regular invite record for tracking
-      inviteId = await convexHttp.mutation(api.invites.createInvite, {
+      const childInviteParams = {
         token: inviteToken,
         joinCode: joinCode,
         code: joinCode, // Use joinCode as the code
+        inviteeEmail: targetEmail,
         targetEmailNormalized: emailNorm,
         targetUserId: targetUserId as any,
         targetState,
-        status: 'pending',
+        status: 'pending' as const,
         used: false,
         inviterId: user.id as any,
-        inviteeEmail: targetEmail,
         cliqId: cliqId ? cliqId as any : undefined,
         isApproved: false,
         friendFirstName: friendFirstName,
@@ -216,20 +229,23 @@ export async function POST(request: NextRequest) {
         inviteNote: inviteNote,
         inviteType: inviteType,
         parentAccountExists: targetState === 'existing_parent',
-      });
+      };
+      
+      console.log(`[INVITE_CREATE] Child invite Convex params:`, childInviteParams);
+      inviteId = await convexHttp.mutation(api.invites.createInvite, childInviteParams);
     } else {
       // For adult invites, create regular invite
-      inviteId = await convexHttp.mutation(api.invites.createInvite, {
+      const adultInviteParams = {
         token: inviteToken,
         joinCode: joinCode,
         code: joinCode, // Use joinCode as the code
+        inviteeEmail: targetEmail,
         targetEmailNormalized: emailNorm,
         targetUserId: targetUserId as any,
         targetState,
-        status: 'pending',
+        status: 'pending' as const,
         used: false,
         inviterId: user.id as any,
-        inviteeEmail: targetEmail,
         cliqId: cliqId ? cliqId as any : undefined,
         isApproved: false,
         friendFirstName: friendFirstName,
@@ -238,7 +254,10 @@ export async function POST(request: NextRequest) {
         inviteNote: inviteNote,
         inviteType: 'adult', // Ensure adult invites are marked as 'adult'
         parentAccountExists: targetState === 'existing_parent',
-      });
+      };
+      
+      console.log(`[INVITE_CREATE] Adult invite Convex params:`, adultInviteParams);
+      inviteId = await convexHttp.mutation(api.invites.createInvite, adultInviteParams);
     }
 
     // Step 5: Send appropriate email based on invite type
