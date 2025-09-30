@@ -131,44 +131,31 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
 
       // Prepare the request payload based on invite type
       console.log('[INVITE_FORM] Creating payload...');
-      const payload: any = {
+      let payload: any = {
         cliqId,
         inviteType,
         inviteNote: inviteNote.trim() || undefined,
       };
 
-      let response;
-      
       if (inviteType === 'child') {
-        // Child invites use the parent approval API (same as direct child signup)
-        const childPayload = {
-          childFirstName: friendFirstName.trim(),
-          childLastName: friendLastName.trim(),
-          childBirthdate: childBirthdate.trim(),
-          parentEmail: parentEmail.trim(),
-        };
-        
-        console.log('[INVITE_FORM] Sending child invite via parent approval API:', childPayload);
-        response = await fetch('/api/parent-approval/request', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(childPayload),
-        });
+        // Child invites: use parentEmail and child details
+        payload.parentEmail = parentEmail.trim();
+        payload.friendFirstName = friendFirstName.trim();
+        payload.friendLastName = friendLastName.trim();
+        payload.childBirthdate = childBirthdate.trim();
       } else {
-        // Adult and Parent invites use the regular invite API
+        // Adult invites: use inviteeEmail (from trustedAdultContact field)
         payload.inviteeEmail = trustedAdultContact.trim();
-        
-        console.log('[INVITE_FORM] Sending adult/parent invite via invite API:', payload);
-        response = await fetch('/api/invites/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
       }
+      
+      console.log('[INVITE_FORM] Sending invite via invite API:', payload);
+      const response = await fetch('/api/invites/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
       const data = await response.json();
 
@@ -188,12 +175,12 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       setSuccess(true);
       
       if (inviteType === 'child') {
-        // Child invites redirect to awaiting approval (same as direct child signup)
+        // Child invites redirect to awaiting approval
         setTimeout(() => {
           window.location.href = '/awaiting-approval';
         }, 1500);
       } else {
-        // Adult/Parent invites redirect to invite sent page
+        // Adult invites redirect to invite sent page
         // Reset form
         setFriendFirstName('');
         setFriendLastName('');
@@ -340,9 +327,9 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
       {/* Email Field - Only for Adult Invites */}
       {inviteType === 'adult' && (
         <div>
-          <Label htmlFor="trustedAdultContact">Adult Email *</Label>
+          <Label htmlFor="adultEmail">Adult Email *</Label>
           <Input
-            id="trustedAdultContact"
+            id="adultEmail"
             type="email"
             value={trustedAdultContact}
             onChange={(e) => setTrustedAdultContact(e.target.value)}
