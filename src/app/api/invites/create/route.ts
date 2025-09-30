@@ -361,30 +361,31 @@ export async function POST(request: NextRequest) {
       requestId: requestId
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[INVITE_CREATE] Error:', error);
-    
-    // Provide more specific error messages for debugging
+
     let errorMessage = 'Internal server error';
-    let errorDetails = {};
-    
+    let errorDetails: any = {};
+
     if (error instanceof Error) {
       errorMessage = error.message;
       errorDetails = {
+        name: error.name,
         message: error.message,
         stack: error.stack,
-        name: error.name
       };
-      console.error('[INVITE_CREATE] Error details:', errorDetails);
+    } else if (typeof error === 'string') {
+      errorMessage = error;
     }
-    
-    // Return detailed error information for debugging
-    return NextResponse.json({ 
-      error: errorMessage,
-      requestId: requestId,
-      errorType: error?.constructor?.name || 'Unknown',
-      details: errorDetails,
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        error: errorMessage,
+        details: errorDetails,
+        timestamp: new Date().toISOString(),
+        requestId: requestId,
+      },
+      { status: 500 }
+    );
   }
 }
