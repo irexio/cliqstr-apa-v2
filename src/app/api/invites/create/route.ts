@@ -20,7 +20,7 @@ import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
 import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
-  console.log("[INVITE_CREATE] ROUTE VERSION v2");
+  console.log("[INVITE_CREATE] ROUTE VERSION v3");
   const requestId = crypto.randomUUID();
   console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
   console.log(`[INVITE_CREATE] DEPLOYMENT TEST - ${new Date().toISOString()}`);
@@ -364,9 +364,9 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('[INVITE_CREATE] Error:', error);
+    console.error("[INVITE_CREATE] Error:", error);
 
-    let errorMessage = 'Internal server error';
+    let errorMessage = "Internal server error";
     let errorDetails: any = {};
 
     if (error instanceof Error) {
@@ -376,7 +376,7 @@ export async function POST(request: NextRequest) {
         message: error.message,
         stack: error.stack,
       };
-    } else if (typeof error === 'string') {
+    } else if (typeof error === "string") {
       errorMessage = error;
     }
 
@@ -385,7 +385,6 @@ export async function POST(request: NextRequest) {
         error: errorMessage,
         details: errorDetails,
         timestamp: new Date().toISOString(),
-        requestId: requestId,
       },
       { status: 500 }
     );
