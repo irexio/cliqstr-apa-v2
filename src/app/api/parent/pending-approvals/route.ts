@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth/session';
-import { convexHttp } from '@/lib/convex-http';
-import { api } from '@/convex/_generated/api';
+import { getIronSession } from 'iron-session';
+import { sessionOptions, SessionData } from '@/lib/auth/session-config';
+import { convexHttp } from '@/lib/convex-server';
+import { api } from 'convex/_generated/api';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession();
-    const user = session?.user;
+    const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
+    const user = session.user;
 
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
