@@ -52,6 +52,37 @@ export default function PendingApprovalsSection() {
     router.push(`/parent-approval?token=${approval.approvalToken}`);
   };
 
+  const handleDeclineApproval = async (approval: PendingApproval) => {
+    if (!confirm(`Are you sure you want to decline the invitation for ${approval.childFirstName} ${approval.childLastName}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/parent-approval/decline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          approvalToken: approval.approvalToken,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Invitation declined successfully');
+        // Refresh the page to update the pending approvals list
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(`Failed to decline invitation: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to decline approval:', error);
+      alert('Failed to decline invitation. Please try again.');
+    }
+  };
+
   const formatExpiryTime = (expiresAt: number) => {
     const now = Date.now();
     const timeLeft = expiresAt - now;
@@ -118,12 +149,18 @@ export default function PendingApprovalsSection() {
                 </div>
               </div>
               
-              <div className="ml-4">
+              <div className="ml-4 flex gap-2">
                 <button
                   onClick={() => handleResumeApproval(approval)}
                   className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
                 >
                   Resume Approval
+                </button>
+                <button
+                  onClick={() => handleDeclineApproval(approval)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                >
+                  Decline
                 </button>
               </div>
             </div>
