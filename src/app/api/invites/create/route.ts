@@ -20,7 +20,7 @@ import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
 import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
-  console.log("[INVITE_CREATE] ROUTE VERSION v3");
+  console.log("[INVITE_CREATE] ROUTE VERSION v4");
   const requestId = crypto.randomUUID();
   console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
   console.log(`[INVITE_CREATE] DEPLOYMENT TEST - ${new Date().toISOString()}`);
@@ -227,10 +227,10 @@ export async function POST(request: NextRequest) {
         inviterId: user.id as any,
         cliqId: cliqId ? cliqId as any : undefined,
         isApproved: false,
-        friendFirstName: friendFirstName,
-        friendLastName: friendLastName,
-        childBirthdate: childBirthdate,
-        inviteNote: inviteNote,
+        friendFirstName: friendFirstName || undefined,
+        friendLastName: friendLastName || undefined,
+        childBirthdate: childBirthdate || undefined,
+        inviteNote: inviteNote || undefined,
         inviteType: inviteType,
         parentAccountExists: targetState === 'existing_parent',
       };
@@ -252,10 +252,10 @@ export async function POST(request: NextRequest) {
         inviterId: user.id as any,
         cliqId: cliqId ? cliqId as any : undefined,
         isApproved: false,
-        friendFirstName: friendFirstName,
-        friendLastName: friendLastName,
-        childBirthdate: childBirthdate,
-        inviteNote: inviteNote,
+        friendFirstName: friendFirstName || undefined,
+        friendLastName: friendLastName || undefined,
+        childBirthdate: childBirthdate || undefined,
+        inviteNote: inviteNote || undefined,
         inviteType: 'adult', // Ensure adult invites are marked as 'adult'
         parentAccountExists: targetState === 'existing_parent',
       };
