@@ -40,6 +40,38 @@ export const getParentLinkByParentAndChild = query({
   },
 });
 
+// Get all children for a parent
+export const getChildrenByParent = query({
+  args: { parentId: v.id("users") },
+  handler: async (ctx, args) => {
+    const parentLinks = await ctx.db
+      .query("parentLinks")
+      .withIndex("by_parent_id", (q) => q.eq("parentId", args.parentId))
+      .collect();
+
+    // Get child details for each link
+    const children = await Promise.all(
+      parentLinks.map(async (link) => {
+        const child = await ctx.db.get(link.childId);
+        const childProfile = await ctx.db
+          .query("myProfiles")
+          .withIndex("by_user_id", (q) => q.eq("userId", link.childId))
+          .first();
+        
+        return {
+          id: link.childId,
+          name: childProfile?.username || child?.email || 'Unknown',
+          email: child?.email,
+          profile: childProfile,
+          parentLink: link,
+        };
+      })
+    );
+
+    return children;
+  },
+});
+
 // Create a new parent link
 export const createParentLink = mutation({
   args: {
