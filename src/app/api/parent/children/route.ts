@@ -67,8 +67,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all children managed by this parent
-    // For now, return empty array - in full implementation, this would query parent-child relationships
-    const children: any[] = [];
+    const children = await convexHttp.query(api.parentLinks.getChildrenByParent, {
+      parentId: session.userId as any,
+    });
 
     console.log(`[PARENT-CHILDREN] Retrieved ${children.length} children for parent ${user.email}`);
 
