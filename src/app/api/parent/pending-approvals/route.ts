@@ -7,10 +7,18 @@ import { api } from 'convex/_generated/api';
 export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
-    const user = session.user;
+
+    if (!session.userId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    // Get current user to verify they're a parent
+    const user = await convexHttp.query(api.users.getCurrentUser, {
+      userId: session.userId as any,
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     if (user.role !== 'Parent' && user.role !== 'Admin') {
