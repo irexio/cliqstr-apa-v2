@@ -110,11 +110,16 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    console.log('[PARENT-CHILDREN] Request body:', JSON.stringify(body, null, 2));
+    
     const parsed = createChildSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.log('[PARENT-CHILDREN] Validation errors:', JSON.stringify(parsed.error.errors, null, 2));
       return NextResponse.json({ 
-        error: parsed.error.errors[0]?.message || 'Invalid child data' 
+        error: parsed.error.errors[0]?.message || 'Invalid child data',
+        details: parsed.error.errors,
+        receivedData: body
       }, { status: 400 });
     }
 
