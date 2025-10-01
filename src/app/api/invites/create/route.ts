@@ -20,7 +20,7 @@ import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
 import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
-  console.log("[INVITE_CREATE] ROUTE VERSION v4");
+  console.log("[INVITE_CREATE] ROUTE VERSION v5");
   const requestId = crypto.randomUUID();
   console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
   console.log(`[INVITE_CREATE] DEPLOYMENT TEST - ${new Date().toISOString()}`);
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
         code: joinCode, // Use joinCode as the code
         inviteeEmail: targetEmail,
         targetEmailNormalized: emailNorm,
-        targetUserId: targetUserId as any,
+        targetUserId: targetUserId ? targetUserId as any : undefined,
         targetState,
         status: 'pending' as const,
         used: false,
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
         code: joinCode, // Use joinCode as the code
         inviteeEmail: targetEmail,
         targetEmailNormalized: emailNorm,
-        targetUserId: targetUserId as any,
+        targetUserId: targetUserId ? targetUserId as any : undefined,
         targetState,
         status: 'pending' as const,
         used: false,
