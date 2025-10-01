@@ -4,6 +4,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ParentDashboard from './ParentDashboard';
 import ChildSignupApprovalFlow from './ChildSignupApprovalFlow';
+import PendingApprovalsSection from './PendingApprovalsSection';
+import ExistingChildrenManagement from './ExistingChildrenManagement';
+import CreateNewChildSection from './CreateNewChildSection';
 
 type InviteStatus = 'valid' | 'used' | 'invalid' | 'loading';
 
@@ -262,7 +265,15 @@ export default function ParentsHQContent() {
         <p className="text-gray-600 mt-2">Comprehensive child management and safety controls</p>
         <p className="text-sm text-blue-600">Every child on Cliqstr requires parent approval through this interface</p>
       </div>
-      <ParentDashboard hideCreateForm={false} />
+      
+      {/* Show pending approvals first */}
+      <PendingApprovalsSection />
+      
+      {/* Show existing children management */}
+      <ExistingChildrenManagement />
+      
+      {/* Show create new child option */}
+      <CreateNewChildSection />
     </div>
   );
 }
