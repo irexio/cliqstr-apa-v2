@@ -193,11 +193,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryLoading: user === undefined
   });
 
+  // Don't show loading state on public pages
+  const shouldShowLoading = !isPublicPage(pathname) && (isLoading || (!!sessionUserId && user === undefined));
+
   return (
     <AuthContext.Provider
       value={{
         user: user || null,
-        isLoading: isLoading || (!!sessionUserId && user === undefined),
+        isLoading: shouldShowLoading,
         error: null,
       }}
     >
