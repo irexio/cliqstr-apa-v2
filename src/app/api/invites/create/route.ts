@@ -20,7 +20,7 @@ import { sendInviteEmail } from '@/lib/auth/sendInviteEmail';
 import { BASE_URL } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
-  console.log("[INVITE_CREATE] ROUTE VERSION v5");
+  console.log("[INVITE_CREATE] ROUTE VERSION v6 - SECURITY FIX: No email-based name extraction");
   const requestId = crypto.randomUUID();
   console.log(`[INVITE_CREATE] Starting invite creation - Request ID: ${requestId}`);
   console.log(`[INVITE_CREATE] DEPLOYMENT TEST - ${new Date().toISOString()}`);
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
         
         // Get inviter name for the email
         const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
-        const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : user.email?.split('@')[0] || 'Someone';
+        const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
         
         // Use parent approval URL instead of old invite flow
         const approvalLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken!)}`;
@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
       } else {
         // Adult invite - use regular invite email
         let cliqName = 'a Cliq';
-        let inviterName = user.email?.split('@')[0] || 'Someone';
+        let inviterName = 'Someone';
         
         try {
           // Get cliq name with error handling
