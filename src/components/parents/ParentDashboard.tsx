@@ -31,6 +31,7 @@ import ChildPermissionManager from './ChildPermissionManager';
 import MultipleParentsManager from './MultipleParentsManager';
 import ChildActivityLogs from './ChildActivityLogs';
 import LiveCliqMonitoring from './LiveCliqMonitoring';
+import PendingApprovalsSection from './PendingApprovalsSection';
 
 
 // 🧠 Local definition of child structure
@@ -96,6 +97,9 @@ export default function ParentDashboard({ hideCreateForm = false }: ParentDashbo
 
   return (
     <div className="space-y-4">
+      {/* Pending Approvals Section - Show incomplete approvals that need attention */}
+      <PendingApprovalsSection />
+      
       {/* Create Child Account Section - Only show if not in approval flow */}
       {!hideCreateForm && (
         <div className="border border-black rounded p-4 bg-black text-white">

@@ -6,6 +6,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 import Link from 'next/link';
 import CliqsGrid from '@/components/cliqs/CliqsGrid';
 import { DashboardProfileNudge } from '@/components/ui/ProfileNudge';
+import PlanGuard from '@/components/auth/PlanGuard';
 
 export default function ClientView({ user }: { user: any }) {
   const cliqs = useQuery(api.cliqs.getUserCliqs, user?.id ? { userId: user.id as Id<'users'> } : 'skip');
@@ -24,7 +25,8 @@ export default function ClientView({ user }: { user: any }) {
   const hasCliqs = formattedCliqs.length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PlanGuard>
+      <div className="min-h-screen bg-gray-50">
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Header Section - Mobile Responsive */}
         <div className="mb-8">
@@ -103,6 +105,7 @@ export default function ClientView({ user }: { user: any }) {
         )}
         </div>
       </div>
+    </PlanGuard>
   );
 }
 
