@@ -20,12 +20,17 @@ export default function ResetPasswordPage() {
 
   // Validate token on page load
   useEffect(() => {
+    console.log('🔐 [RESET-PASSWORD] Page loaded, code from URL:', code);
+    console.log('🔐 [RESET-PASSWORD] Full URL:', window.location.href);
+    
     if (!code) {
+      console.log('🔐 [RESET-PASSWORD] No code found in URL');
       setError('Invalid or missing reset code');
       setStatus('error');
       return;
     }
 
+    console.log('🔐 [RESET-PASSWORD] Code found, validating token...');
     validateToken();
   }, [code]);
 
