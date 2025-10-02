@@ -69,13 +69,24 @@ export async function POST(req: NextRequest) {
 
     const { name, description, privacy, coverImage, minAge, maxAge } = parsed.data;
 
-    // 🔒 CRITICAL: Check child permissions for public cliq creation
-    if (user.account?.role === 'Child' && (privacy === 'public' || privacy === 'semi')) {
-      // Children without profiles cannot create public cliqs
-      if (!user.myProfile) {
-        console.log(`[APA] Child without profile blocked from creating ${privacy} cliq:`, user.email);
+    // 🔒 CRITICAL: Check child permissions and compliance
+    if (user.account?.role === 'Child') {
+      // Check if child has valid parent consent
+      const hasConsent = await convexHttp.query(api.parentConsents.hasValidParentConsent, {
+        childId: user.id as any,
+      });
+      
+      if (!hasConsent.hasConsent) {
         return NextResponse.json({
-          error: 'You need to create a profile first to create public or semi-private cliqs'
+          error: 'Child account incomplete, parent approval required.'
+        }, { status: 403 });
+      }
+      
+      // Children without profiles cannot create cliqs
+      if (!user.myProfile) {
+        console.log(`[APA] Child without profile blocked from creating cliq:`, user.email);
+        return NextResponse.json({
+          error: 'You need to create a profile first to create cliqs'
         }, { status: 403 });
       }
       
@@ -84,10 +95,24 @@ export async function POST(req: NextRequest) {
         profileId: user.myProfile.id as any,
       });
       
-      if (!childSettings?.canCreatePublicCliqs) {
+      if (!childSettings) {
+        return NextResponse.json({
+          error: 'Child account incomplete, parent approval required.'
+        }, { status: 403 });
+      }
+      
+      // Check specific permissions for public/semi cliqs
+      if ((privacy === 'public' || privacy === 'semi') && !childSettings.canCreatePublicCliqs) {
         console.log(`[APA] Child blocked from creating ${privacy} cliq:`, user.email);
         return NextResponse.json({
-          error: 'You need parent permission to create public or semi-private cliqs'
+          error: 'You do not have permission to create public cliqs. Please ask your parent to enable this feature.'
+        }, { status: 403 });
+      }
+      
+      // Check general cliq creation permission
+      if (!childSettings.canCreateCliqs) {
+        return NextResponse.json({
+          error: 'You do not have permission to create cliqs. Please ask your parent to enable this feature.'
         }, { status: 403 });
       }
     }

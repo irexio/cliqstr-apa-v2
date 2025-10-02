@@ -256,10 +256,20 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
           return;
         }
         
-        // For other critical errors, redirect to help page
-        if (reason.includes('Invalid or expired') || reason.includes('Failed to create') || reason.includes('server_error')) {
-          console.log('[PARENTS_HQ][signup-approval] redirecting to help page due to critical error');
-          router.push('/parents/hq/help');
+        // For other critical errors, show specific error messages instead of redirecting
+        if (reason.includes('Invalid or expired')) {
+          setError("This approval request is invalid or has expired. Please request a new invite.");
+          setSubmitting(false);
+          return;
+        }
+        if (reason.includes('Failed to create')) {
+          setError("We couldn't create your child's account due to a setup issue. Please try again.");
+          setSubmitting(false);
+          return;
+        }
+        if (reason.includes('server_error')) {
+          setError("Something went wrong on our end. Please try again later.");
+          setSubmitting(false);
           return;
         }
         

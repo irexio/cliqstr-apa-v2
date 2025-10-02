@@ -57,13 +57,28 @@ export async function POST(req: Request) {
     return new NextResponse('Post must include content or an image.', { status: 400 });
   }
 
-  // 🔒 CRITICAL: Check child permissions for image posting
-  if (image && user.account?.role === 'Child') {
+  // 🔒 CRITICAL: Check child permissions and compliance
+  if (user.account?.role === 'Child') {
+    // Check if child has valid parent consent
+    const hasConsent = await convexHttp.query(api.parentConsents.hasValidParentConsent, {
+      childId: user.id as any,
+    });
+    
+    if (!hasConsent.hasConsent) {
+      return new NextResponse('Child account incomplete, parent approval required.', { status: 403 });
+    }
+    
+    // Check child settings exist
     const childSettings = await convexHttp.query(api.users.getChildSettings, {
       profileId: user.myProfile!.id as any,
     });
     
-    if (!childSettings?.canPostImages) {
+    if (!childSettings) {
+      return new NextResponse('Child account incomplete, parent approval required.', { status: 403 });
+    }
+    
+    // Check specific permissions
+    if (image && !childSettings.canPostImages) {
       return new NextResponse('You do not have permission to post images. Please ask your parent to enable this feature.', { status: 403 });
     }
   }

@@ -47,6 +47,31 @@ export async function POST(req: NextRequest) {
       caption
     });
 
+    // 🔒 CRITICAL: Check child permissions and compliance
+    if (user.account?.role === 'Child') {
+      // Check if child has valid parent consent
+      const hasConsent = await convexHttp.query(api.parentConsents.hasValidParentConsent, {
+        childId: user.id as any,
+      });
+      
+      if (!hasConsent.hasConsent) {
+        return NextResponse.json({
+          error: 'Child account incomplete, parent approval required.'
+        }, { status: 403 });
+      }
+      
+      // Check child settings exist
+      const childSettings = await convexHttp.query(api.users.getChildSettings, {
+        profileId: profileId as any,
+      });
+      
+      if (!childSettings) {
+        return NextResponse.json({
+          error: 'Child account incomplete, parent approval required.'
+        }, { status: 403 });
+      }
+    }
+
     // Verify the profile belongs to the current user using Convex
     const profile = await convexHttp.query(api.profiles.getProfileByUserId, {
       userId: user.id as any,
