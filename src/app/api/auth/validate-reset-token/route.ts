@@ -27,9 +27,20 @@ export async function GET(req: NextRequest) {
     console.log('🔐 [VALIDATE-RESET-TOKEN] Full hashed token:', hashedToken);
 
     // Check if token exists and is not expired
-    const user = await convexHttp.query(api.users.getUserByResetToken, {
-      token: hashedToken,
-    });
+    console.log('🔐 [VALIDATE-RESET-TOKEN] Querying Convex for user with token...');
+    let user;
+    try {
+      user = await convexHttp.query(api.users.getUserByResetToken, {
+        token: hashedToken,
+      });
+      console.log('🔐 [VALIDATE-RESET-TOKEN] Convex query result:', user ? 'User found' : 'No user found');
+    } catch (convexError) {
+      console.error('❌ [VALIDATE-RESET-TOKEN] Convex query failed:', convexError);
+      return NextResponse.json({ 
+        error: 'Database query failed',
+        details: convexError instanceof Error ? convexError.message : 'Unknown Convex error'
+      }, { status: 500 });
+    }
 
     if (!user) {
       console.log('🔐 [VALIDATE-RESET-TOKEN] Invalid or expired token - no user found');
@@ -42,6 +53,14 @@ export async function GET(req: NextRequest) {
 
   } catch (err) {
     console.error('❌ [VALIDATE-RESET-TOKEN] Error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('❌ [VALIDATE-RESET-TOKEN] Error details:', {
+      message: err instanceof Error ? err.message : 'Unknown error',
+      stack: err instanceof Error ? err.stack : undefined,
+      name: err instanceof Error ? err.name : undefined
+    });
+    return NextResponse.json({ 
+      error: 'Server error',
+      details: err instanceof Error ? err.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
