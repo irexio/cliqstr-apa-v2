@@ -166,6 +166,8 @@ export async function POST(req: NextRequest) {
         isApproved: true, // Parent is approving
         plan: 'test', // Default to test plan
         isVerified: true, // Parent approval counts as verification
+        firstName: firstName,
+        lastName: lastName,
       });
 
       console.log(`[PARENT-CHILDREN] Created child user with ID: ${childUserId}`);
@@ -195,6 +197,7 @@ export async function POST(req: NextRequest) {
         canAccessGames: true, // Default to allowing games
         canShareYouTube: false, // Always false for safety
         visibilityLevel: 'private', // Always private for safety
+        receiveAiAlerts: true, // Parents receive AI alerts by default
       });
 
       console.log(`[PARENT-CHILDREN] Created child settings with ID: ${settingsId}`);
