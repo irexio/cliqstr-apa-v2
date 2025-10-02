@@ -67,11 +67,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all children managed by this parent
+    console.log(`[PARENT-CHILDREN] Looking for children for parent ID: ${session.userId} (${user.email})`);
     const children = await convexHttp.query(api.parentLinks.getChildrenByParent, {
       parentId: session.userId as any,
     });
 
     console.log(`[PARENT-CHILDREN] Retrieved ${children.length} children for parent ${user.email}`);
+    console.log(`[PARENT-CHILDREN] Children data:`, children);
 
     return NextResponse.json(children);
 

@@ -26,13 +26,19 @@ export async function GET(req: NextRequest) {
     }
 
     // Get pending approvals for this parent's email
+    console.log(`[PENDING-APPROVALS] Looking for approvals for parent email: ${user.email}`);
     const pendingApprovals = await convexHttp.query(api.parentApprovals.getParentApprovalsByParentEmail, {
       parentEmail: user.email,
     });
 
+    console.log(`[PENDING-APPROVALS] Found ${pendingApprovals.length} total approvals`);
+    console.log(`[PENDING-APPROVALS] Raw approvals:`, pendingApprovals);
+
     // Filter out expired approvals
     const now = Date.now();
     const validApprovals = pendingApprovals.filter(approval => approval.expiresAt > now);
+    
+    console.log(`[PENDING-APPROVALS] Found ${validApprovals.length} valid (non-expired) approvals`);
 
     return NextResponse.json({ 
       pendingApprovals: validApprovals,
