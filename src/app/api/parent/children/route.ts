@@ -236,10 +236,16 @@ export async function POST(req: NextRequest) {
 
       // Step 6: Create parent-child link
       const parentLinkId = await convexHttp.mutation(api.parentLinks.createParentLink, {
-        parentId: session.userId as any,
+        email: user.email,
         childId: childUserId as any,
-        relationship: 'parent',
-        isPrimary: true,
+        role: 'primary',
+        type: 'parent',
+        permissions: {
+          canManageChild: true,
+          canChangeSettings: true,
+          canViewActivity: true,
+          receivesNotifications: true,
+        },
       });
 
       console.log(`[PARENT-CHILDREN] Created parent link with ID: ${parentLinkId}`);
