@@ -19,7 +19,7 @@ export default function SessionProvider({ children }: SessionProviderProps) {
   useEffect(() => {
     async function fetchUserSession() {
       try {
-        let res = await fetch('/auth/status');
+        let res = await fetch('/api/auth/status');
         if (!res.ok) {
           res = await fetch('/api/auth/status');
         }

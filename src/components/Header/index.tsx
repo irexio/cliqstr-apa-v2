@@ -263,7 +263,7 @@ export function HeaderComponent() {
       // If primary endpoint failed, try the fallback endpoint
       try {
         console.log('[Header] Trying fallback auth endpoint');
-        const res = await fetch('/auth/status', {
+        const res = await fetch('/api/auth/status', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
