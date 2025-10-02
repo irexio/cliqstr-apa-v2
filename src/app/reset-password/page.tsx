@@ -61,6 +61,15 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🔐 [RESET-PASSWORD] Form submitted, isValidToken:', isValidToken);
+    
+    // Prevent submission if token validation hasn't completed or failed
+    if (isValidToken !== true) {
+      console.log('🔐 [RESET-PASSWORD] Blocking form submission - token not validated');
+      setError('Please wait for token validation to complete');
+      return;
+    }
+    
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
       return;
