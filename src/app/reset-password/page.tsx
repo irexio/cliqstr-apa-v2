@@ -160,6 +160,11 @@ export default function ResetPasswordPage() {
       <p className="text-sm text-gray-600 text-center">
         Enter your new password below.
       </p>
+      
+      {/* Debug info */}
+      <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
+        Debug: isValidToken={String(isValidToken)}, status={status}
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -180,10 +185,11 @@ export default function ResetPasswordPage() {
 
         <Button 
           type="submit" 
-          disabled={status === 'resetting'} 
+          disabled={status === 'resetting' || isValidToken !== true} 
           className="w-full"
         >
-          {status === 'resetting' ? 'Resetting Password...' : 'Reset Password'}
+          {status === 'resetting' ? 'Resetting Password...' : 
+           isValidToken !== true ? 'Validating Token...' : 'Reset Password'}
         </Button>
       </form>
     </main>
