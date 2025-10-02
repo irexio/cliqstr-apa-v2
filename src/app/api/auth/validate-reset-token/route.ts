@@ -19,10 +19,12 @@ export async function GET(req: NextRequest) {
 
     console.log('🔐 [VALIDATE-RESET-TOKEN] Validating token:', code.substring(0, 8) + '...');
     console.log('🔐 [VALIDATE-RESET-TOKEN] Full token length:', code.length);
+    console.log('🔐 [VALIDATE-RESET-TOKEN] Raw token (first 16 chars):', code.substring(0, 16));
 
     // Hash the token to match what's stored in the database
     const hashedToken = crypto.createHash('sha256').update(code).digest('hex');
     console.log('🔐 [VALIDATE-RESET-TOKEN] Hashed token:', hashedToken.substring(0, 16) + '...');
+    console.log('🔐 [VALIDATE-RESET-TOKEN] Full hashed token:', hashedToken);
 
     // Check if token exists and is not expired
     const user = await convexHttp.query(api.users.getUserByResetToken, {
