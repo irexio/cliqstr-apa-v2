@@ -85,7 +85,9 @@ export default function PlanBanner() {
   const isOnSignupFlow = typeof window !== 'undefined' && (
     window.location.pathname.includes('/sign-up') ||
     window.location.pathname.includes('/sign-in') ||
-    window.location.pathname.includes('/choose-plan')
+    window.location.pathname.includes('/choose-plan') ||
+    window.location.pathname.includes('/profile/create') ||
+    window.location.pathname.includes('/profile/edit')
   );
   
   // Check if this is a parent approval flow (has approvalToken in localStorage)
@@ -101,7 +103,7 @@ export default function PlanBanner() {
     currentPath: typeof window !== 'undefined' ? window.location.pathname : 'server'
   });
   
-  // Don't show banner on dashboard, verification pages, signup flow, or parent approval flow
+  // Don't show banner on dashboard, verification pages, signup flow, profile creation/edit, or parent approval flow
   if (!needsPlan || isOnDashboard || isOnVerificationPage || isOnSignupFlow || isParentApprovalFlow) return null;
 
   return (
