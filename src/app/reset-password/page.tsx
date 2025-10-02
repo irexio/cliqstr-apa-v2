@@ -14,7 +14,6 @@ export default function ResetPasswordPage() {
   const code = searchParams.get('code');
   
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'validating' | 'resetting' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
@@ -33,17 +32,21 @@ export default function ResetPasswordPage() {
   const validateToken = async () => {
     setStatus('validating');
     try {
+      console.log('🔐 [RESET-PASSWORD] Validating token:', code?.substring(0, 8) + '...');
       const response = await fetch(`/api/auth/validate-reset-token?code=${encodeURIComponent(code!)}`);
+      const data = await response.json();
+      console.log('🔐 [RESET-PASSWORD] Validation response:', { status: response.status, data });
+      
       if (response.ok) {
         setIsValidToken(true);
         setStatus('idle');
       } else {
         setIsValidToken(false);
-        setError('Invalid or expired reset code');
+        setError(data.error || 'Invalid or expired reset code');
         setStatus('error');
       }
     } catch (err) {
-      console.error('Token validation error:', err);
+      console.error('🔐 [RESET-PASSWORD] Token validation error:', err);
       setIsValidToken(false);
       setError('Failed to validate reset code');
       setStatus('error');
@@ -53,11 +56,6 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
       return;
@@ -163,18 +161,6 @@ export default function ResetPasswordPage() {
           />
         </div>
 
-        <div>
-          <Label htmlFor="confirmPassword">Confirm New Password</Label>
-          <PasswordInput
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm new password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-          />
-        </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
