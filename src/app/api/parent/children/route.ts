@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 const createChildSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  childEmail: z.string().email('Valid child email is required'),
+  childEmail: z.string().email('Valid child email is required').optional().or(z.literal('')),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   birthdate: z.number(),
@@ -159,9 +159,11 @@ export async function POST(req: NextRequest) {
     let auditLogId: string | undefined;
 
     try {
-      // Step 1: Create child user account with real email
+      // Step 1: Create child user account with email (generate one if not provided)
+      const childEmailToUse = childEmail?.trim() || `${username}@cliqstr.local`;
+      
       childUserId = await convexHttp.mutation(api.users.createUserWithAccount, {
-        email: childEmail, // Use real child email for magic links
+        email: childEmailToUse, // Use provided email or generate local one
         password: password,
         birthdate: birthdate,
         role: 'Child',

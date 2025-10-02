@@ -188,10 +188,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       return;
     }
 
-    if (!childEmail.trim()) {
-      setError('Child email address is required for magic link authentication');
-      return;
-    }
+    // Child email is optional - if not provided, we'll generate a local one
 
     setSubmitting(true);
     setError('');
@@ -415,19 +412,18 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
             </div>
 
             <div>
-              <Label htmlFor="childEmail">Child's Email Address</Label>
+              <Label htmlFor="childEmail">Child's Email Address (Optional)</Label>
               <Input
                 id="childEmail"
                 type="email"
                 value={childEmail}
                 onChange={(e) => setChildEmail(e.target.value)}
-                placeholder="child@example.com"
-                required
+                placeholder="child@example.com (optional)"
               />
               <p className="text-sm text-gray-600 mt-1">
                 {childAge && childAge < 13 
-                  ? "Magic links will be sent to your email for forwarding to your child"
-                  : "Magic links will be sent directly to your child for easy login"
+                  ? "If provided, magic links will be sent to your email for forwarding to your child. If not provided, child will use username/password login."
+                  : "If provided, magic links will be sent directly to your child for easy login. If not provided, child will use username/password login."
                 }
               </p>
             </div>
