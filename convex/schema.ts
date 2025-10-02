@@ -219,6 +219,20 @@ export default defineSchema({
     .index("by_child_id", ["childId"])
     .index("by_created_at", ["createdAt"]),
 
+  parentConsents: defineTable({
+    parentId: v.id("users"),
+    childId: v.id("users"),
+    redAlertAccepted: v.boolean(),
+    silentMonitoringEnabled: v.boolean(),
+    consentTimestamp: v.number(),
+    ipAddress: v.optional(v.string()),
+    userAgent: v.optional(v.string()),
+  })
+    .index("by_parent_id", ["parentId"])
+    .index("by_child_id", ["childId"])
+    .index("by_parent_child", ["parentId", "childId"])
+    .index("by_consent_timestamp", ["consentTimestamp"]),
+
   redAlerts: defineTable({
     cliqId: v.id("cliqs"),
     triggeredById: v.id("users"),

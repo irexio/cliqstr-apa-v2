@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
     });
     console.log(`[INVITE_CREATE] Account found:`, account ? `Role: ${account.role}` : 'Not found');
 
-    // Allow both adults and parents to send invites
-    if (!account || (account.role !== 'Adult' && account.role !== 'Parent')) {
+    // Allow adults, parents, and children (with permission) to send invites
+    if (!account || (account.role !== 'Adult' && account.role !== 'Parent' && account.role !== 'Child')) {
       console.log(`[INVITE_CREATE] Access denied - account: ${account ? account.role : 'none'}`);
-      return NextResponse.json({ error: 'Adult or Parent role required' }, { status: 403 });
+      return NextResponse.json({ error: 'Valid account required' }, { status: 403 });
     }
 
              console.log(`[INVITE_CREATE] Parsing request body...`);
@@ -105,13 +105,48 @@ export async function POST(request: NextRequest) {
     const emailNorm = targetEmail.trim().toLowerCase();
     console.log(`[INVITE_CREATE] Normalized email: ${emailNorm}`);
 
-    // Step 1.5: Validate child invite requirements
+    // Step 1.5: Validate child invite requirements and check permissions
     if (inviteType === 'child') {
       // For child invites, validate required fields
       if (!friendFirstName || !friendLastName || !childBirthdate) {
         return NextResponse.json({ 
           error: 'Child invites require child first name, last name, and birthdate' 
         }, { status: 400 });
+      }
+      
+      // 🔐 CRITICAL COMPLIANCE: Check if child has permission to invite other children
+      if (account.role === 'Child') {
+        // Get child's profile and settings
+        const profile = await convexHttp.query(api.profiles.getProfileByUserId, {
+          userId: user.id as any,
+        });
+        
+        if (!profile) {
+          return NextResponse.json({ 
+            error: 'Child account incomplete, parent approval required' 
+          }, { status: 403 });
+        }
+        
+        const childSettings = await convexHttp.query(api.users.getChildSettings, {
+          profileId: profile._id as any,
+        });
+        
+        if (!childSettings?.canInviteChildren) {
+          return NextResponse.json({ 
+            error: 'You do not have permission to invite other children. Please ask your parent to enable this feature.' 
+          }, { status: 403 });
+        }
+        
+        // Check if child has valid parent consent
+        const consentCheck = await convexHttp.query(api.parentConsents.hasValidParentConsent, {
+          childId: user.id as any,
+        });
+        
+        if (!consentCheck.hasConsent) {
+          return NextResponse.json({ 
+            error: 'Child account incomplete, parent approval required' 
+          }, { status: 403 });
+        }
       }
       
       // Validate that the target email is not a direct child email
@@ -129,6 +164,41 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ 
             error: 'Child invites must use parent email addresses, not child email addresses directly' 
           }, { status: 400 });
+        }
+      }
+    } else if (inviteType === 'adult') {
+      // 🔐 CRITICAL COMPLIANCE: Check if child has permission to invite adults
+      if (account.role === 'Child') {
+        // Get child's profile and settings
+        const profile = await convexHttp.query(api.profiles.getProfileByUserId, {
+          userId: user.id as any,
+        });
+        
+        if (!profile) {
+          return NextResponse.json({ 
+            error: 'Child account incomplete, parent approval required' 
+          }, { status: 403 });
+        }
+        
+        const childSettings = await convexHttp.query(api.users.getChildSettings, {
+          profileId: profile._id as any,
+        });
+        
+        if (!childSettings?.canInviteAdults) {
+          return NextResponse.json({ 
+            error: 'You do not have permission to invite adults. Please ask your parent to enable this feature.' 
+          }, { status: 403 });
+        }
+        
+        // Check if child has valid parent consent
+        const consentCheck = await convexHttp.query(api.parentConsents.hasValidParentConsent, {
+          childId: user.id as any,
+        });
+        
+        if (!consentCheck.hasConsent) {
+          return NextResponse.json({ 
+            error: 'Child account incomplete, parent approval required' 
+          }, { status: 403 });
         }
       }
     }

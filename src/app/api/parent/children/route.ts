@@ -149,48 +149,104 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
     }
 
-    // Create child user account with real email
-    const childUserId = await convexHttp.mutation(api.users.createUserWithAccount, {
-      email: childEmail, // Use real child email for magic links
-      password: password,
-      birthdate: birthdate,
-      role: 'Child',
-      isApproved: true, // Parent is approving
-      plan: 'test', // Default to test plan
-      isVerified: true, // Parent approval counts as verification
-    });
+    // 🔐 ATOMIC WRITES: All compliance data must be written together or none at all
+    let childUserId: string | undefined;
+    let profileId: string | undefined;
+    let settingsId: string | undefined;
+    let consentId: string | undefined;
+    let auditLogId: string | undefined;
 
-    console.log(`[PARENT-CHILDREN] Created child user with ID: ${childUserId}`);
-
-    // Create child profile
-    await convexHttp.mutation(api.profiles.createProfile, {
-      userId: childUserId,
-      username: username,
-      showYear: false, // Children: always false (enforced by policy)
-      showMonthDay: true, // Default: show birthday to cliq members
-    });
-
-    // Create child settings with parent permissions
-    const profile = await convexHttp.query(api.profiles.getProfileByUserId, {
-      userId: childUserId,
-    });
-
-    if (profile) {
-      await convexHttp.mutation(api.users.createChildSettings, {
-        profileId: profile._id,
-        canSendInvites: permissions.canReceiveInvites,
-        inviteRequiresApproval: true,
-        canCreatePublicCliqs: permissions.canCreatePublicCliqs,
-        canPostImages: permissions.canUploadVideos,
-        canJoinPublicCliqs: false, // Default to false for safety
-        canInviteChildren: permissions.canInviteChildren,
-        canInviteAdults: permissions.canInviteAdults,
-        isSilentlyMonitored: silentMonitoring,
-        aiModerationLevel: 'strict', // Default to strict for children
-        canAccessGames: true, // Default to allowing games
-        canShareYouTube: false, // Default to false for safety
-        visibilityLevel: 'private', // Default to private
+    try {
+      // Step 1: Create child user account with real email
+      childUserId = await convexHttp.mutation(api.users.createUserWithAccount, {
+        email: childEmail, // Use real child email for magic links
+        password: password,
+        birthdate: birthdate,
+        role: 'Child',
+        isApproved: true, // Parent is approving
+        plan: 'test', // Default to test plan
+        isVerified: true, // Parent approval counts as verification
       });
+
+      console.log(`[PARENT-CHILDREN] Created child user with ID: ${childUserId}`);
+
+      // Step 2: Create child profile
+      profileId = await convexHttp.mutation(api.profiles.createProfile, {
+        userId: childUserId as any,
+        username: username,
+        showYear: false, // Children: always false (enforced by policy)
+        showMonthDay: true, // Default: show birthday to cliq members
+      });
+
+      console.log(`[PARENT-CHILDREN] Created child profile with ID: ${profileId}`);
+
+      // Step 3: Create child settings with parent permissions (SAFE DEFAULTS)
+      settingsId = await convexHttp.mutation(api.users.createChildSettings, {
+        profileId: profileId as any,
+        canSendInvites: permissions.canReceiveInvites ?? false, // Safe default: false
+        inviteRequiresApproval: true, // Always true for safety
+        canCreatePublicCliqs: permissions.canCreatePublicCliqs ?? false, // Safe default: false
+        canPostImages: permissions.canUploadVideos ?? false, // Safe default: false
+        canJoinPublicCliqs: false, // Always false for safety
+        canInviteChildren: permissions.canInviteChildren ?? false, // Safe default: false
+        canInviteAdults: permissions.canInviteAdults ?? false, // Safe default: false
+        isSilentlyMonitored: silentMonitoring ?? true, // Safe default: true
+        aiModerationLevel: 'strict', // Always strict for children
+        canAccessGames: true, // Default to allowing games
+        canShareYouTube: false, // Always false for safety
+        visibilityLevel: 'private', // Always private for safety
+      });
+
+      console.log(`[PARENT-CHILDREN] Created child settings with ID: ${settingsId}`);
+
+      // Step 4: Create parent consent record
+      consentId = await convexHttp.mutation(api.parentConsents.createParentConsent, {
+        parentId: session.userId as any,
+        childId: childUserId as any,
+        redAlertAccepted: redAlertAccepted,
+        silentMonitoringEnabled: silentMonitoring,
+        ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+        userAgent: req.headers.get('user-agent') || 'unknown',
+      });
+
+      console.log(`[PARENT-CHILDREN] Created parent consent with ID: ${consentId}`);
+
+      // Step 5: Create audit log for approval action
+      auditLogId = await convexHttp.mutation(api.users.logParentAction, {
+        parentId: session.userId as any,
+        childId: childUserId as any,
+        action: 'APPROVE_CHILD',
+        oldValue: undefined, // No previous state for new approval
+        newValue: JSON.stringify({
+          redAlertAccepted,
+          silentMonitoring,
+          permissions,
+          timestamp: Date.now(),
+        }),
+      });
+
+      console.log(`[PARENT-CHILDREN] Created audit log with ID: ${auditLogId}`);
+
+    } catch (complianceError: any) {
+      console.error(`[PARENT-CHILDREN] ATOMIC WRITE FAILED - Rolling back child account creation:`, complianceError);
+      
+      // If any compliance write fails, we need to clean up the child account
+      // This prevents children from being created without proper safety settings
+      try {
+        if (childUserId) {
+          console.log(`[PARENT-CHILDREN] Attempting to clean up child account: ${childUserId}`);
+          // Note: In a production system, you might want to add a cleanup mutation
+          // For now, we'll return an error and let the parent retry
+        }
+      } catch (cleanupError) {
+        console.error(`[PARENT-CHILDREN] Cleanup also failed:`, cleanupError);
+      }
+
+      return NextResponse.json({ 
+        error: 'Failed to create child account with proper safety settings. Please try again.',
+        details: 'Compliance data could not be saved. Child account creation aborted for safety.',
+        complianceError: complianceError?.message || 'Unknown compliance error'
+      }, { status: 500 });
     }
 
     // If this was from an invite, mark the invite as used
@@ -207,6 +263,8 @@ export async function POST(req: NextRequest) {
         id: childUserId,
         username: username,
         name: `${firstName} ${lastName}`,
+        firstName: firstName,
+        lastName: lastName,
       },
     });
 

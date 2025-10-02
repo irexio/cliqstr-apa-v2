@@ -247,7 +247,16 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
           fullResponse: data
         });
         
-        // For critical errors, redirect to help page
+        // For critical compliance errors, show specific error message
+        if (reason.includes('Failed to create child account with proper safety settings') || 
+            reason.includes('Compliance data could not be saved')) {
+          console.log('[PARENTS_HQ][signup-approval] compliance error - showing detailed error');
+          setError(`Safety Setup Failed: ${details || reason}. This is a safety feature - your child's account cannot be created without proper safety settings. Please try again.`);
+          setSubmitting(false);
+          return;
+        }
+        
+        // For other critical errors, redirect to help page
         if (reason.includes('Invalid or expired') || reason.includes('Failed to create') || reason.includes('server_error')) {
           console.log('[PARENTS_HQ][signup-approval] redirecting to help page due to critical error');
           router.push('/parents/hq/help');

@@ -23,6 +23,7 @@ import type * as memberships from "../memberships.js";
 import type * as migrate from "../migrate.js";
 import type * as migrations_removeNameFields from "../migrations/removeNameFields.js";
 import type * as parentApprovals from "../parentApprovals.js";
+import type * as parentConsents from "../parentConsents.js";
 import type * as parentLinks from "../parentLinks.js";
 import type * as posts from "../posts.js";
 import type * as profiles from "../profiles.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   migrate: typeof migrate;
   "migrations/removeNameFields": typeof migrations_removeNameFields;
   parentApprovals: typeof parentApprovals;
+  parentConsents: typeof parentConsents;
   parentLinks: typeof parentLinks;
   posts: typeof posts;
   profiles: typeof profiles;
