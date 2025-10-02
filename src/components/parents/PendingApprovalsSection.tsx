@@ -32,13 +32,19 @@ export default function PendingApprovalsSection() {
   useEffect(() => {
     const fetchPendingApprovals = async () => {
       try {
+        console.log('[PendingApprovalsSection] Fetching pending approvals...');
         const response = await fetch('/api/parent/pending-approvals');
+        console.log('[PendingApprovalsSection] Response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('[PendingApprovalsSection] Received data:', data);
           setPendingApprovals(data.pendingApprovals || []);
+        } else {
+          console.error('[PendingApprovalsSection] API error:', response.status, response.statusText);
         }
       } catch (error) {
-        console.error('Failed to fetch pending approvals:', error);
+        console.error('[PendingApprovalsSection] Failed to fetch pending approvals:', error);
       } finally {
         setLoading(false);
       }

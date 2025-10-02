@@ -25,13 +25,15 @@ export default function ExistingChildrenManagement() {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
+        console.log('[ExistingChildrenManagement] Fetching children...');
         const res = await fetchJson('/api/parent/children');
+        console.log('[ExistingChildrenManagement] Received children:', res);
         setChildren(res);
         if (res.length > 0) {
           setSelectedChildId(res[0].id);
         }
       } catch (error) {
-        console.error('Failed to fetch children:', error);
+        console.error('[ExistingChildrenManagement] Failed to fetch children:', error);
       } finally {
         setLoading(false);
       }

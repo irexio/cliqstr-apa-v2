@@ -267,13 +267,19 @@ export default function ParentsHQContent() {
       </div>
       
       {/* Show pending approvals first */}
-      <PendingApprovalsSection />
+      <div className="mb-6">
+        <PendingApprovalsSection />
+      </div>
       
       {/* Show existing children management */}
-      <ExistingChildrenManagement />
+      <div className="mb-6">
+        <ExistingChildrenManagement />
+      </div>
       
       {/* Show create new child option */}
-      <CreateNewChildSection />
+      <div className="mb-6">
+        <CreateNewChildSection />
+      </div>
     </div>
   );
 }
