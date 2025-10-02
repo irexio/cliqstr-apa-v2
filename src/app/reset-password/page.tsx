@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/Button';
 import { Label } from '@/components/ui/label';
+import PasswordInput from '@/components/ui/PasswordInput';
 import { fetchJson } from '@/lib/fetchJson';
 
 export default function ResetPasswordPage() {
@@ -151,27 +152,27 @@ export default function ResetPasswordPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="password">New Password</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter new password"
             required
             minLength={8}
+            autoComplete="new-password"
           />
         </div>
 
         <div>
           <Label htmlFor="confirmPassword">Confirm New Password</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm new password"
             required
             minLength={8}
+            autoComplete="new-password"
           />
         </div>
 
