@@ -232,6 +232,16 @@ export async function POST(req: NextRequest) {
 
       console.log(`[PARENT-CHILDREN] Created audit log with ID: ${auditLogId}`);
 
+      // Step 6: Create parent-child link
+      const parentLinkId = await convexHttp.mutation(api.parentLinks.createParentLink, {
+        parentId: session.userId as any,
+        childId: childUserId as any,
+        relationship: 'parent',
+        isPrimary: true,
+      });
+
+      console.log(`[PARENT-CHILDREN] Created parent link with ID: ${parentLinkId}`);
+
     } catch (complianceError: any) {
       console.error(`[PARENT-CHILDREN] ATOMIC WRITE FAILED - Rolling back child account creation:`, complianceError);
       
@@ -247,10 +257,10 @@ export async function POST(req: NextRequest) {
         console.error(`[PARENT-CHILDREN] Cleanup also failed:`, cleanupError);
       }
 
+      // Return error to frontend - DO NOT redirect to success
       return NextResponse.json({ 
-        error: 'Failed to create child account with proper safety settings. Please try again.',
-        details: 'Compliance data could not be saved. Child account creation aborted for safety.',
-        complianceError: complianceError?.message || 'Unknown compliance error'
+        error: 'Approval could not be completed. Please try again.',
+        details: complianceError.message 
       }, { status: 500 });
     }
 
@@ -264,6 +274,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      parentId: session.userId,
+      childId: childUserId,
+      childName: `${firstName} ${lastName}`,
       child: {
         id: childUserId,
         username: username,
