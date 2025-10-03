@@ -110,8 +110,8 @@ function InviteAcceptContent() {
         console.log('[INVITE_ACCEPT] Routing parent to invite/parent');
         router.push(`/invite/parent?code=${token}`);
       } else if (inviteType === 'child') {
-        console.log('[INVITE_ACCEPT] Routing child to parent-approval');
-        router.push('/parent-approval');
+        console.log('[INVITE_ACCEPT] Routing child invite to Parents HQ');
+        router.push(`/parents/hq?inviteCode=${encodeURIComponent(token)}`);
       } else {
         // Fallback to adult flow
         console.log('[INVITE_ACCEPT] Unknown invite type, defaulting to choose-plan');

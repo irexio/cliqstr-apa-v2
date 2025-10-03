@@ -16,6 +16,13 @@ export default function ParentsHQContent() {
   const approvalToken = searchParams.get('approvalToken')?.trim() || '';
   const router = useRouter();
 
+  // Debug logging
+  console.log('[PARENTS_HQ_CONTENT] URL parameters:', {
+    inviteCode,
+    approvalToken,
+    allParams: Object.fromEntries(searchParams.entries())
+  });
+
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [authLoading, setAuthLoading] = useState(true);
 
