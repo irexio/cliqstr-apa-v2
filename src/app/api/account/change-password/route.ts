@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { currentPassword, newPassword } = parsed.data;
     
     // Get user from database to verify current password
-    const userData = await convexHttp.query(api.users.getUserByEmail, { email: user.email });
+    const userData = await convexHttp.query(api.users.getUserForSignIn, { email: user.email });
     if (!userData) {
       console.log('🔐 [CHANGE-PASSWORD] User not found in database');
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

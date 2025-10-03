@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash the new password
+    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     // Update user password and clear reset token
