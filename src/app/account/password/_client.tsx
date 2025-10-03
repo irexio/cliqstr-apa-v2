@@ -6,7 +6,6 @@ import PasswordInput from '@/components/ui/PasswordInput';
 export default function PasswordClient({ userEmail }: { userEmail: string }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -18,11 +17,6 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
     setMessage('');
 
     // Basic validation
-    if (newPassword !== confirmPassword) {
-      setError('New passwords do not match');
-      setLoading(false);
-      return;
-    }
 
     if (newPassword.length < 8) {
       setError('New password must be at least 8 characters long');
@@ -43,7 +37,6 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
         setMessage('Password updated successfully!');
         setCurrentPassword('');
         setNewPassword('');
-        setConfirmPassword('');
       } else {
         setError(data.error || 'An error occurred. Please try again.');
       }
@@ -117,19 +110,6 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
             <p className="text-sm text-gray-500 mt-1">Minimum 8 characters</p>
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm New Password
-            </label>
-            <PasswordInput
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your new password"
-              required
-            />
-          </div>
-
           <div className="flex space-x-3 pt-4">
             <button
               type="submit"
@@ -143,7 +123,6 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
               onClick={() => {
                 setCurrentPassword('');
                 setNewPassword('');
-                setConfirmPassword('');
                 setError('');
                 setMessage('');
               }}
