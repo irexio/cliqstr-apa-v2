@@ -110,13 +110,13 @@ export default function ChildCreateModal({ inviteId, inviteCode, prefillFirstNam
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 py-8">
+    <div className="bg-gray-800 border-b border-gray-600 py-8 text-white">
       <div className="max-w-md mx-auto px-6">
         {stepIndex && totalSteps && (
           <div className="text-center text-sm text-gray-500 mb-1">Step {stepIndex} of {totalSteps}</div>
         )}
-        <h2 className="text-xl font-semibold text-gray-900 mb-2 text-center">Create your child's account</h2>
-        <p className="text-center text-gray-600 mb-6">After this, you'll set your child's permissions.</p>
+        <h2 className="text-xl font-semibold text-white mb-2 text-center">Create your child's account</h2>
+        <p className="text-center text-gray-300 mb-6">After this, you'll set your child's permissions.</p>
         
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">

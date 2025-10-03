@@ -53,7 +53,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-lg">
+      <div className="bg-gray-800 text-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-lg">
         <div className="relative">
           {/* Banner */}
           <div className="h-48 w-full bg-gray-200 relative">
@@ -94,7 +94,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
         <div className="pt-16 px-8 pb-8 space-y-6">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nickname</label>
+            <label className="block text-sm font-medium text-gray-300">Nickname</label>
             <input
               type="text"
               value={formData.name}
@@ -105,7 +105,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
 
           {/* Username */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <label className="block text-sm font-medium text-gray-300">Username</label>
             <input
               type="text"
               value={formData.username}
@@ -116,7 +116,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
 
           {/* About / Bio */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">About Me</label>
+            <label className="block text-sm font-medium text-gray-300">About Me</label>
             <textarea
               value={formData.about}
               onChange={(e) => setFormData({ ...formData, about: e.target.value })}
@@ -127,7 +127,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
 
           {/* Birthday */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Birthday</label>
+            <label className="block text-sm font-medium text-gray-300">Birthday</label>
             <input
               type="date"
               value={formData.birthday}
@@ -144,7 +144,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
                 checked={formData.showBirthday}
                 onChange={(e) => setFormData({ ...formData, showBirthday: e.target.checked })}
               />
-              <span className="text-sm text-gray-700">Show my birthday</span>
+              <span className="text-sm text-gray-300">Show my birthday</span>
             </label>
 
             <label className="flex items-center space-x-2">
@@ -153,7 +153,7 @@ export default function EditProfileModal({ onClose, onSave, initialData }: Props
                 checked={formData.showAge}
                 onChange={(e) => setFormData({ ...formData, showAge: e.target.checked })}
               />
-              <span className="text-sm text-gray-700">Show my age</span>
+              <span className="text-sm text-gray-300">Show my age</span>
             </label>
           </div>
 
