@@ -8,18 +8,18 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
-    resetToken: v.optional(v.string()),
-    resetTokenExpires: v.optional(v.number()),
     verificationExpires: v.optional(v.number()),
     verificationToken: v.optional(v.string()),
+    resetToken: v.optional(v.string()),
+    resetTokenExpires: v.optional(v.number()),
     isVerified: v.boolean(),
     isParent: v.boolean(),
     firstName: v.optional(v.string()), // Temporary: for existing data compatibility
     lastName: v.optional(v.string()), // Temporary: for existing data compatibility
   })
     .index("by_email", ["email"])
-    .index("by_reset_token", ["resetToken"])
-    .index("by_verification_token", ["verificationToken"]),
+    .index("by_verification_token", ["verificationToken"])
+    .index("by_reset_token", ["resetToken"]),
 
   myProfiles: defineTable({
     username: v.string(),

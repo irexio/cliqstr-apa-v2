@@ -1,6 +1,5 @@
 // 🔐 APA-HARDENED SIGN-IN PAGE
-// Secure sign-in page with Magic Link authentication only
-// Traditional password reset removed - only magic links allowed
+// Secure sign-in page with traditional password authentication
 
 'use client'
 

@@ -18,7 +18,6 @@ import type * as cliqNotices from "../cliqNotices.js";
 import type * as cliqs from "../cliqs.js";
 import type * as feedback from "../feedback.js";
 import type * as invites from "../invites.js";
-import type * as magicLinks from "../magicLinks.js";
 import type * as memberships from "../memberships.js";
 import type * as migrate from "../migrate.js";
 import type * as migrations_removeNameFields from "../migrations/removeNameFields.js";
@@ -45,7 +44,6 @@ declare const fullApi: ApiFromModules<{
   cliqs: typeof cliqs;
   feedback: typeof feedback;
   invites: typeof invites;
-  magicLinks: typeof magicLinks;
   memberships: typeof memberships;
   migrate: typeof migrate;
   "migrations/removeNameFields": typeof migrations_removeNameFields;

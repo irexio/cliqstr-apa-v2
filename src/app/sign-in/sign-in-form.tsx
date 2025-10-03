@@ -22,14 +22,11 @@ export default function SignInForm() {
   // Check for security-related message in URL parameters and pre-fill email
   useEffect(() => {
     const message = searchParams.get('message');
-    const resetSuccess = searchParams.get('reset');
     const verified = searchParams.get('verified');
     const emailParam = searchParams.get('email');
     
     if (message) {
       setSecurityMessage(decodeURIComponent(message));
-    } else if (resetSuccess === 'success') {
-      setSecurityMessage('Your password has been reset successfully. Please sign in with your new password.');
     } else if (verified === 'true') {
       setSecurityMessage('Your email has been verified successfully! Please sign in to continue.');
     }
@@ -248,31 +245,14 @@ export default function SignInForm() {
         {loading ? 'Signing in…' : 'Sign In'}
       </button>
       
-      {/* Password Reset and Magic Link Options */}
-      <div className="space-y-2">
+      {/* Reset Password Link */}
+      <div className="mt-4 text-center">
         <button 
           type="button" 
           onClick={() => router.push('/forgot-password')}
-          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-lg font-medium"
+          className="text-sm text-gray-600 hover:text-gray-800 underline"
         >
           Reset Password
-        </button>
-        
-        <button 
-          type="button" 
-          onClick={() => {
-            const confirmed = window.confirm(
-              'Email Link Sign-In:\n\n' +
-              'We\'ll send you a secure link to your email. Click the link to sign in without entering your password.\n\n' +
-              'This is faster and more secure than typing your password.'
-            );
-            if (confirmed) {
-              router.push('/auth/magic');
-            }
-          }}
-          className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 text-lg font-medium"
-        >
-          ⚡ Sign in with Email Link
         </button>
       </div>
     </form>

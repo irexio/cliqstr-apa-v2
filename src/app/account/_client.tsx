@@ -54,7 +54,14 @@ export default function AccountClient({ user }: { user: any }) {
               <div className="font-medium text-gray-900">Change Password</div>
               <div className="text-sm text-gray-600">Update your account password</div>
             </Link>
-            {/* TODO: Route to /reset-password or trigger password reset via Resend */}
+
+            <Link
+              href="/forgot-password"
+              className="block p-3 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <div className="font-medium text-gray-900">Reset Password</div>
+              <div className="text-sm text-gray-600">Send password reset link to your email</div>
+            </Link>
 
             <Link
               href="/account/security"

@@ -156,35 +156,6 @@ export const verifyUserEmail = mutation({
   },
 });
 
-// Reset user password
-export const resetUserPassword = mutation({
-  args: { 
-    resetToken: v.string(),
-    newPassword: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_reset_token", (q) => q.eq("resetToken", args.resetToken))
-      .filter((q) => q.gt(q.field("resetTokenExpires"), Date.now()))
-      .first();
-
-    if (!user) {
-      throw new Error("Invalid or expired reset token");
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(args.newPassword, 12);
-
-    await ctx.db.patch(user._id, {
-      password: hashedPassword,
-      resetToken: undefined,
-      resetTokenExpires: undefined,
-    });
-
-    return user._id;
-  },
-});
 
 // Update user plan
 export const updateUserPlan = mutation({
@@ -286,10 +257,10 @@ export const updateUser = mutation({
     updates: v.object({
       email: v.optional(v.string()),
       password: v.optional(v.string()),
-      resetToken: v.optional(v.string()),
-      resetTokenExpires: v.optional(v.number()),
       verificationToken: v.optional(v.string()),
       verificationExpires: v.optional(v.number()),
+      resetToken: v.optional(v.string()),
+      resetTokenExpires: v.optional(v.number()),
       isVerified: v.optional(v.boolean()),
       deletedAt: v.optional(v.number()),
     }),
