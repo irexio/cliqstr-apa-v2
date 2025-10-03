@@ -358,8 +358,8 @@ export const createUserWithAccount = mutation({
     isVerified: v.optional(v.boolean()),
     verificationToken: v.optional(v.string()),
     verificationExpires: v.optional(v.number()),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
+    firstName: v.string(),
+    lastName: v.string(),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -379,6 +379,8 @@ export const createUserWithAccount = mutation({
     // Create account
     await ctx.db.insert("accounts", {
       userId,
+      firstName: args.firstName,
+      lastName: args.lastName,
       birthdate: args.birthdate,
       role: args.role,
       isApproved: args.isApproved,
@@ -387,36 +389,32 @@ export const createUserWithAccount = mutation({
       stripeCustomerId: undefined,
       suspended: false,
       createdAt: now,
-      firstName: args.firstName,
-      lastName: args.lastName,
     });
 
     // Auto-create profile with signup data to reduce friction
-    if (args.firstName && args.lastName) {
-      // Generate username from email (before @ symbol)
-      const emailUsername = args.email.split('@')[0];
-      
-      // Compute birthday cache from birthdate
-      const birthDate = new Date(args.birthdate);
-      const month = String(birthDate.getMonth() + 1).padStart(2, '0');
-      const day = String(birthDate.getDate()).padStart(2, '0');
-      const birthdayMonthDay = `${month}-${day}`;
-      
-      // Enforce child policy: children can never show year
-      const isMinor = (new Date().getFullYear() - birthDate.getFullYear()) < 18;
-      const showYear = isMinor ? false : false; // Default to false for privacy
-      
-      await ctx.db.insert("myProfiles", {
-        username: emailUsername,
-        createdAt: now,
-        updatedAt: now,
-        userId,
-        showYear: showYear,
-        aiModerationLevel: "strict",
-        showMonthDay: true, // Default: show birthday to cliq members
-        birthdayMonthDay,
-      });
-    }
+    // Generate username from email (before @ symbol)
+    const emailUsername = args.email.split('@')[0];
+    
+    // Compute birthday cache from birthdate
+    const birthDate = new Date(args.birthdate);
+    const month = String(birthDate.getMonth() + 1).padStart(2, '0');
+    const day = String(birthDate.getDate()).padStart(2, '0');
+    const birthdayMonthDay = `${month}-${day}`;
+    
+    // Enforce child policy: children can never show year
+    const isMinor = (new Date().getFullYear() - birthDate.getFullYear()) < 18;
+    const showYear = isMinor ? false : false; // Default to false for privacy
+    
+    await ctx.db.insert("myProfiles", {
+      username: emailUsername,
+      createdAt: now,
+      updatedAt: now,
+      userId,
+      showYear: showYear,
+      aiModerationLevel: "strict",
+      showMonthDay: true, // Default: show birthday to cliq members
+      birthdayMonthDay,
+    });
 
     return userId;
   },
@@ -463,6 +461,8 @@ export const createAdminAccount = mutation({
   args: {
     email: v.string(),
     password: v.string(),
+    firstName: v.string(),
+    lastName: v.string(),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -490,6 +490,8 @@ export const createAdminAccount = mutation({
     // Create admin account
     await ctx.db.insert("accounts", {
       userId,
+      firstName: args.firstName,
+      lastName: args.lastName,
       birthdate: new Date("1990-01-01").getTime(), // Default birthdate for admin
       role: "Admin",
       isApproved: true,

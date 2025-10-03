@@ -5,6 +5,8 @@ import { v } from "convex/values";
 export const createAccount = mutation({
   args: {
     userId: v.id("users"),
+    firstName: v.string(),
+    lastName: v.string(),
     birthdate: v.number(),
     role: v.string(),
     isApproved: v.boolean(),
@@ -18,6 +20,8 @@ export const createAccount = mutation({
     
     const accountId = await ctx.db.insert("accounts", {
       userId: args.userId,
+      firstName: args.firstName,
+      lastName: args.lastName,
       birthdate: args.birthdate,
       role: args.role,
       isApproved: args.isApproved,
@@ -64,6 +68,8 @@ export const updateAccount = mutation({
   args: {
     userId: v.id("users"),
     updates: v.object({
+      firstName: v.optional(v.string()),
+      lastName: v.optional(v.string()),
       isApproved: v.optional(v.boolean()),
       stripeStatus: v.optional(v.string()),
       plan: v.optional(v.string()),

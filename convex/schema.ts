@@ -60,6 +60,8 @@ export default defineSchema({
 
   accounts: defineTable({
     userId: v.id("users"),
+    firstName: v.string(),
+    lastName: v.string(),
     birthdate: v.number(),
     role: v.string(),
     isApproved: v.boolean(),
@@ -68,8 +70,6 @@ export default defineSchema({
     stripeCustomerId: v.optional(v.string()),
     createdAt: v.number(),
     suspended: v.boolean(),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
   })
     .index("by_user_id", ["userId"])
     .index("by_stripe_customer_id", ["stripeCustomerId"]),
