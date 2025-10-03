@@ -188,6 +188,12 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       return;
     }
 
+    // Check if we have the required data from either approval or invite
+    if (!approvalDetails && !inviteDetails) {
+      setError('Unable to load child information. Please refresh the page and try again.');
+      return;
+    }
+
     // Child email is optional - if not provided, we'll generate a local one
 
     setSubmitting(true);
@@ -209,14 +215,14 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
         approvalToken: approvalToken,
         // For child invite approval
         code: inviteCode,
-        // Child details (from either source)
-        firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName,
-        lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName,
+        // Child details (from either source) - with fallbacks
+        firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName || 'Child',
+        lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName || 'User',
         birthdate: approvalDetails?.childBirthdate 
           ? new Date(approvalDetails.childBirthdate).getTime() 
           : inviteDetails?.childBirthdate 
           ? new Date(inviteDetails.childBirthdate).getTime() 
-          : 0,
+          : new Date('2010-01-01').getTime(), // Default to 2010 if no birthdate
         // Account details
         username: username.trim(),
         password,
@@ -228,6 +234,12 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       };
 
       console.log('[PARENTS_HQ][signup-approval] Request data:', requestData);
+      console.log('[PARENTS_HQ][signup-approval] Data sources:', {
+        approvalDetails,
+        inviteDetails,
+        hasApprovalToken: !!approvalToken,
+        hasInviteCode: !!inviteCode
+      });
 
       const response = await fetch('/api/parent/children', {
         method: 'POST',
@@ -361,7 +373,6 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
             {approvalDetails ? (
               <>
                 <p><strong>Request Type:</strong> Direct Signup</p>
-                <p><strong>Context:</strong> {approvalDetails.context === 'direct_signup' ? 'Direct Signup' : approvalDetails.context === 'child_invite' ? 'Child Invite' : approvalDetails.context || 'Not specified'}</p>
               </>
             ) : inviteDetails ? (
               <>

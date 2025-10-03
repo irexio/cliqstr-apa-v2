@@ -116,7 +116,24 @@ export default function PendingApprovalsSection() {
   }
 
   if (pendingApprovals.length === 0) {
-    return null; // Don't show anything if no pending approvals
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">⚠️ Pending Child Approvals</h2>
+          <span className="text-sm text-gray-500">0 pending</span>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-4">
+          No pending child approvals at this time.
+        </p>
+        
+        <div className="text-center py-4">
+          <p className="text-gray-500 text-sm">
+            When you receive child approval requests, they will appear here.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

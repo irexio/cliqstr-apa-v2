@@ -54,7 +54,24 @@ export default function ExistingChildrenManagement() {
   }
 
   if (children.length === 0) {
-    return null; // Don't show anything if no children
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">👨‍👩‍👧‍👦 Manage Existing Children</h2>
+          <span className="text-sm text-gray-500">0 children</span>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-4">
+          No children have been added to your account yet.
+        </p>
+        
+        <div className="text-center py-4">
+          <p className="text-gray-500 text-sm">
+            Once you create child accounts or approve child invitations, they will appear here for management.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const selectedChild = children.find(c => c.id === selectedChildId);
