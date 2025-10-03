@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import PasswordInput from '@/components/ui/PasswordInput';
 
 export default function PasswordClient({ userEmail }: { userEmail: string }) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -42,11 +43,27 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
     }
 
     try {
-      // TODO: Wire to Convex/Next route to change password or trigger reset
-      setMessage('Password updated (placeholder).');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      const response = await fetch('/api/account/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Password updated successfully!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setError(data.error || 'An error occurred. Please try again.');
+      }
     } catch (err) {
       setError('An error occurred. Please try again.');
     } finally {
@@ -72,11 +89,23 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
           </div>
           <div>
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-            <input type="password" id="currentPassword" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black" required />
+            <PasswordInput
+              id="currentPassword"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Enter your current password"
+              required
+            />
           </div>
           <div>
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-            <input type="password" id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black" required />
+            <PasswordInput
+              id="newPassword"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter your new password"
+              required
+            />
             <div className="mt-2 text-sm text-gray-600">
               <p>Password requirements:</p>
               <ul className="list-disc list-inside mt-1 space-y-1">
@@ -88,7 +117,13 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
           </div>
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-            <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black" required />
+            <PasswordInput
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your new password"
+              required
+            />
           </div>
           <div className="flex gap-4">
             <button type="submit" disabled={loading} className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50">{loading ? 'Updating...' : 'Change Password'}</button>

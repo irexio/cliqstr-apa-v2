@@ -2,6 +2,8 @@
 
 This file lists core scenarios for automated and manual testing. Each row defines the setup, action, and expected result.
 
+**Last Updated:** October 3, 2025
+
 ---
 
 ## Sign Up Flows
@@ -34,8 +36,8 @@ This file lists core scenarios for automated and manual testing. Each row define
 
 | Scenario | Setup | Action | Expected Result |
 |----------|-------|--------|-----------------|
-| Password reset via magic link | Any user | Click “Forgot Password” → request link | Magic link email sent, login works |
-| Password reset via traditional reset | Any user | Attempt reset via modal | ❌ Should be disabled (only magic link allowed) |
+| Password reset via email | Any user | Click "Reset Password" → enter email → click reset link | Reset email sent via Resend, password change form with eyeball toggle, redirect to sign-in |
+| Password reset from account page | Logged-in user | Go to Account → "Reset Password" | Same flow as above, accessible from account settings |
 | Quota full during invite | Plan quota reached | Attempt to invite new member | Invite blocked, child sees “Request Upgrade,” parent notified via email + in-app |
 
 ---
