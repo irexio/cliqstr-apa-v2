@@ -87,6 +87,8 @@ export async function GET(req: Request) {
       cliqName: cliq?.name || 'Unknown Cliq',
       inviterName: inviterProfile ? `${inviterProfile.account?.firstName || ''} ${inviterProfile.account?.lastName || ''}`.trim() || inviterProfile.username || 'Someone' : 'Someone',
       friendFirstName: invite.friendFirstName,
+      friendLastName: invite.friendLastName,
+      childBirthdate: invite.childBirthdate,
       recipientEmail,     // used to prefill sign-up
       reason: null,
     });

@@ -145,25 +145,30 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
           });
         } else if (inviteCode) {
           // Handle child invite approval
+          console.log(`[CHILD_SIGNUP_APPROVAL] Fetching invite details for code: ${inviteCode}`);
           const response = await fetch(
             `/api/invites/validate?code=${encodeURIComponent(inviteCode)}`,
             { cache: 'no-store' }
           );
           const data = await response.json();
+          console.log(`[CHILD_SIGNUP_APPROVAL] Invite validation response:`, data);
 
           if (!response.ok || data?.valid === false) {
             const reason = data?.reason || data?.error || 'invalid_invite';
+            console.log(`[CHILD_SIGNUP_APPROVAL] Invite validation failed:`, reason);
             throw new Error(typeof reason === 'string' ? reason : 'Failed to load invite details');
           }
 
-          setInviteDetails({
-            friendFirstName: data.childInfo?.firstName || data.invite?.friendFirstName || 'Child',
-            friendLastName: data.childInfo?.lastName || data.invite?.friendLastName || '',
-            childBirthdate: data.childInfo?.birthdate || data.invite?.childBirthdate || '',
-            parentEmail: data.invite?.parentEmail || '',
-            cliqName: data.cliqName || data.invite?.cliq?.name || 'Unknown Cliq',
-            inviterName: data.inviterName || data.invite?.inviterName || 'Unknown',
-          });
+          const inviteDetails = {
+            friendFirstName: data.friendFirstName || 'Child',
+            friendLastName: data.friendLastName || '',
+            childBirthdate: data.childBirthdate || '',
+            parentEmail: data.recipientEmail || '',
+            cliqName: data.cliqName || 'Unknown Cliq',
+            inviterName: data.inviterName || 'Unknown',
+          };
+          console.log(`[CHILD_SIGNUP_APPROVAL] Setting invite details:`, inviteDetails);
+          setInviteDetails(inviteDetails);
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load details');
