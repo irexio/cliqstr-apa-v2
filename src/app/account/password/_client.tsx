@@ -34,7 +34,7 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('Password updated successfully!');
+        setMessage('Password updated successfully! Please remember to use your new password when signing in.');
         setCurrentPassword('');
         setNewPassword('');
       } else {
