@@ -114,6 +114,15 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     console.log('[PARENT-CHILDREN] Request body:', JSON.stringify(body, null, 2));
+    console.log('[PARENT-CHILDREN] Required fields check:', {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      birthdate: body.birthdate,
+      username: body.username,
+      password: body.password ? '***' : 'MISSING',
+      approvalToken: body.approvalToken,
+      inviteCode: body.code
+    });
     
     const parsed = createChildSchema.safeParse(body);
 

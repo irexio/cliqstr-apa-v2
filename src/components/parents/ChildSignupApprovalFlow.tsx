@@ -195,35 +195,46 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
 
     try {
       // Log start
-      console.log('[PARENTS_HQ][signup-approval] start', { token: approvalToken, username, perms: permissions });
+      console.log('[PARENTS_HQ][signup-approval] start', { 
+        token: approvalToken, 
+        username, 
+        perms: permissions,
+        approvalDetails,
+        inviteDetails
+      });
+
+      // Debug the data being sent
+      const requestData = {
+        // For direct signup approval
+        approvalToken: approvalToken,
+        // For child invite approval
+        code: inviteCode,
+        // Child details (from either source)
+        firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName,
+        lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName,
+        birthdate: approvalDetails?.childBirthdate 
+          ? new Date(approvalDetails.childBirthdate).getTime() 
+          : inviteDetails?.childBirthdate 
+          ? new Date(inviteDetails.childBirthdate).getTime() 
+          : 0,
+        // Account details
+        username: username.trim(),
+        password,
+        childEmail: childEmail.trim(),
+        redAlertAccepted,
+        silentMonitoring,
+        permissions,
+        secondParentEmail: secondParentEmail.trim() || undefined,
+      };
+
+      console.log('[PARENTS_HQ][signup-approval] Request data:', requestData);
 
       const response = await fetch('/api/parent/children', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          // For direct signup approval
-          approvalToken: approvalToken,
-          // For child invite approval
-          code: inviteCode,
-          // Child details (from either source)
-          firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName,
-          lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName,
-          birthdate: approvalDetails?.childBirthdate 
-            ? new Date(approvalDetails.childBirthdate).getTime() 
-            : inviteDetails?.childBirthdate 
-            ? new Date(inviteDetails.childBirthdate).getTime() 
-            : 0,
-          // Account details
-          username: username.trim(),
-          password,
-          childEmail: childEmail.trim(),
-          redAlertAccepted,
-          silentMonitoring,
-          permissions,
-          secondParentEmail: secondParentEmail.trim() || undefined,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
