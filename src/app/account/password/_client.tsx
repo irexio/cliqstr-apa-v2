@@ -25,8 +25,17 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
     setError('');
     setMessage('');
 
+    // Debug logging to help identify the issue
+    console.log('🔐 [CHANGE-PASSWORD] Form submission:', {
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+      newPasswordLength: newPassword.length,
+      confirmPasswordLength: confirmPassword.length,
+      passwordsMatch: newPassword === confirmPassword
+    });
+
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match');
+      setError(`New passwords do not match. New: "${newPassword}" | Confirm: "${confirmPassword}"`);
       setLoading(false);
       return;
     }
@@ -124,6 +133,15 @@ export default function PasswordClient({ userEmail }: { userEmail: string }) {
               placeholder="Confirm your new password"
               required
             />
+            {newPassword && confirmPassword && (
+              <div className="mt-1 text-sm">
+                {newPassword === confirmPassword ? (
+                  <span className="text-green-600">✓ Passwords match</span>
+                ) : (
+                  <span className="text-red-600">✗ Passwords do not match</span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex gap-4">
             <button type="submit" disabled={loading} className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50">{loading ? 'Updating...' : 'Change Password'}</button>
