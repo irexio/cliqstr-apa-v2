@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import bcrypt from 'bcryptjs';
 
 // Get current user with profile and account info
 export const getCurrentUser = query({
@@ -172,8 +173,7 @@ export const resetUserPassword = mutation({
       throw new Error("Invalid or expired reset token");
     }
 
-    // Hash the new password (this should be done on the client side or in a secure environment)
-    const bcrypt = require('bcryptjs');
+    // Hash the new password
     const hashedPassword = await bcrypt.hash(args.newPassword, 12);
 
     await ctx.db.patch(user._id, {
