@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
+import { sendResetPasswordEmail } from '@/lib/auth/sendResetPasswordEmail';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -48,14 +49,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send reset email
-    const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://cliqstr.com'}/reset-password?code=${resetToken}`;
+    // Send reset email via Resend
+    const emailResult = await sendResetPasswordEmail(email, resetToken);
     
-    // TODO: Implement email sending here
-    // For now, just log the reset link
-    console.log('🔐 [FORGOT-PASSWORD] Reset link generated:', resetLink);
+    if (!emailResult.success) {
+      console.error('❌ [FORGOT-PASSWORD] Failed to send reset email:', emailResult.error);
+      return NextResponse.json({ error: 'Failed to send reset email. Please try again.' }, { status: 500 });
+    }
     
-    console.log('🔐 [FORGOT-PASSWORD] Password reset email sent successfully');
+    console.log('🔐 [FORGOT-PASSWORD] Password reset email sent successfully to:', email);
     return NextResponse.json({ success: true });
     
   } catch (err) {
