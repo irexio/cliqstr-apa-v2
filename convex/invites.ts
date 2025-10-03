@@ -133,3 +133,39 @@ export const createInviteRequest = mutation({
     return requestId;
   },
 });
+
+// Decline an invite with optional feedback
+export const declineInvite = mutation({
+  args: {
+    code: v.string(),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const invite = await ctx.db
+      .query("invites")
+      .withIndex("by_code", (q) => q.eq("code", args.code))
+      .first();
+
+    if (!invite) {
+      throw new Error("Invite not found");
+    }
+
+    if (invite.status !== "pending") {
+      throw new Error("Invite is no longer pending");
+    }
+
+    // Update invite status to canceled
+    await ctx.db.patch(invite._id, {
+      status: "canceled",
+      updatedAt: Date.now(),
+    });
+
+    console.log(`[INVITE_DECLINE] Declined invite ${args.code} with reason: ${args.reason || 'No reason provided'}`);
+
+    return {
+      success: true,
+      inviteId: invite._id,
+      reason: args.reason,
+    };
+  },
+});
