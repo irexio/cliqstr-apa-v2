@@ -267,21 +267,28 @@ export async function POST(request: NextRequest) {
       approvalToken = crypto.randomUUID();
       const expiresAt = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 days
       
-      await convexHttp.mutation(api.parentApprovals.createParentApproval, {
-        childFirstName: friendFirstName || '',
-        childLastName: friendLastName || '',
-        childBirthdate: childBirthdate || '',
-        parentEmail: targetEmail,
-        context: 'child_invite',
-        inviteId: undefined, // Will be set after invite creation
-        cliqId: cliqId ? cliqId as any : undefined,
-        inviterName: undefined, // Will be set when sending email
-        cliqName: undefined, // Will be set when sending email
-        parentState: targetState === 'existing_user_non_parent' ? 'existing_adult' : targetState,
-        existingParentId: targetState === 'existing_parent' ? targetUserId as any : undefined,
-        approvalToken: approvalToken,
-        expiresAt: expiresAt,
-      });
+      console.log(`[INVITE_CREATE] Creating parent approval for child invite...`);
+      try {
+        await convexHttp.mutation(api.parentApprovals.createParentApproval, {
+          childFirstName: friendFirstName || '',
+          childLastName: friendLastName || '',
+          childBirthdate: childBirthdate || '',
+          parentEmail: targetEmail,
+          context: 'child_invite',
+          inviteId: undefined, // Will be set after invite creation
+          cliqId: cliqId ? cliqId as any : undefined,
+          inviterName: undefined, // Will be set when sending email
+          cliqName: undefined, // Will be set when sending email
+          parentState: targetState === 'existing_user_non_parent' ? 'existing_adult' : targetState,
+          existingParentId: targetState === 'existing_parent' ? targetUserId as any : undefined,
+          approvalToken: approvalToken,
+          expiresAt: expiresAt,
+        });
+        console.log(`[INVITE_CREATE] ✅ Parent approval created successfully`);
+      } catch (error) {
+        console.error(`[INVITE_CREATE] ❌ Failed to create parent approval:`, error);
+        throw error; // Re-throw to stop the process
+      }
       
       // Also create a regular invite record for tracking
       const childInviteParams = {

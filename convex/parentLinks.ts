@@ -89,10 +89,18 @@ export const createParentLink = mutation({
   handler: async (ctx, args) => {
     const now = Date.now();
     
-    // For now, we'll create the link without a parentId since the parent might not have an account yet
-    // The parentId will be set when the parent accepts the invitation
+    // We need to find the parent by email first
+    const parent = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    
+    if (!parent) {
+      throw new Error(`Parent with email ${args.email} not found`);
+    }
+    
     const linkId = await ctx.db.insert("parentLinks", {
-      parentId: "" as any, // Temporary - will be updated when parent accepts
+      parentId: parent._id,
       email: args.email,
       childId: args.childId,
       type: args.type,
