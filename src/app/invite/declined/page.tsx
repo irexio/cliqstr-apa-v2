@@ -62,10 +62,15 @@ export default function InviteDeclinedPage() {
       if (response.ok) {
         setSubmitted(true);
       } else {
-        console.error('Failed to submit decline feedback');
+        const errorData = await response.json();
+        console.error('Failed to submit decline feedback:', errorData);
+        // Still show success page even if backend fails
+        setSubmitted(true);
       }
     } catch (error) {
       console.error('Error submitting decline feedback:', error);
+      // Still show success page even if backend fails
+      setSubmitted(true);
     } finally {
       setLoading(false);
     }

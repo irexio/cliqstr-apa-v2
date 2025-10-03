@@ -19,33 +19,13 @@ export async function GET(req: NextRequest) {
 
     console.log(`[INVITE-DECLINE] Processing decline for code: ${code}`);
 
-    // Get invite details first
-    const invite = await convexHttp.query(api.invites.getInviteByCode, { code });
-    
-    if (!invite) {
-      return NextResponse.json({ error: 'Invite not found' }, { status: 404 });
-    }
-
-    // Mark invite as declined
-    const result = await convexHttp.mutation(api.invites.declineInvite, {
-      code,
-    });
-
-    if (!result) {
-      return NextResponse.json({ 
-        error: 'Failed to decline invite' 
-      }, { status: 500 });
-    }
-
-    console.log(`[INVITE-DECLINE] Successfully declined invite: ${code}`);
-
-    // Redirect to decline confirmation page
+    // Just redirect to the decline page - let the page handle the decline logic
     return NextResponse.redirect(new URL(`/invite/declined?code=${encodeURIComponent(code)}`, req.url));
 
   } catch (error: any) {
     console.error('[INVITE-DECLINE] Error:', error);
     return NextResponse.json({ 
-      error: 'Failed to decline invite',
+      error: 'Failed to process decline request',
       details: error.message 
     }, { status: 500 });
   }
