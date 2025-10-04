@@ -24,6 +24,7 @@ import type * as migrations_removeNameFields from "../migrations/removeNameField
 import type * as parentApprovals from "../parentApprovals.js";
 import type * as parentConsents from "../parentConsents.js";
 import type * as parentLinks from "../parentLinks.js";
+import type * as plans from "../plans.js";
 import type * as posts from "../posts.js";
 import type * as profiles from "../profiles.js";
 import type * as redAlerts from "../redAlerts.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   parentApprovals: typeof parentApprovals;
   parentConsents: typeof parentConsents;
   parentLinks: typeof parentLinks;
+  plans: typeof plans;
   posts: typeof posts;
   profiles: typeof profiles;
   redAlerts: typeof redAlerts;

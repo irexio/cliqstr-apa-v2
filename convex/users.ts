@@ -204,6 +204,11 @@ export const upgradeToParent = mutation({
       throw new Error("Child accounts cannot become parents");
     }
 
+    // Update both users and accounts tables
+    await ctx.db.patch(args.userId, {
+      isParent: true,
+    });
+
     await ctx.db.patch(account._id, {
       role: "Parent",
       isApproved: true, // Parents are auto-approved

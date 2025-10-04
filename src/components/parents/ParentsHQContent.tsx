@@ -7,6 +7,7 @@ import ChildSignupApprovalFlow from './ChildSignupApprovalFlow';
 import PendingApprovalsSection from './PendingApprovalsSection';
 import ExistingChildrenManagement from './ExistingChildrenManagement';
 import CreateNewChildSection from './CreateNewChildSection';
+import AdultUpgradeSection from './AdultUpgradeSection';
 
 type InviteStatus = 'valid' | 'used' | 'invalid' | 'loading';
 
@@ -22,6 +23,9 @@ export default function ParentsHQContent() {
     approvalToken,
     allParams: Object.fromEntries(searchParams.entries())
   });
+  console.log('[PARENTS_HQ_CONTENT] Raw searchParams:', searchParams.toString());
+  console.log('[PARENTS_HQ_CONTENT] inviteCode type:', typeof inviteCode, 'value:', inviteCode);
+  console.log('[PARENTS_HQ_CONTENT] approvalToken type:', typeof approvalToken, 'value:', approvalToken);
 
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [authLoading, setAuthLoading] = useState(true);
@@ -58,6 +62,12 @@ export default function ParentsHQContent() {
         if (data.user.role === 'Child') {
           router.replace('/awaiting-approval');
           return;
+        }
+
+        // If user is an Adult and has no invite/approval token, they need to be upgraded to Parent
+        if (data.user.role === 'Adult' && !inviteCode && !approvalToken) {
+          console.log('[PARENTS_HQ_CONTENT] Adult user needs upgrade to Parent role');
+          // We'll handle this in the main dashboard - show upgrade option
         }
       } catch (err) {
         console.error('[PARENTS_HQ] auth check failed:', err);
@@ -271,6 +281,11 @@ export default function ParentsHQContent() {
         <h1 className="text-3xl font-bold text-gray-900">⚡ Parents HQ</h1>
         <p className="text-gray-600 mt-2">Comprehensive child management and safety controls</p>
         <p className="text-sm text-blue-600">Every child on Cliqstr requires parent approval through this interface</p>
+      </div>
+      
+      {/* Show upgrade option for Adult users */}
+      <div className="mb-6">
+        <AdultUpgradeSection />
       </div>
       
       {/* Show pending approvals first */}

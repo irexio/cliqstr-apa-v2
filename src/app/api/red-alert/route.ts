@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all members of the cliq
-    const memberships = await convexHttp.query(api.memberships.getMembershipsByCliqId, {
+    const memberships = await convexHttp.query(api.cliqs.getMembershipsByCliqId, {
       cliqId: cliqId as any,
     });
 

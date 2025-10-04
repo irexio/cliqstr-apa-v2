@@ -1,211 +1,212 @@
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
-// Join a cliq
-export const joinCliq = mutation({
+/**
+ * Membership Record Table
+ * Tracks individual members linked to plans
+ */
+export const createMembership = mutation({
   args: {
-    userId: v.id("users"),
-    cliqId: v.id("cliqs"),
-    role: v.optional(v.string()),
+    memberId: v.id("users"), // User ID of the member
+    planId: v.id("plans"), // Plan they belong to
+    role: v.union(
+      v.literal("parent"),
+      v.literal("child"), 
+      v.literal("member"),
+      v.literal("admin")
+    ),
+    status: v.union(
+      v.literal("active"),
+      v.literal("pending"),
+      v.literal("removed")
+    ),
   },
   handler: async (ctx, args) => {
-    // Check if user is already a member
+    const now = Date.now();
+    
+    const membershipId = await ctx.db.insert("planMemberships", {
+      memberId: args.memberId,
+      planId: args.planId,
+      role: args.role,
+      status: args.status,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    console.log(`[MEMBERSHIPS] Created membership for user ${args.memberId} in plan ${args.planId} with role ${args.role}`);
+    
+    return membershipId;
+  },
+});
+
+export const getMembershipsByPlan = query({
+  args: { planId: v.id("plans") },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("planMemberships")
+      .withIndex("by_plan", (q) => q.eq("planId", args.planId))
+      .collect();
+
+    return memberships;
+  },
+});
+
+export const getMembershipsByMember = query({
+  args: { memberId: v.id("users") },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("planMemberships")
+      .withIndex("by_member", (q) => q.eq("memberId", args.memberId))
+      .collect();
+
+    return memberships;
+  },
+});
+
+export const updateMembershipStatus = mutation({
+  args: {
+    membershipId: v.id("planMemberships"),
+    status: v.union(
+      v.literal("active"),
+      v.literal("pending"),
+      v.literal("removed")
+    ),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.membershipId, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
+
+    console.log(`[MEMBERSHIPS] Updated membership ${args.membershipId} to status ${args.status}`);
+  },
+});
+
+export const removeMembership = mutation({
+  args: { membershipId: v.id("planMemberships") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.membershipId, {
+      status: "removed",
+      updatedAt: Date.now(),
+    });
+
+    console.log(`[MEMBERSHIPS] Removed membership ${args.membershipId}`);
+  },
+});
+
+/**
+ * Get active member count for a plan
+ * This is used to keep currentMembers in sync
+ */
+export const getActiveMemberCount = query({
+  args: { planId: v.id("plans") },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("planMemberships")
+      .withIndex("by_plan", (q) => q.eq("planId", args.planId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    return memberships.length;
+  },
+});
+
+/**
+ * Add member to plan and update member count
+ * This is the main function to use when adding members
+ */
+export const addMemberToPlan = mutation({
+  args: {
+    memberId: v.id("users"),
+    planId: v.id("plans"),
+    role: v.union(
+      v.literal("parent"),
+      v.literal("child"),
+      v.literal("member"),
+      v.literal("admin")
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Check if membership already exists
     const existingMembership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_cliq", (q) => 
-        q.eq("userId", args.userId).eq("cliqId", args.cliqId)
-      )
+      .query("planMemberships")
+      .withIndex("by_member", (q) => q.eq("memberId", args.memberId))
+      .filter((q) => q.eq(q.field("planId"), args.planId))
       .first();
 
     if (existingMembership) {
-      throw new Error("User is already a member of this cliq");
+      // Update existing membership
+      await ctx.db.patch(existingMembership._id, {
+        status: "active",
+        role: args.role,
+        updatedAt: Date.now(),
+      });
+      console.log(`[MEMBERSHIPS] Updated existing membership for user ${args.memberId}`);
+    } else {
+      // Create new membership
+      await ctx.db.insert("planMemberships", {
+        memberId: args.memberId,
+        planId: args.planId,
+        role: args.role,
+        status: "active",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      console.log(`[MEMBERSHIPS] Created new membership for user ${args.memberId}`);
     }
 
-    const membershipId = await ctx.db.insert("memberships", {
-      userId: args.userId,
-      cliqId: args.cliqId,
-      role: args.role ?? "Member",
-      joinedAt: Date.now(),
-    });
-
-    return membershipId;
-  },
-});
-
-// Leave a cliq
-export const leaveCliq = mutation({
-  args: {
-    userId: v.id("users"),
-    cliqId: v.id("cliqs"),
-  },
-  handler: async (ctx, args) => {
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_cliq", (q) => 
-        q.eq("userId", args.userId).eq("cliqId", args.cliqId)
-      )
-      .first();
-
-    if (!membership) {
-      throw new Error("User is not a member of this cliq");
-    }
-
-    // Check if user is the owner
-    const cliq = await ctx.db.get(args.cliqId);
-    if (cliq?.ownerId === args.userId) {
-      throw new Error("Owner cannot leave their own cliq");
-    }
-
-    await ctx.db.delete(membership._id);
-  },
-});
-
-// Update member role
-export const updateMemberRole = mutation({
-  args: {
-    userId: v.id("users"),
-    cliqId: v.id("cliqs"),
-    newRole: v.string(),
-    updatedBy: v.id("users"),
-  },
-  handler: async (ctx, args) => {
-    // Check if updater is the cliq owner
-    const cliq = await ctx.db.get(args.cliqId);
-    if (cliq?.ownerId !== args.updatedBy) {
-      throw new Error("Only cliq owner can update member roles");
-    }
-
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_cliq", (q) => 
-        q.eq("userId", args.userId).eq("cliqId", args.cliqId)
-      )
-      .first();
-
-    if (!membership) {
-      throw new Error("User is not a member of this cliq");
-    }
-
-    await ctx.db.patch(membership._id, {
-      role: args.newRole,
-    });
-  },
-});
-
-// Remove member from cliq
-export const removeMember = mutation({
-  args: {
-    userId: v.id("users"),
-    cliqId: v.id("cliqs"),
-    removedBy: v.id("users"),
-  },
-  handler: async (ctx, args) => {
-    // Check if remover is the cliq owner
-    const cliq = await ctx.db.get(args.cliqId);
-    if (cliq?.ownerId !== args.removedBy) {
-      throw new Error("Only cliq owner can remove members");
-    }
-
-    // Owner cannot remove themselves
-    if (args.userId === args.removedBy) {
-      throw new Error("Owner cannot remove themselves");
-    }
-
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_cliq", (q) => 
-        q.eq("userId", args.userId).eq("cliqId", args.cliqId)
-      )
-      .first();
-
-    if (!membership) {
-      throw new Error("User is not a member of this cliq");
-    }
-
-    await ctx.db.delete(membership._id);
-  },
-});
-
-// Get user's memberships
-export const getUserMemberships = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
-    const memberships = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+    // Update plan member count
+    const activeCount = await ctx.db
+      .query("planMemberships")
+      .withIndex("by_plan", (q) => q.eq("planId", args.planId))
+      .filter((q) => q.eq(q.field("status"), "active"))
       .collect();
 
-    const cliqs = await Promise.all(
-      memberships.map(async (membership) => {
-        const cliq = await ctx.db.get(membership.cliqId);
-        return cliq ? { ...cliq, membership } : null;
-      })
-    );
-
-    return cliqs.filter((cliq) => cliq && !cliq.deleted);
-  },
-});
-
-// Check membership status
-export const getMembershipStatus = query({
-  args: {
-    userId: v.id("users"),
-    cliqId: v.id("cliqs"),
-  },
-  handler: async (ctx, args) => {
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_cliq", (q) => 
-        q.eq("userId", args.userId).eq("cliqId", args.cliqId)
-      )
-      .first();
-
-    return membership ? {
-      isMember: true,
-      role: membership.role,
-      joinedAt: membership.joinedAt,
-    } : {
-      isMember: false,
-      role: null,
-      joinedAt: null,
-    };
-  },
-});
-
-// Get all memberships (for validation)
-export const getAllMemberships = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("memberships").collect();
-  },
-});
-
-// Get all memberships for a specific cliq
-export const getMembershipsByCliqId = query({
-  args: { cliqId: v.id("cliqs") },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("memberships")
-      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
-      .collect();
-  },
-});
-
-// Create membership
-export const createMembership = mutation({
-  args: {
-    userId: v.id("users"),
-    cliqId: v.id("cliqs"),
-    role: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const membershipId = await ctx.db.insert("memberships", {
-      userId: args.userId,
-      cliqId: args.cliqId,
-      role: args.role ?? "Member",
-      joinedAt: Date.now(),
+    await ctx.db.patch(args.planId, {
+      currentMembers: activeCount.length,
+      updatedAt: Date.now(),
     });
 
-    return membershipId;
+    console.log(`[MEMBERSHIPS] Updated plan ${args.planId} to ${activeCount.length} active members`);
+  },
+});
+
+/**
+ * Remove member from plan and update member count
+ */
+export const removeMemberFromPlan = mutation({
+  args: {
+    memberId: v.id("users"),
+    planId: v.id("plans"),
+  },
+  handler: async (ctx, args) => {
+    // Find and remove membership
+    const membership = await ctx.db
+      .query("planMemberships")
+      .withIndex("by_member", (q) => q.eq("memberId", args.memberId))
+      .filter((q) => q.eq(q.field("planId"), args.planId))
+      .first();
+
+    if (membership) {
+      await ctx.db.patch(membership._id, {
+        status: "removed",
+        updatedAt: Date.now(),
+      });
+      console.log(`[MEMBERSHIPS] Removed membership for user ${args.memberId}`);
+    }
+
+    // Update plan member count
+    const activeCount = await ctx.db
+      .query("planMemberships")
+      .withIndex("by_plan", (q) => q.eq("planId", args.planId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    await ctx.db.patch(args.planId, {
+      currentMembers: activeCount.length,
+      updatedAt: Date.now(),
+    });
+
+    console.log(`[MEMBERSHIPS] Updated plan ${args.planId} to ${activeCount.length} active members`);
   },
 });

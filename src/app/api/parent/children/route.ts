@@ -108,7 +108,18 @@ export async function POST(req: NextRequest) {
       userId: session.userId as any,
     });
 
-    if (!user || (user.role !== 'Parent' && user.role !== 'Admin')) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // If user is an Adult, upgrade them to Parent role
+    if (user.role === 'Adult') {
+      console.log(`[PARENT-CHILDREN] Upgrading Adult user ${user.email} to Parent role`);
+      await convexHttp.mutation(api.users.upgradeToParent, {
+        userId: session.userId as any,
+      });
+      console.log(`[PARENT-CHILDREN] Successfully upgraded user to Parent role`);
+    } else if (user.role !== 'Parent' && user.role !== 'Admin') {
       return NextResponse.json({ error: 'Access denied. Parent role required.' }, { status: 403 });
     }
 
@@ -121,7 +132,7 @@ export async function POST(req: NextRequest) {
       username: body.username,
       password: body.password ? '***' : 'MISSING',
       approvalToken: body.approvalToken,
-      inviteCode: body.code
+      inviteCode: body.inviteCode
     });
     
     const parsed = createChildSchema.safeParse(body);

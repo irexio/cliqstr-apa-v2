@@ -218,6 +218,53 @@ export const getCliqMembers = query({
   },
 });
 
+// Join a cliq
+export const joinCliq = mutation({
+  args: {
+    userId: v.id("users"),
+    cliqId: v.id("cliqs"),
+    role: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    
+    // Check if user is already a member
+    const existingMembership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_cliq", (q) => 
+        q.eq("userId", args.userId).eq("cliqId", args.cliqId)
+      )
+      .first();
+
+    if (existingMembership) {
+      throw new Error("User is already a member of this cliq");
+    }
+
+    // Create membership
+    const membershipId = await ctx.db.insert("memberships", {
+      userId: args.userId,
+      cliqId: args.cliqId,
+      role: args.role,
+      joinedAt: now,
+    });
+
+    return membershipId;
+  },
+});
+
+// Get memberships by cliq ID
+export const getMembershipsByCliqId = query({
+  args: { cliqId: v.id("cliqs") },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
+      .collect();
+
+    return memberships;
+  },
+});
+
 // Get all cliqs (for validation)
 export const getAllCliqs = query({
   args: {},

@@ -199,6 +199,15 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
       return;
     }
 
+    // Debug: Check which flow we're in
+    console.log('[PARENTS_HQ][signup-approval] Flow detection:', {
+      hasApprovalDetails: !!approvalDetails,
+      hasInviteDetails: !!inviteDetails,
+      approvalToken: approvalToken,
+      inviteCode: inviteCode,
+      flowType: approvalDetails ? 'direct_signup' : inviteDetails ? 'child_invite' : 'unknown'
+    });
+
     // Child email is optional - if not provided, we'll generate a local one
 
     setSubmitting(true);
@@ -216,10 +225,9 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
 
       // Debug the data being sent
       const requestData = {
-        // For direct signup approval
-        approvalToken: approvalToken,
-        // For child invite approval
-        code: inviteCode,
+        // Only send the token/code that exists
+        ...(approvalToken && { approvalToken }),
+        ...(inviteCode && { inviteCode }),
         // Child details (from either source) - with fallbacks
         firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName || 'Child',
         lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName || 'User',
@@ -243,7 +251,9 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
         approvalDetails,
         inviteDetails,
         hasApprovalToken: !!approvalToken,
-        hasInviteCode: !!inviteCode
+        hasInviteCode: !!inviteCode,
+        approvalTokenValue: approvalToken,
+        inviteCodeValue: inviteCode
       });
 
       const response = await fetch('/api/parent/children', {

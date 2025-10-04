@@ -113,7 +113,7 @@ export async function POST(
     }
 
     // Create membership using Convex
-    const membershipId = await convexHttp.mutation(api.memberships.joinCliq, {
+    const membershipId = await convexHttp.mutation(api.cliqs.joinCliq, {
       userId: user.id as any,
       cliqId: cliqId as any,
       role: 'Member',

@@ -256,6 +256,46 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_created_at", ["createdAt"]),
 
+  // Plan metadata table for tracking member limits
+  plans: defineTable({
+    planId: v.string(), // "individual", "premium", "family", "large-group", "invited"
+    ownerId: v.id("users"), // User ID of the paying account holder
+    maxMembers: v.number(), // Maximum members allowed
+    currentMembers: v.number(), // Current active members
+    billingCycle: v.union(v.literal("monthly"), v.literal("annual")),
+    isGroupPlan: v.boolean(), // true for family/large-group, false for individual/premium
+    stripeSubscriptionId: v.optional(v.string()), // Stripe subscription ID when integrated
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_plan_id", ["planId"])
+    .index("by_stripe_subscription", ["stripeSubscriptionId"]),
+
+  // Membership records linking users to plans
+  planMemberships: defineTable({
+    memberId: v.id("users"), // User ID of the member
+    planId: v.id("plans"), // Plan they belong to
+    role: v.union(
+      v.literal("parent"),
+      v.literal("child"), 
+      v.literal("member"),
+      v.literal("admin")
+    ),
+    status: v.union(
+      v.literal("active"),
+      v.literal("pending"),
+      v.literal("removed")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_member", ["memberId"])
+    .index("by_plan", ["planId"])
+    .index("by_member_plan", ["memberId", "planId"])
+    .index("by_status", ["status"]),
+
+  // Cliq memberships (existing table for cliq membership)
   memberships: defineTable({
     userId: v.id("users"),
     cliqId: v.id("cliqs"),

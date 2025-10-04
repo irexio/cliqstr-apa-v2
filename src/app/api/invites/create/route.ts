@@ -352,14 +352,14 @@ export async function POST(request: NextRequest) {
         const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
         const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
         
-        // Use parent approval URL instead of old invite flow
-        const approvalLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken!)}`;
+        // Use invite flow URL for child invites
+        const inviteLink = `${BASE_URL}/invite/accept?code=${encodeURIComponent(joinCode)}`;
         
         await sendChildInviteEmail({
           to: targetEmail,
           cliqName: cliqName,
           inviterName: inviterName,
-          inviteLink: approvalLink, // Now points to parent approval flow
+          inviteLink: inviteLink, // Points to invite flow
           friendFirstName: friendFirstName || '',
           friendLastName: friendLastName || '',
           inviteNote: inviteNote,
