@@ -27,6 +27,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchJson } from '@/lib/fetchJson';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ChildPermissionManager from './ChildPermissionManager';
 import MultipleParentsManager from './MultipleParentsManager';
 import ChildActivityLogs from './ChildActivityLogs';
@@ -100,6 +101,30 @@ export default function ParentDashboard({ hideCreateForm = false }: ParentDashbo
       {/* Pending Approvals Section - Show incomplete approvals that need attention */}
       <PendingApprovalsSection />
       
+      {/* Child Selector Dropdown - Show when parent has children */}
+      {children.length > 0 && (
+        <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+          <label htmlFor="childSelector" className="block text-sm font-semibold mb-2">
+            Select Child to Manage
+          </label>
+          <Select 
+            value={selectedChildId ?? ''} 
+            onValueChange={(value) => setSelectedChildId(value)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a child" />
+            </SelectTrigger>
+            <SelectContent>
+              {children.map((child) => (
+                <SelectItem key={child.id} value={child.id}>
+                  {child.name || child.email || `Child ${child.id}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
       {/* Create Child Account Section - Only show if not in approval flow */}
       {!hideCreateForm && (
         <div className="border border-black rounded p-4 bg-black text-white">
@@ -160,24 +185,7 @@ export default function ParentDashboard({ hideCreateForm = false }: ParentDashbo
         </div>
       )}
 
-      {/* Existing Children Section */}
-      {children.length > 0 && (
-        <div>
-          <h3 className="font-semibold mb-2">Manage Existing Children</h3>
-          <select
-            value={selectedChildId ?? ''}
-            onChange={(e) => setSelectedChildId(e.target.value)}
-            className="mb-4 border p-2 rounded"
-          >
-            <option value="">Select a child...</option>
-            {children.map((child) => (
-              <option key={child.id} value={child.id}>
-                {child.name || child.email}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      {/* Child Management Section - Shows when a child is selected */}
 
       {selectedChildId && (
         <>
