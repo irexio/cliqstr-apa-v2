@@ -29,6 +29,7 @@ interface User {
     stripeStatus: string | null;
     plan: string | null;
     stripeCustomerId: string | null;
+    setupStage: string | undefined;
     suspended: boolean;
     birthdate: number;
     firstName: string | undefined;

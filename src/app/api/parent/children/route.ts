@@ -320,6 +320,16 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
     }
 
+    // Set setup stage to 'completed' - parent has successfully created child account
+    await convexHttp.mutation(api.accounts.updateAccount, {
+      userId: session.userId as any,
+      updates: {
+        setupStage: 'completed',
+      },
+    });
+
+    console.log(`[PARENT-CHILDREN] Set setup stage to 'completed'`);
+
     console.log(`[PARENT-CHILDREN] Successfully created child account: ${username}`);
 
     return NextResponse.json({

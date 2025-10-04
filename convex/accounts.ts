@@ -74,6 +74,7 @@ export const updateAccount = mutation({
       stripeStatus: v.optional(v.string()),
       plan: v.optional(v.string()),
       stripeCustomerId: v.optional(v.string()),
+      setupStage: v.optional(v.string()),
       suspended: v.optional(v.boolean()),
     }),
   },

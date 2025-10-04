@@ -17,16 +17,11 @@ export default function SmartParentApprovalRouter() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<any>(null);
+  const [resuming, setResuming] = useState(false);
 
   const token = searchParams.get('token');
 
   useEffect(() => {
-    if (!token) {
-      setError('No approval token provided');
-      setLoading(false);
-      return;
-    }
-
     checkParentProgress();
   }, [token]);
 
@@ -35,18 +30,54 @@ export default function SmartParentApprovalRouter() {
       setLoading(true);
       setError(null);
 
-      // Step 1: Check approval status
-      const approvalResponse = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(token!)}`);
-      const approvalData = await approvalResponse.json();
+      let approval = null;
+      
+      // Step 1: Check approval status (only if token provided)
+      if (token) {
+        const approvalResponse = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(token)}`);
+        const approvalData = await approvalResponse.json();
 
-      if (!approvalResponse.ok || !approvalData.approval) {
-        setError('Invalid or expired approval token');
+        if (!approvalResponse.ok || !approvalData.approval) {
+          setError('Invalid or expired approval token');
+          setLoading(false);
+          return;
+        }
+
+        approval = approvalData.approval;
+        console.log('[SMART-ROUTER] Approval status:', approval.status);
+      } else {
+        // Fallback for sign-in resume
+        const parentResponse = await fetch('/api/auth/status');
+        if (parentResponse.ok) {
+          const { user } = await parentResponse.json();
+          if (user?.account?.role === 'Parent') {
+            // Show resuming message for a moment
+            setResuming(true);
+            setLoading(false);
+            
+            // Small delay to show the resuming message
+            setTimeout(() => {
+              // Decide route based on setupStage
+              switch (user.account.setupStage) {
+                case 'started':
+                  router.push('/choose-plan');
+                  return;
+                case 'plan_selected':
+                case 'child_pending':
+                  router.push('/parents/hq?resume=true');
+                  return;
+                default:
+                  router.push('/parents/hq');
+                  return;
+              }
+            }, 1000);
+            return;
+          }
+        }
+        setError('Unable to detect approval state');
         setLoading(false);
         return;
       }
-
-      const approval = approvalData.approval;
-      console.log('[SMART-ROUTER] Approval status:', approval.status);
 
       // Step 2: Check if parent account exists
       let parentAccount = null;
@@ -106,26 +137,52 @@ export default function SmartParentApprovalRouter() {
       let redirectUrl = '';
       let stepDescription = '';
 
-      if (approval.status === 'pending' && !parentAccount) {
-        // Step 1: Parent hasn't started - create account
-        redirectUrl = `/parent-approval?token=${encodeURIComponent(token!)}`;
-        stepDescription = 'Create your parent account';
-      } else if (approval.status === 'approved' && parentAccount && !hasPlan) {
-        // Step 2: Parent has account but no plan - select plan
-        redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token!)}`;
-        stepDescription = 'Select your plan';
-      } else if (approval.status === 'approved' && parentAccount && hasPlan && !childExists) {
-        // Step 3: Parent has plan but no child account - RESUME child setup
-        redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token!)}`;
-        stepDescription = 'Resume setting up your child\'s account';
-      } else if (approval.status === 'approved' && parentAccount && hasPlan && childExists) {
-        // Step 4: Everything is done - success page
-        redirectUrl = `/parents/hq/success?childName=${encodeURIComponent(approval.childFirstName)}`;
-        stepDescription = 'Child account setup complete';
+      if (token && approval) {
+        // Token-based flow (from email)
+        if (approval.status === 'pending' && !parentAccount) {
+          // Step 1: Parent hasn't started - create account
+          redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
+          stepDescription = 'Create your parent account';
+        } else if (approval.status === 'approved' && parentAccount && !hasPlan) {
+          // Step 2: Parent has account but no plan - select plan
+          redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
+          stepDescription = 'Select your plan';
+        } else if (approval.status === 'approved' && parentAccount && hasPlan && !childExists) {
+          // Step 3: Parent has plan but no child account - RESUME child setup
+          redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+          stepDescription = 'Resume setting up your child\'s account';
+        } else if (approval.status === 'approved' && parentAccount && hasPlan && childExists) {
+          // Step 4: Everything is done - success page
+          redirectUrl = `/parents/hq/success?childName=${encodeURIComponent(approval.childFirstName)}`;
+          stepDescription = 'Child account setup complete';
+        } else {
+          // Fallback - go to account creation
+          redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
+          stepDescription = 'Create your parent account';
+        }
       } else {
-        // Fallback - go to account creation
-        redirectUrl = `/parent-approval?token=${encodeURIComponent(token!)}`;
-        stepDescription = 'Create your parent account';
+        // Direct login flow (no token) - route based on setup stage
+        if (!parentAccount) {
+          // No parent account - redirect to sign up
+          redirectUrl = '/sign-up';
+          stepDescription = 'Create your account';
+        } else if (parentAccount && !hasPlan) {
+          // Parent has account but no plan - select plan
+          redirectUrl = '/choose-plan';
+          stepDescription = 'Select your plan';
+        } else if (parentAccount && hasPlan && !childExists) {
+          // Parent has plan but no child account - create child
+          redirectUrl = '/parents/hq/dashboard';
+          stepDescription = 'Set up your child\'s account';
+        } else if (parentAccount && hasPlan && childExists) {
+          // Everything is done - go to dashboard
+          redirectUrl = '/parents/hq/dashboard';
+          stepDescription = 'Setup complete - go to dashboard';
+        } else {
+          // Fallback - go to dashboard
+          redirectUrl = '/parents/hq/dashboard';
+          stepDescription = 'Go to dashboard';
+        }
       }
 
       console.log('[SMART-ROUTER] Routing to:', redirectUrl, 'for step:', stepDescription);
@@ -162,6 +219,22 @@ export default function SmartParentApprovalRouter() {
           <CardContent className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
             <p className="text-gray-600">Checking your progress...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (resuming) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">🔄 Resuming Setup</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Resuming your setup...</p>
           </CardContent>
         </Card>
       </div>

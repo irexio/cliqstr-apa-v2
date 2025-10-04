@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
       userId: parentUser._id,
       updates: {
         plan: plan,
+        setupStage: 'plan_selected',
       },
     });
 
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
       status: 'approved',
     });
 
-    console.log(`[PARENT-APPROVAL-PLAN] Successfully updated parent plan and marked approval as approved`);
+    console.log(`[PARENT-APPROVAL-PLAN] Successfully updated parent plan, set setup stage to 'plan_selected', and marked approval as approved`);
 
     return NextResponse.json({
       success: true,

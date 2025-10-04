@@ -95,6 +95,15 @@ export async function POST(req: NextRequest) {
 
     console.log(`[PARENT-APPROVAL-SIGNUP] Successfully created parent account`);
 
+    // Set setup stage to 'started' - parent has account but no plan yet
+    await convexHttp.mutation(api.accounts.updateAccount, {
+      userId: parentUser,
+      updates: {
+        setupStage: 'started',
+      },
+    });
+
+    console.log(`[PARENT-APPROVAL-SIGNUP] Set setup stage to 'started'`);
 
     // Create a session for the parent
     const now = Date.now();

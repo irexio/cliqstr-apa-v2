@@ -68,6 +68,7 @@ export default defineSchema({
     stripeStatus: v.optional(v.string()),
     plan: v.optional(v.string()),
     stripeCustomerId: v.optional(v.string()),
+    setupStage: v.optional(v.string()), // 'started' | 'plan_selected' | 'child_pending' | 'completed'
     createdAt: v.number(),
     suspended: v.boolean(),
   })

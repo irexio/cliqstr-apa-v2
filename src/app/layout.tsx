@@ -15,6 +15,7 @@ import SessionProvider from '@/components/SessionProvider';
 import AppFrame from '@/components/AppFrame';
 import { ConvexClientProvider } from '@/components/providers/ConvexProvider';
 import { AuthProvider } from '@/lib/auth/useAuth';
+import ParentSetupGuard from '@/components/auth/ParentSetupGuard';
 
 
 const poppins = Poppins({
@@ -41,6 +42,7 @@ export default function RootLayout({
           <SessionProvider>
             <Suspense fallback={<div>Loading...</div>}>
               <AuthProvider>
+                <ParentSetupGuard />
                 <AppFrame>{children}</AppFrame>
               </AuthProvider>
             </Suspense>

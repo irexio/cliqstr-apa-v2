@@ -47,6 +47,7 @@ export const getCurrentUser = query({
         stripeStatus: account.stripeStatus || null,
         plan: account.plan || null,
         stripeCustomerId: account.stripeCustomerId || null,
+        setupStage: account.setupStage,
         suspended: account.suspended,
         birthdate: account.birthdate,
         firstName: account.firstName,
