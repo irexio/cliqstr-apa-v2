@@ -153,12 +153,30 @@ export async function POST(req: NextRequest) {
     // Handle approval token flow (direct child signup)
     let approval = null;
     if (approvalToken) {
+      console.log(`[PARENT-CHILDREN] Looking up approval token: ${approvalToken}`);
+      
       // Get the approval record
       approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
         approvalToken,
       });
 
-      if (!approval || approval.status !== 'pending') {
+      console.log(`[PARENT-CHILDREN] Approval lookup result:`, {
+        found: !!approval,
+        status: approval?.status,
+        expiresAt: approval?.expiresAt,
+        currentTime: Date.now(),
+        isExpired: approval ? Date.now() > approval.expiresAt : 'N/A'
+      });
+
+      if (!approval) {
+        console.error(`[PARENT-CHILDREN] No approval record found for token: ${approvalToken}`);
+        return NextResponse.json({ 
+          error: 'Invalid or expired approval token' 
+        }, { status: 400 });
+      }
+
+      if (approval.status !== 'pending') {
+        console.error(`[PARENT-CHILDREN] Approval status is not pending: ${approval.status} for token: ${approvalToken}`);
         return NextResponse.json({ 
           error: 'Invalid or expired approval token' 
         }, { status: 400 });
