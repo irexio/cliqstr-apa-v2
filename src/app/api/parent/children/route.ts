@@ -151,9 +151,10 @@ export async function POST(req: NextRequest) {
     console.log(`[PARENT-CHILDREN] Creating child account: ${username} for parent ${user.email}`);
 
     // Handle approval token flow (direct child signup)
+    let approval = null;
     if (approvalToken) {
       // Get the approval record
-      const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
+      approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
         approvalToken,
       });
 
@@ -163,12 +164,7 @@ export async function POST(req: NextRequest) {
         }, { status: 400 });
       }
 
-      // Mark the approval as completed
-      await convexHttp.mutation(api.parentApprovals.approveParentApproval, {
-        approvalToken,
-      });
-
-      console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
+      console.log(`[PARENT-CHILDREN] Found valid approval token: ${approvalToken}`);
     }
 
     // 🔐 ATOMIC WRITES: All compliance data must be written together or none at all
@@ -296,6 +292,14 @@ export async function POST(req: NextRequest) {
     if (inviteCode) {
       // TODO: Update invite status when invite system is fully implemented
       console.log(`[PARENT-CHILDREN] Child created from invite code: ${inviteCode}`);
+    }
+
+    // Mark the approval as completed ONLY after successful child creation
+    if (approvalToken && approval) {
+      await convexHttp.mutation(api.parentApprovals.approveParentApproval, {
+        approvalToken,
+      });
+      console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
     }
 
     console.log(`[PARENT-CHILDREN] Successfully created child account: ${username}`);

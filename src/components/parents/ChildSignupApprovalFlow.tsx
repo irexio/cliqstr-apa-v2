@@ -74,48 +74,11 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
     invitesRequireParentApproval: true, // Default to true for safety, but parent can change
   });
 
-  // Auto-save form data to localStorage
+  // SECURITY FIX: Remove localStorage persistence to prevent data leaks between different parent-child sessions
+  // Each parent-child approval should start with a clean form
   useEffect(() => {
-    const saveFormData = () => {
-      const formData = {
-        username,
-        password: '', // Don't save password for security
-        childEmail,
-        redAlertAccepted,
-        silentMonitoring,
-        secondParentEmail,
-        permissions,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem('parentHQ_formData', JSON.stringify(formData));
-    };
-
-    // Save every 3 seconds
-    const interval = setInterval(saveFormData, 3000);
-    return () => clearInterval(interval);
-  }, [username, redAlertAccepted, silentMonitoring, secondParentEmail, permissions]);
-
-  // Load saved form data on mount
-  useEffect(() => {
-    const savedData = localStorage.getItem('parentHQ_formData');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        // Only restore if data is less than 1 hour old
-        if (Date.now() - parsed.timestamp < 3600000) {
-          setUsername(parsed.username || '');
-          setChildEmail(parsed.childEmail || '');
-          setRedAlertAccepted(parsed.redAlertAccepted || false);
-          setSilentMonitoring(parsed.silentMonitoring !== false); // Default to true
-          setSecondParentEmail(parsed.secondParentEmail || '');
-          if (parsed.permissions) {
-            setPermissions(prev => ({ ...prev, ...parsed.permissions }));
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to restore form data:', err);
-      }
-    }
+    // Clear any existing form data to prevent data leaks between different parent-child sessions
+    localStorage.removeItem('parentHQ_formData');
   }, []);
 
   // Fetch approval details or invite details
