@@ -8,10 +8,19 @@ import { Button } from '@/components/ui/button';
  * AdultUpgradeSection - Shows upgrade option for Adult users who need Parent role
  * This component appears when an Adult user visits Parents HQ but needs to be upgraded
  */
-export default function AdultUpgradeSection() {
+interface AdultUpgradeSectionProps {
+  userRole?: string;
+}
+
+export default function AdultUpgradeSection({ userRole }: AdultUpgradeSectionProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Only show upgrade section for Adult users
+  if (userRole !== 'Adult') {
+    return null;
+  }
 
   const handleUpgrade = async () => {
     setLoading(true);

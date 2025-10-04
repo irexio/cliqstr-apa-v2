@@ -121,6 +121,17 @@ export function UserDropdown({ userData, handleSignOut }: UserDropdownProps) {
             Change Password
           </Link>
           
+          {/* Show Parents HQ link only for parents */}
+          {userData.role === 'PARENT' && (
+            <Link 
+              href="/parents/hq/dashboard" 
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsUserMenuOpen(false)}
+            >
+              Parents HQ
+            </Link>
+          )}
+          
           {/* Show billing link only for adults and parents */}
           {(userData.role === 'PARENT' || userData.role === 'ADULT') && (
             <Link 

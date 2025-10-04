@@ -29,6 +29,7 @@ export default function ParentsHQContent() {
 
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [authLoading, setAuthLoading] = useState(true);
+  const [userData, setUserData] = useState<any>(null);
 
   // 1) Auth gate: require login, allow Adult or Parent, block Child
   useEffect(() => {
@@ -41,6 +42,9 @@ export default function ParentsHQContent() {
           cache: 'no-store',
         });
         const data = res.ok ? await res.json() : null;
+        
+        // Store user data in state for render access
+        if (!cancelled) setUserData(data);
 
         if (!data?.user) {
           // Allow unauthenticated users if they have a pending invite or approval token (signup flow)
@@ -64,10 +68,25 @@ export default function ParentsHQContent() {
           return;
         }
 
+        // Debug logging for user role detection
+        console.log('[PARENTS_HQ_CONTENT] User role detection:', {
+          userRole: data.user.role,
+          hasInviteCode: !!inviteCode,
+          hasApprovalToken: !!approvalToken,
+          inviteCode: inviteCode,
+          approvalToken: approvalToken
+        });
+
         // If user is an Adult and has no invite/approval token, they need to be upgraded to Parent
         if (data.user.role === 'Adult' && !inviteCode && !approvalToken) {
           console.log('[PARENTS_HQ_CONTENT] Adult user needs upgrade to Parent role');
           // We'll handle this in the main dashboard - show upgrade option
+        }
+
+        // If user is already a Parent and has no invite/approval token, they're accessing their dashboard
+        if (data.user.role === 'Parent' && !inviteCode && !approvalToken) {
+          console.log('[PARENTS_HQ_CONTENT] Existing parent accessing dashboard');
+          // This is a normal dashboard access - no special handling needed
         }
       } catch (err) {
         console.error('[PARENTS_HQ] auth check failed:', err);
@@ -285,7 +304,7 @@ export default function ParentsHQContent() {
       
       {/* Show upgrade option for Adult users */}
       <div className="mb-6">
-        <AdultUpgradeSection />
+        <AdultUpgradeSection userRole={userData?.user?.role} />
       </div>
       
       {/* Show pending approvals first */}
