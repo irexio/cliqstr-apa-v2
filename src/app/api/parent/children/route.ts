@@ -175,8 +175,8 @@ export async function POST(req: NextRequest) {
         }, { status: 400 });
       }
 
-      if (approval.status !== 'pending') {
-        console.error(`[PARENT-CHILDREN] Approval status is not pending: ${approval.status} for token: ${approvalToken}`);
+      if (approval.status !== 'pending' && approval.status !== 'approved') {
+        console.error(`[PARENT-CHILDREN] Approval status is not pending or approved: ${approval.status} for token: ${approvalToken}`);
         return NextResponse.json({ 
           error: 'Invalid or expired approval token' 
         }, { status: 400 });
