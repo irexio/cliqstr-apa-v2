@@ -25,10 +25,10 @@ export async function sendParentEmail({
   
   const defaultSubject = 'Approve Your Child\'s Cliqstr Account';
 
-  // Build canonical invite URL pointing to elegant Parents HQ wizard
+  // Build canonical invite URL pointing to smart router
   function buildParentInviteUrl(code?: string) {
     return code
-      ? `${BASE_URL}/invite/accept?code=${encodeURIComponent(code)}`
+      ? `${BASE_URL}/parent-approval/smart?token=${encodeURIComponent(code)}`
       : `${BASE_URL}/parents/hq/dashboard`;
   }
 
