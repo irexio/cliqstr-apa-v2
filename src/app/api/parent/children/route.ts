@@ -211,6 +211,7 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Created child user with ID: ${childUserId}`);
 
       // Step 2: Create child profile
+      console.log(`[PARENT-CHILDREN] Creating child profile for user: ${childUserId}, username: ${username}`);
       profileId = await convexHttp.mutation(api.profiles.createProfile, {
         userId: childUserId as any,
         username: username,
@@ -221,6 +222,7 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Created child profile with ID: ${profileId}`);
 
       // Step 3: Create child settings with parent permissions (SAFE DEFAULTS)
+      console.log(`[PARENT-CHILDREN] Creating child settings for profile: ${profileId}`);
       settingsId = await convexHttp.mutation(api.users.createChildSettings, {
         profileId: profileId as any,
         canSendInvites: permissions.canReceiveInvites ?? false, // Safe default: false
@@ -241,6 +243,7 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Created child settings with ID: ${settingsId}`);
 
       // Step 4: Create parent consent record
+      console.log(`[PARENT-CHILDREN] Creating parent consent for parent: ${session.userId}, child: ${childUserId}`);
       consentId = await convexHttp.mutation(api.parentConsents.createParentConsent, {
         parentId: session.userId as any,
         childId: childUserId as any,
@@ -253,6 +256,7 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Created parent consent with ID: ${consentId}`);
 
       // Step 5: Create audit log for approval action
+      console.log(`[PARENT-CHILDREN] Creating audit log for parent: ${session.userId}, child: ${childUserId}`);
       auditLogId = await convexHttp.mutation(api.users.logParentAction, {
         parentId: session.userId as any,
         childId: childUserId as any,
@@ -269,6 +273,7 @@ export async function POST(req: NextRequest) {
       console.log(`[PARENT-CHILDREN] Created audit log with ID: ${auditLogId}`);
 
       // Step 6: Create parent-child link
+      console.log(`[PARENT-CHILDREN] Creating parent link for parent: ${user.email}, child: ${childUserId}`);
       const parentLinkId = await convexHttp.mutation(api.parentLinks.createParentLink, {
         email: user.email,
         childId: childUserId as any,
@@ -286,6 +291,15 @@ export async function POST(req: NextRequest) {
 
     } catch (complianceError: any) {
       console.error(`[PARENT-CHILDREN] ATOMIC WRITE FAILED - Rolling back child account creation:`, complianceError);
+      console.error(`[PARENT-CHILDREN] Error details:`, {
+        message: complianceError.message,
+        stack: complianceError.stack,
+        childUserId,
+        profileId,
+        settingsId,
+        consentId,
+        auditLogId
+      });
       
       // If any compliance write fails, we need to clean up the child account
       // This prevents children from being created without proper safety settings
@@ -301,7 +315,7 @@ export async function POST(req: NextRequest) {
 
       // Return error to frontend - DO NOT redirect to success
       return NextResponse.json({ 
-        error: 'Approval could not be completed. Please try again.',
+        error: 'Failed to create child account with proper safety settings',
         details: complianceError.message 
       }, { status: 500 });
     }
