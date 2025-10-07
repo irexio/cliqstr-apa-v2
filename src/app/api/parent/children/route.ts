@@ -29,13 +29,12 @@ const createChildSchema = z.object({
   redAlertAccepted: z.boolean(),
   silentMonitoring: z.boolean(),
   secondParentEmail: z.string().email().optional(),
-  inviteCode: z.string().optional(),
   approvalToken: z.string().optional(),
 }).refine(
-  (data) => data.inviteCode || data.approvalToken,
+  (data) => data.approvalToken,
   {
-    message: "Either inviteCode or approvalToken must be provided",
-    path: ["inviteCode", "approvalToken"],
+    message: "approvalToken must be provided",
+    path: ["approvalToken"],
   }
 );
 
@@ -131,8 +130,7 @@ export async function POST(req: NextRequest) {
       birthdate: body.birthdate,
       username: body.username,
       password: body.password ? '***' : 'MISSING',
-      approvalToken: body.approvalToken,
-      inviteCode: body.inviteCode
+      approvalToken: body.approvalToken
     });
     
     const parsed = createChildSchema.safeParse(body);
@@ -146,7 +144,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const { username, password, childEmail, firstName, lastName, birthdate, permissions, redAlertAccepted, silentMonitoring, secondParentEmail, inviteCode, approvalToken } = parsed.data;
+    const { username, password, childEmail, firstName, lastName, birthdate, permissions, redAlertAccepted, silentMonitoring, secondParentEmail, approvalToken } = parsed.data;
 
     console.log(`[PARENT-CHILDREN] Creating child account: ${username} for parent ${user.email}`);
 
@@ -320,11 +318,7 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
-    // If this was from an invite, mark the invite as used
-    if (inviteCode) {
-      // TODO: Update invite status when invite system is fully implemented
-      console.log(`[PARENT-CHILDREN] Child created from invite code: ${inviteCode}`);
-    }
+    // Note: All flows now use approvalToken for consistency
 
     // Mark the approval as completed ONLY after successful child creation
     if (approvalToken && approval) {

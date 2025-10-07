@@ -138,7 +138,7 @@ export default function SmartParentApprovalRouter() {
       let stepDescription = '';
 
       if (token && approval) {
-        // Token-based flow (from email)
+        // Token-based flow (from email) - UNIFIED APPROACH
         if (approval.status === 'pending' && !parentAccount) {
           // Step 1: Parent hasn't started - create account
           redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
@@ -147,23 +147,11 @@ export default function SmartParentApprovalRouter() {
           // Step 2: Parent has account but no plan - select plan
           redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
           stepDescription = 'Select your plan';
-        } else if (approval.status === 'approved' && parentAccount && hasPlan && !childExists) {
-          // Step 3: Parent has plan but no child account - RESUME child setup
-          // Check if this is a child invite or direct signup
-          if (approval.context === 'child_invite') {
-            redirectUrl = `/parents/hq?inviteCode=${encodeURIComponent(token)}`;
-          } else {
-            redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
-          }
-          stepDescription = 'Resume setting up your child\'s account';
-        } else if (approval.status === 'approved' && parentAccount && hasPlan && childExists) {
-          // Step 4: Everything is done - success page
-          redirectUrl = `/parents/hq/success?childName=${encodeURIComponent(approval.childFirstName)}`;
-          stepDescription = 'Child account setup complete';
         } else {
-          // Fallback - go to account creation
-          redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
-          stepDescription = 'Create your parent account';
+          // Step 3+: All other cases go to unified Parents HQ
+          // The unified dashboard will handle setup vs manage mode based on context
+          redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+          stepDescription = 'Complete child setup in Parents HQ';
         }
       } else {
         // Direct login flow (no token) - route based on setup stage
@@ -175,18 +163,10 @@ export default function SmartParentApprovalRouter() {
           // Parent has account but no plan - select plan
           redirectUrl = '/choose-plan';
           stepDescription = 'Select your plan';
-        } else if (parentAccount && hasPlan && !childExists) {
-          // Parent has plan but no child account - create child
-          redirectUrl = '/parents/hq/dashboard';
-          stepDescription = 'Set up your child\'s account';
-        } else if (parentAccount && hasPlan && childExists) {
-          // Everything is done - go to dashboard
-          redirectUrl = '/parents/hq/dashboard';
-          stepDescription = 'Setup complete - go to dashboard';
         } else {
-          // Fallback - go to dashboard
-          redirectUrl = '/parents/hq/dashboard';
-          stepDescription = 'Go to dashboard';
+          // Everything else goes to unified Parents HQ
+          redirectUrl = '/parents/hq';
+          stepDescription = 'Go to Parents HQ';
         }
       }
 

@@ -29,6 +29,7 @@ interface InviteDetails {
 interface ChildSignupApprovalFlowProps {
   approvalToken?: string;
   inviteCode?: string;
+  onChildCreated?: () => void;
 }
 
 /**
@@ -45,7 +46,7 @@ interface ChildSignupApprovalFlowProps {
  *   - Every child MUST have parents complete these permissions
  *   - Approval is NOT marked as completed until final Parent HQ approval
  */
-export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: ChildSignupApprovalFlowProps) {
+export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onChildCreated }: ChildSignupApprovalFlowProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -188,9 +189,8 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
 
       // Debug the data being sent
       const requestData = {
-        // Only send the token/code that exists
-        ...(approvalToken && { approvalToken }),
-        ...(inviteCode && { inviteCode }),
+        // Standardize on approvalToken for all flows
+        approvalToken: approvalToken || inviteCode,
         // Child details (from either source) - with fallbacks
         firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName || 'Child',
         lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName || 'User',
@@ -278,10 +278,17 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode }: C
         return;
       }
 
-      // Success - clear saved form data and redirect to success page
-      console.log('[PARENTS_HQ][signup-approval] success - redirecting to success page');
+      // Success - clear saved form data and handle completion
+      console.log('[PARENTS_HQ][signup-approval] success - child account created');
       localStorage.removeItem('parentHQ_formData'); // Clear saved form data
-      router.replace(`/parents/hq/success?childName=${encodeURIComponent(childFirstName)}`);
+      
+      if (onChildCreated) {
+        // Use callback to switch to manage mode
+        onChildCreated();
+      } else {
+        // Fallback to success page
+        router.replace(`/parents/hq/success?childName=${encodeURIComponent(childFirstName)}`);
+      }
       
     } catch (err: any) {
       console.error('[PARENTS_HQ][signup-approval] catch block error', err);
