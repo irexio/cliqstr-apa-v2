@@ -149,7 +149,12 @@ export default function SmartParentApprovalRouter() {
           stepDescription = 'Select your plan';
         } else if (approval.status === 'approved' && parentAccount && hasPlan && !childExists) {
           // Step 3: Parent has plan but no child account - RESUME child setup
-          redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+          // Check if this is a child invite or direct signup
+          if (approval.context === 'child_invite') {
+            redirectUrl = `/parents/hq?inviteCode=${encodeURIComponent(token)}`;
+          } else {
+            redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+          }
           stepDescription = 'Resume setting up your child\'s account';
         } else if (approval.status === 'approved' && parentAccount && hasPlan && childExists) {
           // Step 4: Everything is done - success page
