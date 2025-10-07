@@ -352,8 +352,11 @@ export async function POST(request: NextRequest) {
         const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
         const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
         
-        // Use invite flow URL for child invites
-        const inviteLink = `${BASE_URL}/invite/accept?code=${encodeURIComponent(joinCode)}`;
+        // Use smart router for child invites to handle parent approval flow
+        if (!approvalToken) {
+          throw new Error('Approval token not generated for child invite');
+        }
+        const inviteLink = `${BASE_URL}/parent-approval/smart?token=${encodeURIComponent(approvalToken)}`;
         
         await sendChildInviteEmail({
           to: targetEmail,
