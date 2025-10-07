@@ -107,6 +107,10 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
             parentEmail: data.approval.parentEmail,
             context: data.approval.context,
           });
+          
+          // Pre-fill username with suggested value
+          const suggestedUsername = `${data.approval.childFirstName.toLowerCase()}${data.approval.childLastName ? data.approval.childLastName.toLowerCase() : ''}`;
+          setUsername(suggestedUsername);
         } else if (inviteCode) {
           // Handle child invite approval
           console.log(`[CHILD_SIGNUP_APPROVAL] Fetching invite details for code: ${inviteCode}`);
@@ -133,6 +137,10 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
           };
           console.log(`[CHILD_SIGNUP_APPROVAL] Setting invite details:`, inviteDetails);
           setInviteDetails(inviteDetails);
+          
+          // Pre-fill username with suggested value
+          const suggestedUsername = `${inviteDetails.friendFirstName.toLowerCase()}${inviteDetails.friendLastName ? inviteDetails.friendLastName.toLowerCase() : ''}`;
+          setUsername(suggestedUsername);
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load details');
@@ -344,15 +352,15 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
     : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Parent HQ Header */}
       <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="text-blue-900">⚡ Parent HQ - Child Permission Setup</CardTitle>
-          <p className="text-blue-700 text-sm">Every child must have parents complete these permissions before account creation</p>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-blue-900 text-sm sm:text-base">⚡ Parent HQ - Child Permission Setup</CardTitle>
+          <p className="text-blue-700 text-xs sm:text-sm">Every child must have parents complete these permissions before account creation</p>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-blue-800">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="space-y-1 sm:space-y-2 text-blue-800 text-xs sm:text-sm">
             <p><strong>Child:</strong> {childName}</p>
             {childAge && <p><strong>Age:</strong> {childAge} years old</p>}
             {approvalDetails ? (
@@ -401,21 +409,24 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
 
       {/* Account Setup */}
       <Card>
-        <CardHeader>
-          <CardTitle>Create Child Account</CardTitle>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-sm sm:text-base">Create Child Account</CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmitApproval} className="space-y-4">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <form onSubmit={handleSubmitApproval} className="space-y-3 sm:space-y-4">
             <div>
               <Label htmlFor="username">Username for {childFirstName}</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Choose a username"
+                placeholder={`${childFirstName.toLowerCase()}${childLastName ? childLastName.toLowerCase() : ''}`}
                 required
                 minLength={3}
               />
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Suggested: {childFirstName.toLowerCase()}{childLastName ? childLastName.toLowerCase() : ''}
+              </p>
             </div>
 
             <div>
@@ -427,7 +438,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                 onChange={(e) => setChildEmail(e.target.value)}
                 placeholder="child@example.com (optional)"
               />
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
                 {childAge && childAge < 13 
                   ? "If provided, magic links will be sent to your email for forwarding to your child. If not provided, child will use username/password login."
                   : "If provided, magic links will be sent directly to your child for easy login. If not provided, child will use username/password login."
@@ -481,10 +492,10 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
             </div>
 
             {/* Parent HQ: Child Permissions */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium mb-3">⚡ Parent HQ: Set Permissions for {childFirstName}</h4>
-              <p className="text-gray-600 text-xs mb-3">Select which features you want activated on your child's account</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h4 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">⚡ Parent HQ: Set Permissions for {childFirstName}</h4>
+              <p className="text-gray-600 text-xs mb-2 sm:mb-3">Select which features you want activated on your child's account</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="canCreateCliqs"
@@ -650,19 +661,19 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
               </div>
             )}
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={() => router.push('/parents/hq')}
-                className="flex-1"
+                className="flex-1 text-sm sm:text-base"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={submitting || !redAlertAccepted}
-                className="flex-1"
+                className="flex-1 text-sm sm:text-base"
               >
                 {submitting ? 'Creating Account...' : `⚡ Parent HQ: Complete Setup for ${childFirstName}`}
               </Button>

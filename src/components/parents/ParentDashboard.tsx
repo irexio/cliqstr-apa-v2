@@ -116,21 +116,21 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">⚡ Parents HQ</h1>
-        <p className="text-gray-600 mt-2">Comprehensive child management and safety controls</p>
-        <p className="text-sm text-blue-600">Every child on Cliqstr requires parent approval through this interface</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">⚡ Parents HQ</h1>
+        <p className="text-gray-600 mt-2 text-sm sm:text-base">Comprehensive child management and safety controls</p>
+        <p className="text-xs sm:text-sm text-blue-600 mt-1">Every child on Cliqstr requires parent approval through this interface</p>
       </div>
 
       {/* Mode Indicator */}
       {context === 'setup' && (
-        <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-4">
-          <p className="text-blue-800 font-semibold">
+        <div className="bg-blue-100 border-l-4 border-blue-500 p-3 sm:p-4 mb-4">
+          <p className="text-blue-800 font-semibold text-sm sm:text-base">
             🔧 Setup Mode: Creating new child account
           </p>
-          <p className="text-blue-700 text-sm mt-1">
+          <p className="text-blue-700 text-xs sm:text-sm mt-1">
             Complete the child approval process below. After setup, you'll be able to manage this child from the main dashboard.
           </p>
         </div>
@@ -138,8 +138,8 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
 
       {context === 'setup' && setupApproval ? (
         /* Setup Mode: Child Signup Approval Flow */
-        <div className="border p-4 bg-blue-50 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">
+        <div className="border p-3 sm:p-4 bg-blue-50 rounded-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-2">
             Set Up Child Account for {setupApproval.childFirstName} {setupApproval.childLastName}
           </h2>
           <ChildSignupApprovalFlow 

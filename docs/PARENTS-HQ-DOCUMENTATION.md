@@ -1,22 +1,38 @@
 # Parents HQ - Complete Documentation
 
+**Last Updated: October 7, 2025**
+
 ## Overview
 
 Parents HQ is the comprehensive parent management interface for Cliqstr, providing parents with tools to manage their children's accounts, monitor activity, and ensure safety compliance with APA (Age-Appropriate Design Code) requirements.
+
+## 🎯 **UNIFIED ARCHITECTURE (Current Implementation)**
+
+### **Single Entry Point: `/parents/hq`**
+The Parents HQ now uses a **unified architecture** with a single entry point that intelligently switches between different modes based on context:
+
+- **Setup Mode**: For child approval flows (invites, direct signups)
+- **Manage Mode**: For ongoing child management by existing parents
+
+### **Smart Router Integration**
+All parent approval flows are routed through the **Smart Router** (`/parent-approval/smart`) which:
+- Detects parent progress through the approval process
+- Routes to appropriate steps (account creation, plan selection, child setup)
+- Ensures consistent experience regardless of entry point
 
 ## Current Implementation Status
 
 ### ✅ Active Features (Production Ready)
 
-#### 1. **Child Account Management**
+#### 1. **Unified Parent Dashboard** ⭐ **NEW ARCHITECTURE**
 - **Location**: `src/components/parents/ParentDashboard.tsx`
-- **Purpose**: Main dashboard for managing all children
+- **Purpose**: Single dashboard component that switches between setup and manage modes
 - **Features**:
-  - Create new child accounts
-  - Manage existing children permissions
-  - Handle child invite approvals
-  - Update child credentials
-  - Set all child safety permissions
+  - **Context-aware rendering**: Automatically switches between setup/manage modes
+  - **Setup Mode**: Child approval flows with ChildSignupApprovalFlow
+  - **Manage Mode**: Existing children management with permissions, monitoring, etc.
+  - **Automatic mode transition**: Seamlessly switches to manage mode after child creation
+  - **Consistent interface**: Same layout regardless of entry point
 
 #### 2. **Child Permission Management**
 - **Location**: `src/components/parents/ChildPermissionManager.tsx`
@@ -54,14 +70,16 @@ Parents HQ is the comprehensive parent management interface for Cliqstr, providi
   - Role-based permissions (primary, secondary, guardian)
   - Email-based parent linking
 
-#### 6. **Child Signup Approval Flow**
+#### 6. **Child Signup Approval Flow** ⭐ **UPDATED**
 - **Location**: `src/components/parents/ChildSignupApprovalFlow.tsx`
-- **Purpose**: Handle child account creation with parent approval
+- **Purpose**: Handle child account creation with parent approval (used in setup mode)
 - **Features**:
   - Parent approval for child signups
   - Silent monitoring toggle during signup
   - Streamlined form (email above password, single password field)
   - Enhanced error handling with specific messages
+  - **Callback integration**: Automatically switches to manage mode after successful child creation
+  - **Unified token handling**: Standardized on `approvalToken` for all flows
 
 ## Database Schema
 
@@ -156,26 +174,42 @@ Parents HQ is the comprehensive parent management interface for Cliqstr, providi
 
 ## User Flows
 
-### 1. **Parent Accessing Parents HQ**
+### 1. **Unified Parent HQ Access** ⭐ **NEW FLOW**
 ```
-1. Parent logs in → Navigate to Parents HQ
-2. System verifies parent role
-3. Display ParentDashboard with all children
-4. Parent selects child to manage
-5. Show management options (permissions, monitoring, activity logs)
+1. Parent accesses /parents/hq (any entry point)
+2. System determines context:
+   - Has approvalToken/inviteCode → Setup Mode
+   - No token → Manage Mode
+3. ParentDashboard renders appropriate mode:
+   - Setup Mode: ChildSignupApprovalFlow for child approval
+   - Manage Mode: Full management interface with children dropdown
+4. After child creation: Automatic transition to Manage Mode
 ```
 
-### 2. **Child Signup with Parent Approval**
+### 2. **Smart Router Flow** ⭐ **NEW ARCHITECTURE**
+```
+1. Parent clicks email link → Smart Router (/parent-approval/smart)
+2. Smart Router detects progress:
+   - No parent account → /parent-approval (account creation)
+   - No plan → /choose-plan (plan selection)
+   - Ready for child setup → /parents/hq?approvalToken=xxx (setup mode)
+3. All flows eventually lead to unified /parents/hq
+```
+
+### 3. **Child Signup with Parent Approval** ⭐ **UPDATED**
 ```
 1. Child attempts to sign up
 2. System detects child age → Redirect to parent approval
 3. Parent receives approval request
-4. Parent fills out ChildSignupApprovalFlow form
-5. System creates child account with parent settings
-6. Child account is ready for use
+4. Parent clicks email link → Smart Router
+5. Smart Router → /parents/hq?approvalToken=xxx (setup mode)
+6. Parent fills out ChildSignupApprovalFlow form
+7. System creates child account with parent settings
+8. Automatic transition to Manage Mode
+9. Child account is ready for use
 ```
 
-### 3. **Live Silent Monitoring**
+### 4. **Live Silent Monitoring**
 ```
 1. Parent selects child in Parents HQ
 2. Parent clicks "Live Cliq Monitoring"
@@ -186,7 +220,7 @@ Parents HQ is the comprehensive parent management interface for Cliqstr, providi
 7. Updates automatically via Convex real-time queries
 ```
 
-### 4. **Permission Management**
+### 5. **Permission Management**
 ```
 1. Parent selects child
 2. Parent modifies permissions in ChildPermissionManager
@@ -220,13 +254,13 @@ Parents HQ is the comprehensive parent management interface for Cliqstr, providi
 ### Active Components
 ```
 src/components/parents/
-├── ParentDashboard.tsx              # Main dashboard
+├── ParentDashboard.tsx              # ⭐ UNIFIED dashboard (setup/manage modes)
 ├── ChildPermissionManager.tsx       # Permission controls
-├── LiveCliqMonitoring.tsx          # Live monitoring (NEW)
+├── LiveCliqMonitoring.tsx          # Live monitoring
 ├── ChildActivityLogs.tsx           # Activity history
 ├── MultipleParentsManager.tsx      # Multi-parent management
-├── ChildSignupApprovalFlow.tsx     # Child signup approval
-└── ParentsHQContent.tsx            # Main content wrapper
+├── ChildSignupApprovalFlow.tsx     # Child signup approval (setup mode)
+└── PendingApprovalsSection.tsx     # Pending approvals display
 ```
 
 ### API Routes
@@ -234,7 +268,17 @@ src/components/parents/
 src/app/api/parent/
 ├── settings/update/route.ts        # Update child settings
 ├── activity-logs/route.ts          # Get activity logs
-└── children/route.ts               # Create child accounts
+├── children/route.ts               # Create child accounts (unified)
+└── pending-approvals/route.ts      # Get pending approvals
+```
+
+### Smart Router & Entry Points
+```
+src/app/
+├── parents/hq/page.tsx             # ⭐ UNIFIED entry point
+├── parent-approval/smart/page.tsx  # ⭐ Smart router
+├── parent-approval/page.tsx        # Parent account creation
+└── choose-plan/page.tsx            # Plan selection
 ```
 
 ### Convex Functions
@@ -246,28 +290,38 @@ convex/
 └── parentLinks.ts                  # Parent-child relationships
 ```
 
-## Legacy/Unused Files
+## 🧹 **CLEANUP COMPLETED (October 7, 2025)**
 
-### ⚠️ Deprecated Components
-These files exist but are NOT part of the current Parents HQ flow:
-
-```
-src/legacy/parents-hq-invites/
-└── LegacyFallback.tsx              # Legacy fallback (unused)
-
-deprecated/pages/legacy/
-└── [filename].tsx                  # Various legacy pages (unused)
-```
-
-### ⚠️ Deprecated API Routes
-These API routes exist but are NOT part of the current flow:
+### ✅ **Removed Deprecated Files**
+The following files have been **permanently removed** during the unified architecture cleanup:
 
 ```
-deprecated/api/
-├── debug/                          # Debug routes (unused)
-├── dev/                            # Development routes (unused)
-└── test/                           # Test routes (unused)
+❌ DELETED:
+├── src/app/parents/hq/dashboard/page.tsx     # Replaced by unified /parents/hq
+├── src/components/parents/ParentsHQContent.tsx # Merged into ParentDashboard
+├── src/components/parents/ParentsHQWithSignup.tsx # Legacy pre-session version
+└── docs/PARENTS-HQ-WIZARD.md                # Obsolete multi-step wizard docs
 ```
+
+### ✅ **Updated Route References**
+All references to `/parents/hq/dashboard` have been updated to use the unified `/parents/hq` route:
+
+```
+✅ UPDATED:
+├── src/lib/auth/sendParentEmail.ts
+├── src/components/Header/UserDropdown.tsx
+├── src/app/invite/accept/_client.tsx
+├── src/app/sign-in/sign-in-form.tsx
+├── src/app/parent-approval/_client.tsx
+├── src/app/choose-plan/choose-plan-form.tsx
+└── src/app/api/parent-approval/accept/route.ts
+```
+
+### ✅ **Build Verification**
+- `npm run build` passes successfully
+- No import or module errors
+- All deprecated components removed
+- Unified `/parents/hq` remains only functional entry point
 
 ## Configuration
 
@@ -519,4 +573,18 @@ npx convex run users:getChildSettings --profileId "profile_id"
 
 Parents HQ is a comprehensive, secure, and privacy-focused system that allows parents to manage their children's Cliqstr experience while maintaining complete transparency and control. The system includes real-time monitoring, detailed audit trails, and granular permission controls, all while ensuring children's privacy and safety.
 
-The current implementation is production-ready and actively used. Any files in the `deprecated/` or `legacy/` directories are not part of the current flow and can be safely ignored or removed during cleanup.
+### **🎯 Key Architectural Improvements (October 7, 2025)**
+
+1. **Unified Entry Point**: Single `/parents/hq` route handles all parent functionality
+2. **Context-Aware Dashboard**: Automatically switches between setup and manage modes
+3. **Smart Router Integration**: Intelligent routing based on parent progress
+4. **Simplified Codebase**: Removed duplicate logic and deprecated components
+5. **Consistent User Experience**: Same interface regardless of entry point
+
+### **✅ Current Status**
+- **Production Ready**: Fully functional and actively used
+- **Clean Architecture**: No deprecated or legacy components
+- **Build Verified**: Passes all tests and builds successfully
+- **Future-Proof**: Extensible design for new features
+
+The unified implementation eliminates confusion, reduces maintenance overhead, and provides a stable foundation for future enhancements.

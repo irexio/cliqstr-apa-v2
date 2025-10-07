@@ -353,10 +353,8 @@ export async function POST(request: NextRequest) {
         const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
         
         // Use smart router for child invites to handle parent approval flow
-        if (!approvalToken) {
-          throw new Error('Approval token not generated for child invite');
-        }
-        const inviteLink = `${BASE_URL}/parent-approval/smart?token=${encodeURIComponent(approvalToken)}`;
+        // For child invites, use the joinCode to preserve the invite context
+        const inviteLink = `${BASE_URL}/parent-approval/smart?token=${encodeURIComponent(joinCode)}`;
         
         await sendChildInviteEmail({
           to: targetEmail,

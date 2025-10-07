@@ -34,17 +34,37 @@ export default function SmartParentApprovalRouter() {
       
       // Step 1: Check approval status (only if token provided)
       if (token) {
+        // First try to get approval by token (for direct signups)
         const approvalResponse = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(token)}`);
         const approvalData = await approvalResponse.json();
 
-        if (!approvalResponse.ok || !approvalData.approval) {
-          setError('Invalid or expired approval token');
-          setLoading(false);
-          return;
+        if (approvalResponse.ok && approvalData.approval) {
+          approval = approvalData.approval;
+          console.log('[SMART-ROUTER] Found approval record, status:', approval.status);
+        } else {
+          // If not found in approvals, try to get invite details (for child invites)
+          console.log('[SMART-ROUTER] No approval found, checking if token is invite code...');
+          const inviteResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(token)}`);
+          const inviteData = await inviteResponse.json();
+          
+          if (inviteResponse.ok && inviteData.valid) {
+            // Convert invite data to approval format for consistency
+            approval = {
+              childFirstName: inviteData.friendFirstName || 'Child',
+              childLastName: inviteData.friendLastName || '',
+              childBirthdate: inviteData.childBirthdate || '',
+              parentEmail: inviteData.recipientEmail || '',
+              status: 'pending',
+              context: 'child_invite',
+              inviteCode: token, // Store the original invite code
+            };
+            console.log('[SMART-ROUTER] Found invite record, converted to approval format');
+          } else {
+            setError('Invalid or expired token');
+            setLoading(false);
+            return;
+          }
         }
-
-        approval = approvalData.approval;
-        console.log('[SMART-ROUTER] Approval status:', approval.status);
       } else {
         // Fallback for sign-in resume
         const parentResponse = await fetch('/api/auth/status');
@@ -150,7 +170,13 @@ export default function SmartParentApprovalRouter() {
         } else {
           // Step 3+: All other cases go to unified Parents HQ
           // The unified dashboard will handle setup vs manage mode based on context
-          redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+          if (approval.context === 'child_invite') {
+            // For child invites, pass the original inviteCode to preserve context
+            redirectUrl = `/parents/hq?inviteCode=${encodeURIComponent(approval.inviteCode || token)}`;
+          } else {
+            // For direct signups, use approvalToken
+            redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+          }
           stepDescription = 'Complete child setup in Parents HQ';
         }
       } else {

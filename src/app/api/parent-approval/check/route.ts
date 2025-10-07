@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
         parentEmail: pendingSignup.parentEmail,
         status: pendingSignup.status,
         expiresAt: pendingSignup.expiresAt,
+        context: pendingSignup.context, // Include context to distinguish child_invite vs direct_signup
       },
     });
 
