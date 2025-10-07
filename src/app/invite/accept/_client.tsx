@@ -38,7 +38,7 @@ function InviteAcceptContent() {
           // This is a parent approval token - handle as before
           if (parentData.approval.parentState === 'existing_parent') {
             console.log('[INVITE_ACCEPT] Redirecting existing parent to Parents HQ');
-            router.push(`/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`);
+            router.push(`/parents/hq?approvalToken=${encodeURIComponent(token)}`);
           } else {
             console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
             router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);

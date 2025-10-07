@@ -173,7 +173,7 @@ export default function ChoosePlanForm() {
             // For parent approval flow, go directly to child creation
             router.push(`/parents/hq?approvalToken=${encodeURIComponent(approvalToken)}`);
           } else {
-            router.push('/parents/hq/dashboard');
+            router.push('/parents/hq');
           }
         }, 2000);
       } else {

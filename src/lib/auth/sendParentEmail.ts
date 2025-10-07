@@ -29,7 +29,7 @@ export async function sendParentEmail({
   function buildParentInviteUrl(code?: string) {
     return code
       ? `${BASE_URL}/parent-approval/smart?token=${encodeURIComponent(code)}`
-      : `${BASE_URL}/parents/hq/dashboard`;
+      : `${BASE_URL}/parents/hq`;
   }
 
   const approvalLink = buildParentInviteUrl(inviteCode);

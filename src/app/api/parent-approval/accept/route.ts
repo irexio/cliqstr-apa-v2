@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       if (approval.parentState === 'existing_parent') {
         // Existing parent - go directly to Parents HQ (they already have a plan)
         console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting existing parent to Parents HQ`);
-        redirectUrl = `/parents/hq/dashboard?approvalToken=${encodeURIComponent(token)}`;
+        redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
       } else {
         // New parent or existing adult converting to parent - go to plan selection
         console.log(`[PARENT-APPROVAL-ACCEPT] Redirecting new/existing adult to plan selection`);

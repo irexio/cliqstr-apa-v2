@@ -143,8 +143,8 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
             Set Up Child Account for {setupApproval.childFirstName} {setupApproval.childLastName}
           </h2>
           <ChildSignupApprovalFlow 
-            approvalToken={approvalToken}
-            inviteCode={inviteCode}
+            approvalToken={approvalToken || undefined}
+            inviteCode={inviteCode || undefined}
             onChildCreated={handleChildCreated}
           />
         </div>

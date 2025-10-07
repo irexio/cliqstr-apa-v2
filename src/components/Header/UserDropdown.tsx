@@ -124,7 +124,7 @@ export function UserDropdown({ userData, handleSignOut }: UserDropdownProps) {
           {/* Show Parents HQ link only for parents */}
           {userData.role === 'PARENT' && (
             <Link 
-              href="/parents/hq/dashboard" 
+              href="/parents/hq" 
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               onClick={() => setIsUserMenuOpen(false)}
             >

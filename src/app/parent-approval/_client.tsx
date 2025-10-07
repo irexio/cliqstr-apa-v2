@@ -82,7 +82,7 @@ export default function ParentApprovalContent() {
           }
 
           // Redirect directly to Parents HQ
-          router.push('/parents/hq/dashboard?approvalToken=' + encodeURIComponent(token));
+          router.push('/parents/hq?approvalToken=' + encodeURIComponent(token));
         } else {
           // New parent or existing adult - create account first
           const signupResponse = await fetch('/api/parent-approval/signup', {

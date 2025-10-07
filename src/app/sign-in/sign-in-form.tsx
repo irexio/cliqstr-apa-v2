@@ -202,7 +202,7 @@ export default function SignInForm() {
       }
 
       if (account?.role === 'Parent') {
-        hardNavigate('/parents/hq/dashboard');
+        hardNavigate('/parents/hq');
         return;
       }
 
