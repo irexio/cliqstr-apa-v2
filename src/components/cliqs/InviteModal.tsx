@@ -14,7 +14,7 @@ export default function InviteModal({ cliqId, open, onClose, canInvite = false }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full p-6 rounded-lg bg-gray-800 text-white">
+      <DialogContent className="max-w-md w-full p-6 rounded-lg">
         <DialogTitle className="text-xl font-bold mb-2">Invite to Cliq</DialogTitle>
         <InviteClient cliqId={cliqId} />
         <button

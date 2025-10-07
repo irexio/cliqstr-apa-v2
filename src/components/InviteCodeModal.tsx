@@ -119,10 +119,10 @@ export default function InviteCodeModal({ open, setOpen }: InviteCodeModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-gray-800 text-white p-8 rounded-lg shadow-lg w-full max-w-md mx-4 relative">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-4 relative">
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-gray-300 hover:text-white"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
           aria-label="Close"
         >
           <XMarkIcon className="h-6 w-6" />
@@ -134,7 +134,7 @@ export default function InviteCodeModal({ open, setOpen }: InviteCodeModalProps)
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Join a Cliq</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-900">Join a Cliq</h2>
         
         <p className="text-gray-600 mb-6 text-center">
           Enter your invite code to join a private cliq
@@ -153,7 +153,7 @@ export default function InviteCodeModal({ open, setOpen }: InviteCodeModalProps)
                 value={inviteCode}
                 onChange={handleInputChange}
                 onPaste={handlePaste}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none transition-all text-black ${
                   success ? 'border-green-500 bg-green-50' : 
                   error ? 'border-red-500 bg-red-50' : 
                   'border-gray-300 focus:ring-[#c032d1] focus:border-[#c032d1]'
