@@ -171,13 +171,21 @@ export default function SmartParentApprovalRouter() {
           // Step 3+: All other cases go to unified Parents HQ
           // The unified dashboard will handle setup vs manage mode based on context
           if (approval.context === 'child_invite') {
-            // For child invites, pass the original inviteCode to preserve context
+            // For child invites, always go to setup mode (even if parent has other children)
             redirectUrl = `/parents/hq?inviteCode=${encodeURIComponent(approval.inviteCode || token)}`;
+            stepDescription = 'Complete child setup in Parents HQ';
           } else {
-            // For direct signups, use approvalToken
-            redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+            // For direct signups, check if this specific child already exists
+            if (childExists) {
+              // Child already exists - go to manage mode
+              redirectUrl = `/parents/hq`;
+              stepDescription = 'Go to Parents HQ to manage existing child';
+            } else {
+              // Child doesn't exist - go to setup mode
+              redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+              stepDescription = 'Complete child setup in Parents HQ';
+            }
           }
-          stepDescription = 'Complete child setup in Parents HQ';
         }
       } else {
         // Direct login flow (no token) - route based on setup stage

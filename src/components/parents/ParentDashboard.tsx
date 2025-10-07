@@ -71,14 +71,38 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
       if (context === 'setup' && (approvalToken || inviteCode)) {
         // Setup mode: Load approval details
         try {
-          const token = approvalToken || inviteCode;
-          const res = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(token!)}`);
-          if (res.ok) {
-            const data = await res.json();
-            setSetupApproval(data.approval);
-          } else {
-            console.error('[PARENT_DASHBOARD] Invalid approval token');
-            router.push('/parents/hq'); // fallback to manage mode
+          if (inviteCode) {
+            // For child invites, use invite validation API
+            const res = await fetch(`/api/invites/validate?code=${encodeURIComponent(inviteCode)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.valid) {
+                // Convert invite data to approval format
+                setSetupApproval({
+                  childFirstName: data.friendFirstName || 'Child',
+                  childLastName: data.friendLastName || '',
+                  childBirthdate: data.childBirthdate || '',
+                  parentEmail: data.recipientEmail || '',
+                  context: 'child_invite',
+                });
+              } else {
+                console.error('[PARENT_DASHBOARD] Invalid invite code');
+                router.push('/parents/hq'); // fallback to manage mode
+              }
+            } else {
+              console.error('[PARENT_DASHBOARD] Invalid invite code');
+              router.push('/parents/hq'); // fallback to manage mode
+            }
+          } else if (approvalToken) {
+            // For direct signups, use approval check API
+            const res = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`);
+            if (res.ok) {
+              const data = await res.json();
+              setSetupApproval(data.approval);
+            } else {
+              console.error('[PARENT_DASHBOARD] Invalid approval token');
+              router.push('/parents/hq'); // fallback to manage mode
+            }
           }
         } catch (error) {
           console.error('[PARENT_DASHBOARD] Failed to load approval details:', error);
