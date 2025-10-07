@@ -240,7 +240,8 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
       console.log('[PARENTS_HQ][signup-approval] API response:', { 
         status: response.status, 
         ok: response.ok, 
-        data 
+        data,
+        requestData: requestData
       });
 
       if (!response.ok) {
@@ -269,7 +270,9 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
           return;
         }
         if (reason.includes('Failed to create')) {
-          setError("We couldn't create your child's account due to a setup issue. Please try again.");
+          // Show more specific error details if available
+          const specificError = details ? `Setup failed: ${details}` : "We couldn't create your child's account due to a setup issue. Please try again.";
+          setError(specificError);
           setSubmitting(false);
           return;
         }
@@ -356,11 +359,11 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
       {/* Parent HQ Header */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="text-blue-900 text-sm sm:text-base">⚡ Parent HQ - Child Permission Setup</CardTitle>
-          <p className="text-blue-700 text-xs sm:text-sm">Every child must have parents complete these permissions before account creation</p>
+          <CardTitle className="text-blue-900 text-base sm:text-lg">⚡ Parent HQ - Child Permission Setup</CardTitle>
+          <p className="text-blue-700 text-sm sm:text-base">Every child must have parents complete these permissions before account creation</p>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0">
-          <div className="space-y-1 sm:space-y-2 text-blue-800 text-xs sm:text-sm">
+          <div className="space-y-1 sm:space-y-2 text-blue-800 text-sm sm:text-base">
             <p><strong>Child:</strong> {childName}</p>
             {childAge && <p><strong>Age:</strong> {childAge} years old</p>}
             {approvalDetails ? (
@@ -380,16 +383,16 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
 
       {/* Red Alert Agreement */}
       <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-red-900">🚨 Red Alert System - Critical Safety Feature</CardTitle>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-red-900 text-base sm:text-lg">🚨 Red Alert System - Critical Safety Feature</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6 pt-0">
           <div className="space-y-3">
-            <p className="text-red-800 text-sm">
+            <p className="text-red-800 text-sm sm:text-base">
               <strong>Red Alert System:</strong> When a Red Alert is pressed, the post is immediately suspended, 
               AI moderation and parents are both instantly notified. This is a critical safety feature.
             </p>
-            <p className="text-red-800 text-sm">
+            <p className="text-red-800 text-sm sm:text-base">
               By approving this signup, you understand that {childFirstName}'s activity 
               will be monitored for safety and you will receive instant alerts for any concerning behavior.
             </p>
@@ -399,7 +402,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                 checked={redAlertAccepted}
                 onCheckedChange={(checked) => setRedAlertAccepted(checked as boolean)}
               />
-              <Label htmlFor="redAlert" className="text-red-800 font-medium">
+              <Label htmlFor="redAlert" className="text-red-800 font-medium text-sm sm:text-base">
                 I understand the Red Alert system is critical for {childFirstName}'s safety
               </Label>
             </div>
@@ -410,12 +413,12 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
       {/* Account Setup */}
       <Card>
         <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="text-sm sm:text-base">Create Child Account</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Create Child Account</CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0">
           <form onSubmit={handleSubmitApproval} className="space-y-3 sm:space-y-4">
             <div>
-              <Label htmlFor="username">Username for {childFirstName}</Label>
+              <Label htmlFor="username" className="text-sm sm:text-base font-medium">Username for {childFirstName}</Label>
               <Input
                 id="username"
                 value={username}
@@ -423,22 +426,24 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                 placeholder={`${childFirstName.toLowerCase()}${childLastName ? childLastName.toLowerCase() : ''}`}
                 required
                 minLength={3}
+                className="text-sm sm:text-base"
               />
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
                 Suggested: {childFirstName.toLowerCase()}{childLastName ? childLastName.toLowerCase() : ''}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="childEmail">Child's Email Address (Optional)</Label>
+              <Label htmlFor="childEmail" className="text-sm sm:text-base font-medium">Child's Email Address (Optional)</Label>
               <Input
                 id="childEmail"
                 type="email"
                 value={childEmail}
                 onChange={(e) => setChildEmail(e.target.value)}
                 placeholder="child@example.com (optional)"
+                className="text-sm sm:text-base"
               />
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
                 {childAge && childAge < 13 
                   ? "If provided, magic links will be sent to your email for forwarding to your child. If not provided, child will use username/password login."
                   : "If provided, magic links will be sent directly to your child for easy login. If not provided, child will use username/password login."
@@ -447,7 +452,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm sm:text-base font-medium">Password</Label>
               <PasswordInput
                 id="password"
                 value={password}
@@ -455,38 +460,39 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                 placeholder="Create a secure password"
                 required
                 minLength={6}
+                className="text-sm sm:text-base"
               />
             </div>
 
             {/* Additional Parent/Guardian Email */}
             <div>
-              <Label htmlFor="secondParentEmail">Additional Parent/Guardian Email (Optional)</Label>
+              <Label htmlFor="secondParentEmail" className="text-sm sm:text-base font-medium">Additional Parent/Guardian Email (Optional)</Label>
               <input
                 id="secondParentEmail"
                 type="email"
                 value={secondParentEmail}
                 onChange={(e) => setSecondParentEmail(e.target.value)}
                 placeholder="Enter additional parent or guardian email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm sm:text-base text-gray-500 mt-1">
                 Add another parent or guardian who should also receive notifications about {childFirstName}.
               </p>
             </div>
 
             {/* Silent Monitoring Toggle */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="silentMonitoring"
                   checked={silentMonitoring}
                   onCheckedChange={(checked) => setSilentMonitoring(checked as boolean)}
                 />
-                <Label htmlFor="silentMonitoring" className="font-medium">
+                <Label htmlFor="silentMonitoring" className="text-sm sm:text-base font-medium">
                   Enable Silent Monitoring (Recommended)
                 </Label>
               </div>
-              <p className="text-gray-600 text-sm mt-1">
+              <p className="text-gray-600 text-sm sm:text-base mt-1">
                 Monitor {childFirstName}'s activity without them knowing
               </p>
             </div>
@@ -494,7 +500,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
             {/* Parent HQ: Child Permissions */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
               <h4 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">⚡ Parent HQ: Set Permissions for {childFirstName}</h4>
-              <p className="text-gray-600 text-xs mb-2 sm:mb-3">Select which features you want activated on your child's account</p>
+              <p className="text-gray-600 text-sm sm:text-base mb-2 sm:mb-3">Select which features you want activated on your child's account</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
@@ -504,7 +510,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canCreateCliqs: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canCreateCliqs" className="text-sm">
+                  <Label htmlFor="canCreateCliqs" className="text-sm sm:text-base">
                     Can create cliqs
                   </Label>
                 </div>
@@ -517,7 +523,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canInviteChildren: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canInviteChildren" className="text-sm">
+                  <Label htmlFor="canInviteChildren" className="text-sm sm:text-base">
                     Can invite children
                   </Label>
                 </div>
@@ -530,7 +536,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canInviteAdults: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canInviteAdults" className="text-sm">
+                  <Label htmlFor="canInviteAdults" className="text-sm sm:text-base">
                     Can invite adults
                   </Label>
                 </div>
@@ -543,7 +549,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canCreatePublicCliqs: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canCreatePublicCliqs" className="text-sm">
+                  <Label htmlFor="canCreatePublicCliqs" className="text-sm sm:text-base">
                     Can create public cliqs
                   </Label>
                 </div>
@@ -556,7 +562,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canReceiveInvites: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canJoinAgeAppropriatePublicCliqs" className="text-sm">
+                  <Label htmlFor="canJoinAgeAppropriatePublicCliqs" className="text-sm sm:text-base">
                     Can join age appropriate public cliqs
                   </Label>
                 </div>
@@ -570,7 +576,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canPost: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canPost" className="text-sm">
+                  <Label htmlFor="canPost" className="text-sm sm:text-base">
                     Can create posts
                   </Label>
                 </div>
@@ -583,7 +589,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canComment: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canComment" className="text-sm">
+                  <Label htmlFor="canComment" className="text-sm sm:text-base">
                     Can comment on posts
                   </Label>
                 </div>
@@ -596,7 +602,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canReact: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canReact" className="text-sm">
+                  <Label htmlFor="canReact" className="text-sm sm:text-base">
                     Can react to posts
                   </Label>
                 </div>
@@ -609,7 +615,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canViewProfiles: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canViewProfiles" className="text-sm">
+                  <Label htmlFor="canViewProfiles" className="text-sm sm:text-base">
                     Can view other profiles
                   </Label>
                 </div>
@@ -622,7 +628,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canReceiveInvites: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canReceiveInvites" className="text-sm">
+                  <Label htmlFor="canReceiveInvites" className="text-sm sm:text-base">
                     Can receive invites
                   </Label>
                 </div>
@@ -635,7 +641,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, canUploadVideos: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="canUploadVideos" className="text-sm">
+                  <Label htmlFor="canUploadVideos" className="text-sm sm:text-base">
                     Can upload videos
                   </Label>
                 </div>
@@ -648,7 +654,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
                       setPermissions(prev => ({ ...prev, invitesRequireParentApproval: checked as boolean }))
                     }
                   />
-                  <Label htmlFor="invitesRequireParentApproval" className="text-sm">
+                  <Label htmlFor="invitesRequireParentApproval" className="text-sm sm:text-base">
                     All invites must be parent approved (Recommended for safety)
                   </Label>
                 </div>
