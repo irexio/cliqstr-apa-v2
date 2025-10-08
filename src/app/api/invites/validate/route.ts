@@ -41,6 +41,9 @@ export async function GET(req: Request) {
       used: invite?.used,
       expired,
       role: invite?.invitedRole,
+      inviteType: invite?.inviteType,
+      expiresAt: invite?.expiresAt,
+      currentTime: now,
     });
 
     if (!invite) {

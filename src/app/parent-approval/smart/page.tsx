@@ -44,8 +44,15 @@ export default function SmartParentApprovalRouter() {
         } else {
           // If not found in approvals, try to get invite details (for child invites)
           console.log('[SMART-ROUTER] No approval found, checking if token is invite code...');
+          console.log('[SMART-ROUTER] Validating invite code:', token);
           const inviteResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(token)}`);
           const inviteData = await inviteResponse.json();
+          
+          console.log('[SMART-ROUTER] Invite validation response:', {
+            ok: inviteResponse.ok,
+            status: inviteResponse.status,
+            data: inviteData
+          });
           
           if (inviteResponse.ok && inviteData.valid) {
             // Convert invite data to approval format for consistency
