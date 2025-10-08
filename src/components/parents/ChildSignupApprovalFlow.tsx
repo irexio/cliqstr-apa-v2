@@ -30,6 +30,8 @@ interface ChildSignupApprovalFlowProps {
   approvalToken?: string;
   inviteCode?: string;
   onChildCreated?: () => void;
+  childId?: string; // For editing existing children
+  mode?: 'create' | 'edit'; // 'create' for new children, 'edit' for existing
 }
 
 /**
@@ -46,7 +48,7 @@ interface ChildSignupApprovalFlowProps {
  *   - Every child MUST have parents complete these permissions
  *   - Approval is NOT marked as completed until final Parent HQ approval
  */
-export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onChildCreated }: ChildSignupApprovalFlowProps) {
+export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onChildCreated, childId, mode = 'create' }: ChildSignupApprovalFlowProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -57,6 +59,7 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
   // Form state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState(''); // For editing existing children
   const [childEmail, setChildEmail] = useState('');
   const [redAlertAccepted, setRedAlertAccepted] = useState(false);
   const [silentMonitoring, setSilentMonitoring] = useState(true);
@@ -82,13 +85,52 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
     localStorage.removeItem('parentHQ_formData');
   }, []);
 
-  // Fetch approval details or invite details
+  // Fetch approval details, invite details, or existing child data
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         setLoading(true);
         
-        if (approvalToken) {
+        if (mode === 'edit' && childId) {
+          // Load existing child data for editing
+          const response = await fetch(`/api/parent/children/${childId}`, {
+            cache: 'no-store'
+          });
+          const data = await response.json();
+
+          if (!response.ok || !data.child) {
+            throw new Error('Failed to load child details');
+          }
+
+          // Pre-fill form with existing child data
+          setUsername(data.child.username || '');
+          setChildEmail(data.child.email || '');
+          setRedAlertAccepted(true); // Assume already accepted
+          setSilentMonitoring(data.child.silentMonitoring ?? true);
+          setSecondParentEmail(data.child.secondParentEmail || '');
+          setPermissions(data.child.permissions || {
+            canPost: true,
+            canComment: true,
+            canReact: true,
+            canViewProfiles: true,
+            canReceiveInvites: true,
+            canCreatePublicCliqs: false,
+            canInviteChildren: false,
+            canInviteAdults: false,
+            canCreateCliqs: false,
+            canUploadVideos: false,
+            invitesRequireParentApproval: true,
+          });
+
+          // Set child details for display
+          setApprovalDetails({
+            childFirstName: data.child.firstName || 'Child',
+            childLastName: data.child.lastName || '',
+            childBirthdate: data.child.birthdate || '',
+            parentEmail: data.child.parentEmail || '',
+            context: 'edit_existing',
+          });
+        } else if (approvalToken) {
           // Handle direct child signup approval
           const response = await fetch(
             `/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`,
@@ -150,25 +192,37 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
     };
 
     fetchDetails();
-  }, [approvalToken, inviteCode]);
+  }, [approvalToken, inviteCode, childId, mode]);
 
   const handleSubmitApproval = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!redAlertAccepted) {
-      setError('You must accept the Red Alert monitoring agreement');
-      return;
-    }
+    if (mode === 'create') {
+      if (!redAlertAccepted) {
+        setError('You must accept the Red Alert monitoring agreement');
+        return;
+      }
 
-    if (!username.trim() || !password.trim()) {
-      setError('Username and password are required');
-      return;
-    }
+      if (!username.trim() || !password.trim()) {
+        setError('Username and password are required');
+        return;
+      }
 
-    // Check if we have the required data from either approval or invite
-    if (!approvalDetails && !inviteDetails) {
-      setError('Unable to load child information. Please refresh the page and try again.');
-      return;
+      // Check if we have the required data from either approval or invite
+      if (!approvalDetails && !inviteDetails) {
+        setError('Unable to load child information. Please refresh the page and try again.');
+        return;
+      }
+    } else if (mode === 'edit') {
+      if (!username.trim()) {
+        setError('Username is required');
+        return;
+      }
+      // SECURITY: For editing, ALWAYS require current password for verification
+      if (!currentPassword.trim()) {
+        setError('Current password is required to make any changes');
+        return;
+      }
     }
 
     // Debug: Check which flow we're in
@@ -209,7 +263,8 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
           : new Date('2010-01-01').getTime(), // Default to 2010 if no birthdate
         // Account details
         username: username.trim(),
-        password,
+        password: mode === 'edit' ? password : password, // New password (if provided)
+        currentPassword: mode === 'edit' ? currentPassword : undefined, // Current password for verification
         childEmail: childEmail.trim(),
         redAlertAccepted,
         silentMonitoring,
@@ -227,8 +282,13 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
         inviteCodeValue: inviteCode
       });
 
-      const response = await fetch('/api/parent/children', {
-        method: 'POST',
+      const url = mode === 'edit' && childId 
+        ? `/api/parent/children/${childId}` 
+        : '/api/parent/children';
+      const method = mode === 'edit' ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -290,12 +350,16 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
       }
 
       // Success - clear saved form data and handle completion
-      console.log('[PARENTS_HQ][signup-approval] success - child account created');
+      console.log(`[PARENTS_HQ][signup-approval] success - child account ${mode === 'edit' ? 'updated' : 'created'}`);
       localStorage.removeItem('parentHQ_formData'); // Clear saved form data
       
-      if (onChildCreated) {
+      if (mode === 'create' && onChildCreated) {
         // Use callback to switch to manage mode
         onChildCreated();
+      } else if (mode === 'edit') {
+        // For edit mode, just show success message and stay on the same page
+        setError(''); // Clear any errors
+        // Could add a success message here
       } else {
         // Fallback to success page
         router.replace(`/parents/hq/success?childName=${encodeURIComponent(childFirstName)}`);
@@ -413,7 +477,9 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
       {/* Account Setup */}
       <Card>
         <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Create Child Account</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            {mode === 'edit' ? 'Update Child Account' : 'Create Child Account'}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0">
           <form onSubmit={handleSubmitApproval} className="space-y-3 sm:space-y-4">
@@ -451,17 +517,45 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
               </p>
             </div>
 
+            {/* Current Password (for editing) - ALWAYS REQUIRED */}
+            {mode === 'edit' && (
+              <div>
+                <Label htmlFor="currentPassword" className="text-sm sm:text-base font-medium">
+                  Current Password (Required for ALL changes)
+                </Label>
+                <PasswordInput
+                  id="currentPassword"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password to verify you can make changes"
+                  required
+                  className="text-sm sm:text-base"
+                />
+                <p className="text-sm sm:text-base text-gray-600 mt-1">
+                  <strong>Security:</strong> Current password is required to make ANY changes to this child's account
+                </p>
+              </div>
+            )}
+
+            {/* New Password */}
             <div>
-              <Label htmlFor="password" className="text-sm sm:text-base font-medium">Password</Label>
+              <Label htmlFor="password" className="text-sm sm:text-base font-medium">
+                {mode === 'edit' ? 'New Password (Optional)' : 'Password'}
+              </Label>
               <PasswordInput
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a secure password"
-                required
+                placeholder={mode === 'edit' ? "Leave blank to keep current password" : "Create a secure password"}
+                required={mode === 'create'}
                 minLength={6}
                 className="text-sm sm:text-base"
               />
+              {mode === 'edit' && (
+                <p className="text-sm sm:text-base text-gray-600 mt-1">
+                  Leave blank to keep the current password
+                </p>
+              )}
             </div>
 
             {/* Additional Parent/Guardian Email */}
@@ -678,10 +772,15 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
               </Button>
               <Button 
                 type="submit" 
-                disabled={submitting || !redAlertAccepted}
+                disabled={submitting || (mode === 'create' && !redAlertAccepted)}
                 className="flex-1 text-sm sm:text-base"
               >
-                {submitting ? 'Creating Account...' : `⚡ Parent HQ: Complete Setup for ${childFirstName}`}
+                {submitting 
+                  ? (mode === 'edit' ? 'Updating Account...' : 'Creating Account...') 
+                  : (mode === 'edit' 
+                      ? `⚡ Parent HQ: Update ${childFirstName}` 
+                      : `⚡ Parent HQ: Complete Setup for ${childFirstName}`)
+                }
               </Button>
             </div>
           </form>

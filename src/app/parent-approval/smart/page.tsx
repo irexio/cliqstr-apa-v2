@@ -138,10 +138,10 @@ export default function SmartParentApprovalRouter() {
             const childrenData = await childrenResponse.json();
             // Check if child with matching name exists
             const childName = `${approval.childFirstName} ${approval.childLastName}`;
-            childExists = childrenData.children?.some((child: any) => 
+            childExists = childrenData?.some((child: any) => 
               `${child.firstName} ${child.lastName}` === childName
             );
-            console.log('[SMART-ROUTER] Found children:', childrenData.children?.length || 0);
+            console.log('[SMART-ROUTER] Found children:', childrenData?.length || 0);
             console.log('[SMART-ROUTER] Looking for child:', childName);
             console.log('[SMART-ROUTER] Child exists:', childExists);
           }
