@@ -67,7 +67,12 @@ export default function SmartParentApprovalRouter() {
             };
             console.log('[SMART-ROUTER] Found invite record, converted to approval format');
           } else {
-            setError('Invalid or expired token');
+            console.error('[SMART-ROUTER] Invite validation failed:', {
+              response: inviteResponse,
+              data: inviteData,
+              token: token
+            });
+            setError(`Invalid or expired token. Response: ${inviteResponse.status}, Data: ${JSON.stringify(inviteData)}`);
             setLoading(false);
             return;
           }

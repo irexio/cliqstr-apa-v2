@@ -46,6 +46,21 @@ export async function GET(req: Request) {
       currentTime: now,
     });
 
+    // Additional debugging for child invites
+    if (invite?.inviteType === 'child' || invite?.invitedRole === 'child') {
+      console.log('[INVITE/VALIDATE] Child invite details:', {
+        code,
+        inviteType: invite.inviteType,
+        invitedRole: invite.invitedRole,
+        friendFirstName: invite.friendFirstName,
+        friendLastName: invite.friendLastName,
+        recipientEmail: invite.inviteeEmail || invite.trustedAdultContact,
+        status: invite.status,
+        used: invite.used,
+        expired
+      });
+    }
+
     if (!invite) {
       return NextResponse.json(
         { valid: false, reason: 'not_found' },
