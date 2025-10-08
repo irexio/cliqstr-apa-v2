@@ -10,11 +10,17 @@ export const dynamic = 'force-dynamic';
  * Checks if a parent approval token is valid and returns the pending signup data
  */
 export async function GET(req: NextRequest) {
+  console.log('[PARENT-APPROVAL-CHECK] Route called!');
+  
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get('token');
 
+    console.log(`[PARENT-APPROVAL-CHECK] URL: ${req.url}`);
+    console.log(`[PARENT-APPROVAL-CHECK] Token from URL: ${token}`);
+
     if (!token) {
+      console.log('[PARENT-APPROVAL-CHECK] No token provided');
       return NextResponse.json({ error: 'No approval token provided' }, { status: 400 });
     }
 
