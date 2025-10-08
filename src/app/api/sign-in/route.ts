@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { identifier, password } = await req.json();
+    const { identifier, password, approvalToken } = await req.json();
 
     if (!identifier || !password) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
@@ -200,6 +200,34 @@ export async function POST(req: NextRequest) {
     const refreshIntervalMins = Number(process.env.SESSION_REFRESH_INTERVAL_MINUTES || 20);
     const idleCutoffMins = Number(process.env.SESSION_IDLE_CUTOFF_MINUTES || 60);
     
+    // Handle adult-to-parent upgrade if approval token is provided
+    if (approvalToken && user.account?.role === 'Adult') {
+      console.log(`[SIGN-IN] Upgrading Adult user ${user._id} to Parent role via approval token`);
+      
+      // Get the approval record to verify this is a valid upgrade
+      const approval = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
+        approvalToken,
+      });
+
+      if (approval && approval.parentState === 'existing_adult') {
+        // Upgrade to Parent role
+        await convexHttp.mutation(api.users.upgradeToParent, {
+          userId: user._id as any,
+        });
+        
+        console.log(`[SIGN-IN] Successfully upgraded user ${user._id} to Parent role`);
+        
+        // Refresh user data after upgrade
+        const updatedUser = await convexHttp.query(api.users.getUserForSignIn, {
+          email: user.email,
+        });
+        
+        if (updatedUser) {
+          user.account = updatedUser.account;
+        }
+      }
+    }
+
     // Clear any existing cache for this user to ensure fresh data
     console.log('[SIGN-IN] Clearing user cache for fresh sign-in:', user._id.toString());
     await invalidateUser(user._id.toString());

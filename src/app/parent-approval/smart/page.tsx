@@ -26,11 +26,11 @@ export default function SmartParentApprovalRouter() {
   }, [token]);
 
   const checkParentProgress = async () => {
+    let approval = null;
+    
     try {
       setLoading(true);
       setError(null);
-
-      let approval = null;
       
       // Step 1: Check approval status (only if token provided)
       if (token) {
@@ -165,24 +165,60 @@ export default function SmartParentApprovalRouter() {
       let stepDescription = '';
 
       if (token && approval) {
-        // Token-based flow (from email) - UNIFIED APPROACH
-        if (approval.status === 'pending' && !parentAccount) {
-          // Step 1: Parent hasn't started - create account
-          redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
-          stepDescription = 'Create your parent account';
-        } else if (approval.status === 'approved' && parentAccount && !hasPlan) {
-          // Step 2: Parent has account but no plan - select plan
-          redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
-          stepDescription = 'Select your plan';
-        } else {
-          // Step 3+: All other cases go to unified Parents HQ
-          // The unified dashboard will handle setup vs manage mode based on context
-          if (approval.context === 'child_invite') {
-            // For child invites, always go to setup mode (even if parent has other children)
-            redirectUrl = `/parents/hq?inviteCode=${encodeURIComponent(approval.inviteCode || token)}`;
+        // Token-based flow (from email) - ALWAYS FOLLOW THE 3-STEP FLOW
+        if (approval.context === 'child_invite') {
+          // CHILD INVITE FLOW: Check if parent exists and their role
+          if (!parentAccount) {
+            // NEW PARENT: Parent Sign Up → Plan Page → PHQ
+            if (approval.status === 'pending') {
+              // Step 1: Parent Sign Up
+              redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
+              stepDescription = 'Create your parent account';
+            } else if (approval.status === 'approved' && !hasPlan) {
+              // Step 2: Plan Page
+              redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
+              stepDescription = 'Select your plan';
+            } else {
+              // Step 3: Parents HQ
+              redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+              stepDescription = 'Complete child setup in Parents HQ';
+            }
+          } else if (parentAccount && parentAccount.role === 'Parent') {
+            // EXISTING PARENT: Go directly to PHQ
+            redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
             stepDescription = 'Complete child setup in Parents HQ';
+          } else if (approval.parentState === 'existing_adult') {
+            // EXISTING ADULT: Sign In → Upgrade to Parent → Plan Page → PHQ
+            if (approval.status === 'pending') {
+              // Step 1: Sign In (existing adult needs to sign in first)
+              redirectUrl = `/sign-in?approvalToken=${encodeURIComponent(token)}`;
+              stepDescription = 'Sign in to upgrade to parent account';
+            } else if (approval.status === 'approved' && !hasPlan) {
+              // Step 2: Plan Page
+              redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
+              stepDescription = 'Select your plan';
+            } else {
+              // Step 3: Parents HQ
+              redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+              stepDescription = 'Complete child setup in Parents HQ';
+            }
           } else {
-            // For direct signups, check if this specific child already exists
+            // Fallback: Go to Parents HQ
+            redirectUrl = `/parents/hq?approvalToken=${encodeURIComponent(token)}`;
+            stepDescription = 'Complete child setup in Parents HQ';
+          }
+        } else {
+          // DIRECT SIGNUP FLOW: Check if parent has account first
+          if (approval.status === 'pending' && !parentAccount) {
+            // Step 1: Parent hasn't started - create account
+            redirectUrl = `/parent-approval?token=${encodeURIComponent(token)}`;
+            stepDescription = 'Create your parent account';
+          } else if (approval.status === 'approved' && parentAccount && !hasPlan) {
+            // Step 2: Parent has account but no plan - select plan
+            redirectUrl = `/choose-plan?approvalToken=${encodeURIComponent(token)}`;
+            stepDescription = 'Select your plan';
+          } else {
+            // Step 3+: Check if this specific child already exists
             if (childExists) {
               // Child already exists - go to manage mode
               redirectUrl = `/parents/hq`;
@@ -212,6 +248,15 @@ export default function SmartParentApprovalRouter() {
       }
 
       console.log('[SMART-ROUTER] Routing to:', redirectUrl, 'for step:', stepDescription);
+      console.log('[SMART-ROUTER] Full routing details:', {
+        token,
+        approval,
+        parentAccount: !!parentAccount,
+        hasPlan,
+        childExists,
+        redirectUrl,
+        stepDescription
+      });
 
       setProgress({
         approval,
@@ -229,6 +274,12 @@ export default function SmartParentApprovalRouter() {
 
     } catch (err) {
       console.error('[SMART-ROUTER] Error checking progress:', err);
+      console.error('[SMART-ROUTER] Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        token,
+        approval: approval || null
+      });
       setError('Failed to check your progress. Please try again.');
     } finally {
       setLoading(false);
