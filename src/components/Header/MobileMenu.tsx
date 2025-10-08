@@ -160,14 +160,14 @@ export function MobileMenu({
                 </Link>
               )}
 
-              {/* Show parent controls only for parents */}
+              {/* Show Parents HQ only for parents */}
               {userData?.role === 'PARENT' && (
                 <Link 
-                  href="/parent-controls" 
+                  href="/parents/hq" 
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Parent Controls
+                  ⚡ Parents HQ
                 </Link>
               )}
 

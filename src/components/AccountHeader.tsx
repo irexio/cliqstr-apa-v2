@@ -110,14 +110,14 @@ export default function AccountHeader({ user }: AccountHeaderProps) {
                     </>
                   )}
                   
-                  {/* Show parent controls only for parents */}
+                  {/* Show Parents HQ only for parents */}
                   {user.role === 'PARENT' && (
                     <Link 
-                      href="/parent-controls" 
+                      href="/parents/hq" 
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Parent Controls
+                      ⚡ Parents HQ
                     </Link>
                   )}
                   
