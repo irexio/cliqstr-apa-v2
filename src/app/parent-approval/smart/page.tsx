@@ -34,16 +34,9 @@ export default function SmartParentApprovalRouter() {
       
       // Step 1: Check approval status (only if token provided)
       if (token) {
-        // First try to get approval by token (for direct signups)
-        const approvalResponse = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(token)}`);
-        const approvalData = await approvalResponse.json();
-
-        if (approvalResponse.ok && approvalData.approval) {
-          approval = approvalData.approval;
-          console.log('[SMART-ROUTER] Found approval record, status:', approval.status);
-        } else {
-          // If not found in approvals, try to get invite details (for child invites)
-          console.log('[SMART-ROUTER] No approval found, checking if token is invite code...');
+        // Check if this is a child invite token (starts with CLIQ-)
+        if (token.startsWith('CLIQ-')) {
+          console.log('[SMART-ROUTER] Detected child invite token, validating invite code');
           console.log('[SMART-ROUTER] Validating invite code:', token);
           const inviteResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(token)}`);
           const inviteData = await inviteResponse.json();
@@ -73,6 +66,25 @@ export default function SmartParentApprovalRouter() {
               token: token
             });
             setError(`Invalid or expired token. Response: ${inviteResponse.status}, Data: ${JSON.stringify(inviteData)}`);
+            setLoading(false);
+            return;
+          }
+        } else {
+          // This is a direct signup token, try to get approval by token
+          console.log('[SMART-ROUTER] Detected direct signup token, checking parent approval');
+          const approvalResponse = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(token)}`);
+          const approvalData = await approvalResponse.json();
+
+          if (approvalResponse.ok && approvalData.approval) {
+            approval = approvalData.approval;
+            console.log('[SMART-ROUTER] Found approval record, status:', approval.status);
+          } else {
+            console.error('[SMART-ROUTER] Parent approval check failed:', {
+              response: approvalResponse,
+              data: approvalData,
+              token: token
+            });
+            setError(`Invalid or expired approval token. Response: ${approvalResponse.status}, Data: ${JSON.stringify(approvalData)}`);
             setLoading(false);
             return;
           }

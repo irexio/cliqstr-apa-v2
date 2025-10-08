@@ -1,6 +1,4 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { convexHttp } from '@/lib/convex-server';
-import { api } from 'convex/_generated/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,30 +24,11 @@ export async function GET(req: NextRequest) {
 
     console.log(`[PARENT-APPROVAL-CHECK] Checking token: ${token}`);
 
-    // Get the parent approval by token
-    const pendingSignup = await convexHttp.query(api.parentApprovals.getParentApprovalByToken, {
-      approvalToken: token,
-    });
-
-    if (!pendingSignup) {
-      console.log(`[PARENT-APPROVAL-CHECK] Token not found or expired: ${token}`);
-      return NextResponse.json({ error: 'Invalid or expired approval token' }, { status: 404 });
-    }
-
-    console.log(`[PARENT-APPROVAL-CHECK] Found pending signup for child: ${pendingSignup.childFirstName} ${pendingSignup.childLastName}`);
-
+    // For now, just return a simple response to test if the route works
     return NextResponse.json({
       success: true,
-      approval: {
-        id: pendingSignup._id,
-        childFirstName: pendingSignup.childFirstName,
-        childLastName: pendingSignup.childLastName,
-        childBirthdate: pendingSignup.childBirthdate,
-        parentEmail: pendingSignup.parentEmail,
-        status: pendingSignup.status,
-        expiresAt: pendingSignup.expiresAt,
-        context: pendingSignup.context, // Include context to distinguish child_invite vs direct_signup
-      },
+      message: 'Route is working!',
+      token: token,
     });
 
   } catch (error) {
