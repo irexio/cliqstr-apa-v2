@@ -59,6 +59,8 @@
     "@radix-ui/react-tooltip": "^1.2.6",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.3.0",
+    "@swc/core": "^1.13.5",
+    "@swc/helpers": "^0.5.17",
     "@types/classnames": "^2.3.0",
     "@uploadthing/react": "^7.3.2",
     "bcryptjs": "^3.0.2",
