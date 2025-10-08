@@ -29,7 +29,7 @@ interface InviteDetails {
 interface ChildSignupApprovalFlowProps {
   approvalToken?: string;
   inviteCode?: string;
-  onChildCreated?: () => void;
+  onChildCreated?: (childName?: string) => void;
   childId?: string; // For editing existing children
   mode?: 'create' | 'edit'; // 'create' for new children, 'edit' for existing
 }
@@ -354,8 +354,8 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
       localStorage.removeItem('parentHQ_formData'); // Clear saved form data
       
       if (mode === 'create' && onChildCreated) {
-        // Use callback to switch to manage mode
-        onChildCreated();
+        // Use callback to switch to success page with child name
+        onChildCreated(`${childFirstName} ${childLastName}`.trim());
       } else if (mode === 'edit') {
         // For edit mode, just show success message and stay on the same page
         setError(''); // Clear any errors

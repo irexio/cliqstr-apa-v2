@@ -64,6 +64,54 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
   const [setupApproval, setSetupApproval] = useState<ApprovalDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Check parent's current state and route accordingly
+  const checkParentStateAndRoute = async (parentEmail: string, inviteCode: string) => {
+    try {
+      // Check if user is currently signed in
+      const authResponse = await fetch('/api/auth/status');
+      if (authResponse.ok) {
+        const { user } = await authResponse.json();
+        
+        if (user?.account?.role === 'Parent') {
+          // Existing parent - continue to setup
+          console.log('[PARENT_DASHBOARD] Existing parent, continuing to setup');
+          return;
+        } else if (user?.account?.role === 'Adult') {
+          // Existing adult - redirect to sign-in with auto-upgrade
+          console.log('[PARENT_DASHBOARD] Existing adult, redirecting to sign-in for upgrade');
+          router.push(`/sign-in?inviteCode=${encodeURIComponent(inviteCode)}`);
+          return;
+        }
+      }
+      
+      // No user signed in - check if parent account exists
+      const checkUserResponse = await fetch(`/api/auth/check-user?email=${encodeURIComponent(parentEmail)}`);
+      if (checkUserResponse.ok) {
+        const { exists, role } = await checkUserResponse.json();
+        
+        if (exists && role === 'Parent') {
+          // Parent account exists - redirect to sign-in
+          console.log('[PARENT_DASHBOARD] Parent account exists, redirecting to sign-in');
+          router.push(`/sign-in?inviteCode=${encodeURIComponent(inviteCode)}`);
+          return;
+        } else if (exists && role === 'Adult') {
+          // Adult account exists - redirect to sign-in with auto-upgrade
+          console.log('[PARENT_DASHBOARD] Adult account exists, redirecting to sign-in for upgrade');
+          router.push(`/sign-in?inviteCode=${encodeURIComponent(inviteCode)}`);
+          return;
+        }
+      }
+      
+      // No account exists - redirect to parent signup
+      console.log('[PARENT_DASHBOARD] No account exists, redirecting to parent signup');
+      router.push(`/parent-approval?inviteCode=${encodeURIComponent(inviteCode)}`);
+      
+    } catch (error) {
+      console.error('[PARENT_DASHBOARD] Error checking parent state:', error);
+      // On error, continue to setup (fallback)
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -78,13 +126,18 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
               const data = await res.json();
               if (data.valid) {
                 // Convert invite data to approval format
-                setSetupApproval({
+                const approvalData = {
                   childFirstName: data.friendFirstName || 'Child',
                   childLastName: data.friendLastName || '',
                   childBirthdate: data.childBirthdate || '',
                   parentEmail: data.recipientEmail || '',
                   context: 'child_invite',
-                });
+                };
+                
+                // Check parent's current state and route accordingly
+                await checkParentStateAndRoute(approvalData.parentEmail, inviteCode);
+                
+                setSetupApproval(approvalData);
               } else {
                 console.error('[PARENT_DASHBOARD] Invalid invite code');
                 router.push('/parents/hq'); // fallback to manage mode
@@ -125,9 +178,12 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
     loadData();
   }, [context, approvalToken, inviteCode, router]);
 
-  const handleChildCreated = () => {
-    // After successful child creation, switch to manage mode
-    router.push('/parents/hq');
+  const handleChildCreated = (childName?: string) => {
+    // After successful child creation, redirect to success page
+    const successUrl = childName 
+      ? `/parents/hq/success?childName=${encodeURIComponent(childName)}`
+      : '/parents/hq/success';
+    router.push(successUrl);
   };
 
   if (loading) {
