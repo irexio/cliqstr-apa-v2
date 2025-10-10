@@ -2,7 +2,6 @@ import { NextResponse, NextRequest } from 'next/server';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
 import { z } from 'zod';
-import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,9 +42,9 @@ export async function POST(req: NextRequest) {
       }, { status: 404 });
     }
 
-    if (approval.status !== 'pending') {
-      return NextResponse.json({ 
-        error: 'This approval has already been processed' 
+    if (approval.status !== 'pending' && approval.status !== 'approved') {
+      return NextResponse.json({
+        error: 'This approval has already been processed'
       }, { status: 400 });
     }
 
@@ -91,13 +90,18 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Mark the approval as approved now that the parent has selected a plan
-    await convexHttp.mutation(api.parentApprovals.updateParentApprovalStatus, {
-      approvalToken,
-      status: 'approved',
-    });
+    // Ensure approval reflects progress (legacy tokens may still be pending)
+    if (approval.status !== 'approved') {
+      await convexHttp.mutation(api.parentApprovals.updateParentApprovalStatus, {
+        approvalToken,
+        status: 'approved',
+      });
+      console.log(`[PARENT-APPROVAL-PLAN] Updated approval ${approval._id} status to 'approved' after plan selection`);
+    } else {
+      console.log(`[PARENT-APPROVAL-PLAN] Approval ${approval._id} already marked as 'approved' prior to plan selection`);
+    }
 
-    console.log(`[PARENT-APPROVAL-PLAN] Successfully updated parent plan, set setup stage to 'plan_selected', and marked approval as approved`);
+    console.log(`[PARENT-APPROVAL-PLAN] Successfully updated parent plan and set setup stage to 'plan_selected'`);
 
     return NextResponse.json({
       success: true,

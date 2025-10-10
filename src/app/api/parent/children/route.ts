@@ -322,10 +322,14 @@ export async function POST(req: NextRequest) {
 
     // Mark the approval as completed ONLY after successful child creation
     if (approvalToken && approval) {
-      await convexHttp.mutation(api.parentApprovals.approveParentApproval, {
-        approvalToken,
-      });
-      console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
+      if (approval.status === 'pending') {
+        await convexHttp.mutation(api.parentApprovals.approveParentApproval, {
+          approvalToken,
+        });
+        console.log(`[PARENT-CHILDREN] Marked approval as completed for token: ${approvalToken}`);
+      } else {
+        console.log(`[PARENT-CHILDREN] Approval token ${approvalToken} already marked as approved; skipping status mutation`);
+      }
     }
 
     // Set setup stage to 'completed' - parent has successfully created child account

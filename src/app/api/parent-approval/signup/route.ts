@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Note: Parent will create their own social media profile later
-    // Note: Approval will be marked as completed after plan selection
+    // Note: Approval will now track parent progress through setup stages
 
     console.log(`[PARENT-APPROVAL-SIGNUP] Successfully created parent account`);
 
@@ -104,6 +104,14 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`[PARENT-APPROVAL-SIGNUP] Set setup stage to 'started'`);
+
+    // Mark the approval as approved so the router can advance to plan selection
+    await convexHttp.mutation(api.parentApprovals.updateParentApprovalStatus, {
+      approvalToken,
+      status: 'approved',
+    });
+
+    console.log(`[PARENT-APPROVAL-SIGNUP] Updated approval ${approval._id} status to 'approved' after parent signup`);
 
     // Create a session for the parent
     const now = Date.now();
