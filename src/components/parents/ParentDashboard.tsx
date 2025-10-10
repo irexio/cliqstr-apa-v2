@@ -79,32 +79,32 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
         } else if (user?.account?.role === 'Adult') {
           // Existing adult - redirect to sign-in with auto-upgrade
           console.log('[PARENT_DASHBOARD] Existing adult, redirecting to sign-in for upgrade');
-          router.push(`/sign-in?inviteCode=${encodeURIComponent(inviteCode)}`);
+          router.push(`/sign-in?approvalToken=${encodeURIComponent(approvalToken || '')}`);
           return;
         }
       }
-      
+
       // No user signed in - check if parent account exists
       const checkUserResponse = await fetch(`/api/auth/check-user?email=${encodeURIComponent(parentEmail)}`);
       if (checkUserResponse.ok) {
         const { exists, role } = await checkUserResponse.json();
-        
+
         if (exists && role === 'Parent') {
           // Parent account exists - redirect to sign-in
           console.log('[PARENT_DASHBOARD] Parent account exists, redirecting to sign-in');
-          router.push(`/sign-in?inviteCode=${encodeURIComponent(inviteCode)}`);
+          router.push(`/sign-in?approvalToken=${encodeURIComponent(approvalToken || '')}`);
           return;
         } else if (exists && role === 'Adult') {
           // Adult account exists - redirect to sign-in with auto-upgrade
           console.log('[PARENT_DASHBOARD] Adult account exists, redirecting to sign-in for upgrade');
-          router.push(`/sign-in?inviteCode=${encodeURIComponent(inviteCode)}`);
+          router.push(`/sign-in?approvalToken=${encodeURIComponent(approvalToken || '')}`);
           return;
         }
       }
       
       // No account exists - redirect to parent signup
       console.log('[PARENT_DASHBOARD] No account exists, redirecting to parent signup');
-      router.push(`/parent-approval?inviteCode=${encodeURIComponent(inviteCode)}`);
+      router.push(`/parent-approval?token=${encodeURIComponent(approvalToken || '')}`);
       
     } catch (error) {
       console.error('[PARENT_DASHBOARD] Error checking parent state:', error);
@@ -119,42 +119,39 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
       if (context === 'setup' && (approvalToken || inviteCode)) {
         // Setup mode: Load approval details
         try {
-          if (inviteCode) {
-            // For child invites, use invite validation API
-            const res = await fetch(`/api/invites/validate?code=${encodeURIComponent(inviteCode)}`);
-            if (res.ok) {
-              const data = await res.json();
-              if (data.valid) {
-                // Convert invite data to approval format
-                const approvalData = {
-                  childFirstName: data.friendFirstName || 'Child',
-                  childLastName: data.friendLastName || '',
-                  childBirthdate: data.childBirthdate || '',
-                  parentEmail: data.recipientEmail || '',
-                  context: 'child_invite',
-                };
-                
-                // Check parent's current state and route accordingly
-                await checkParentStateAndRoute(approvalData.parentEmail, inviteCode);
-                
-                setSetupApproval(approvalData);
-              } else {
-                console.error('[PARENT_DASHBOARD] Invalid invite code');
-                router.push('/parents/hq'); // fallback to manage mode
-              }
-            } else {
-              console.error('[PARENT_DASHBOARD] Invalid invite code');
-              router.push('/parents/hq'); // fallback to manage mode
-            }
-          } else if (approvalToken) {
-            // For direct signups, use approval check API
+          if (approvalToken) {
+            // Use approval check API for both direct signups and child invites
             const res = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(approvalToken)}`);
             if (res.ok) {
               const data = await res.json();
-              setSetupApproval(data.approval);
+              if (data.approval) {
+                // Check parent's current state and route accordingly
+                await checkParentStateAndRoute(data.approval.parentEmail, approvalToken);
+
+                setSetupApproval(data.approval);
+              } else {
+                console.error('[PARENT_DASHBOARD] No approval data in response');
+                router.push('/parents/hq'); // fallback to manage mode
+              }
             } else {
               console.error('[PARENT_DASHBOARD] Invalid approval token');
               router.push('/parents/hq'); // fallback to manage mode
+            }
+          } else if (inviteCode) {
+            // Legacy support: if only inviteCode is provided, treat it as approvalToken
+            const res = await fetch(`/api/parent-approval/check?token=${encodeURIComponent(inviteCode)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.approval) {
+                await checkParentStateAndRoute(data.approval.parentEmail, inviteCode);
+                setSetupApproval(data.approval);
+              } else {
+                console.error('[PARENT_DASHBOARD] No approval data in response');
+                router.push('/parents/hq');
+              }
+            } else {
+              console.error('[PARENT_DASHBOARD] Invalid invite code');
+              router.push('/parents/hq');
             }
           }
         } catch (error) {

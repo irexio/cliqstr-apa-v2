@@ -52,11 +52,14 @@ export default function SignInForm() {
     setError('');
 
     try {
+      // Get approval token from URL parameters
+      const approvalToken = searchParams.get('approvalToken');
+
       // 🔐 Step 1: Authenticate via POST
       const res = await fetch('/api/sign-in', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password }),
+        body: JSON.stringify({ identifier, password, approvalToken }),
       });
 
       let signInData;
@@ -192,6 +195,12 @@ export default function SignInForm() {
           }
           return;
         } catch {}
+      }
+
+      // Handle approval token context (already declared above)
+      if (approvalToken && account?.role === 'Parent') {
+        hardNavigate(`/parents/hq?approvalToken=${encodeURIComponent(approvalToken)}`);
+        return;
       }
 
       // Final redirect
