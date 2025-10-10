@@ -249,17 +249,24 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
         inviteDetails
       });
 
+      // Validate that we have a proper approval token
+      const finalApprovalToken = approvalToken || inviteCode;
+      if (!finalApprovalToken) {
+        setError('Invalid approval token. Please refresh the page and try again.');
+        return;
+      }
+
       // Debug the data being sent
       const requestData = {
         // Standardize on approvalToken for all flows
-        approvalToken: approvalToken || inviteCode,
+        approvalToken: finalApprovalToken,
         // Child details (from either source) - with fallbacks
         firstName: approvalDetails?.childFirstName || inviteDetails?.friendFirstName || 'Child',
         lastName: approvalDetails?.childLastName || inviteDetails?.friendLastName || 'User',
-        birthdate: approvalDetails?.childBirthdate 
-          ? new Date(approvalDetails.childBirthdate).getTime() 
-          : inviteDetails?.childBirthdate 
-          ? new Date(inviteDetails.childBirthdate).getTime() 
+        birthdate: approvalDetails?.childBirthdate
+          ? new Date(approvalDetails.childBirthdate).getTime()
+          : inviteDetails?.childBirthdate
+          ? new Date(inviteDetails.childBirthdate).getTime()
           : new Date('2010-01-01').getTime(), // Default to 2010 if no birthdate
         // Account details
         username: username.trim(),
