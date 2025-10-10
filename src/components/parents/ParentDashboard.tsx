@@ -29,6 +29,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchJson } from '@/lib/fetchJson';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import ChildPermissionManager from './ChildPermissionManager';
 import MultipleParentsManager from './MultipleParentsManager';
 import ChildActivityLogs from './ChildActivityLogs';
@@ -194,104 +195,122 @@ export default function ParentDashboard({ context, approvalToken, inviteCode }: 
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">⚡ Parents HQ</h1>
-        <p className="text-gray-600 mt-2 text-sm sm:text-base">Comprehensive child management and safety controls</p>
-        <p className="text-xs sm:text-sm text-blue-600 mt-1">Every child on Cliqstr requires parent approval through this interface</p>
-      </div>
-
-      {/* Mode Indicator */}
-      {context === 'setup' && (
-        <div className="bg-blue-100 border-l-4 border-blue-500 p-3 sm:p-4 mb-4">
-          <p className="text-blue-800 font-semibold text-sm sm:text-base">
-            🔧 Setup Mode: Creating new child account
-          </p>
-          <p className="text-blue-700 text-xs sm:text-sm mt-1">
-            Complete the child approval process below. After setup, you'll be able to manage this child from the main dashboard.
-          </p>
+      {/* Header - Different for setup vs manage */}
+      {context === 'setup' ? (
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">⚡ Parents HQ</h1>
+          <p className="text-gray-600 mt-2 text-sm sm:text-base">Set up your child's Cliqstr account</p>
         </div>
-      )}
-
-      {/* Pending Approvals Section */}
-      <PendingApprovalsSection />
-      
-      {/* Child Selector Dropdown - Show when parent has children */}
-      {children.length > 0 && (
-        <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-          <label htmlFor="childSelector" className="block text-sm font-semibold mb-2">
-            Select Child to Manage
-          </label>
-          <Select 
-            value={selectedChildId ?? ''} 
-            onValueChange={(value) => setSelectedChildId(value)}
+      ) : (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">⚡ Parents HQ</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your children's accounts and permissions</p>
+          </div>
+          <Button
+            onClick={() => router.push('/parents/hq/setup')}
+            className="mt-3 sm:mt-0 bg-black text-white hover:bg-gray-800"
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a child" />
-            </SelectTrigger>
-            <SelectContent>
-              {children.map((child) => (
-                <SelectItem key={child.id} value={child.id}>
-                  {child.name || child.email || `Child ${child.id}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            + Add New Child
+          </Button>
         </div>
       )}
 
-      {/* Create New Child Section */}
-      <div className="border border-black rounded p-4 bg-black text-white">
-        <h3 className="font-semibold mb-2 text-white">+ Add New Child</h3>
-        <p className="text-gray-300 text-sm mb-3">Create a new child account and set up their permissions and safety controls.</p>
-        <button
-          onClick={() => router.push('/parents/hq?create=true')}
-          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 border border-white"
-        >
-          + Create New Child Account
-        </button>
-      </div>
+      {/* Setup Mode Content */}
+      {context === 'setup' && (
+        <>
+          {/* Setup Mode Indicator */}
+          <div className="bg-blue-100 border-l-4 border-blue-500 p-3 sm:p-4">
+            <p className="text-blue-800 font-semibold text-sm sm:text-base">
+              🔧 Setting up child account
+            </p>
+            <p className="text-blue-700 text-xs sm:text-sm mt-1">
+              Complete the setup process below. After completion, you'll return to the main dashboard.
+            </p>
+          </div>
 
-      {/* UNIFIED CHILD FORM - Works for both setup and management */}
-      {(context === 'setup' && setupApproval) || selectedChildId ? (
-        <div className="border p-3 sm:p-4 bg-blue-50 rounded-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-2">
-            {context === 'setup' && setupApproval 
-              ? `Set Up Child Account for ${setupApproval.childFirstName} ${setupApproval.childLastName}`
-              : `Manage ${children.find(c => c.id === selectedChildId)?.name || 'Child'}`
-            }
-          </h2>
-          <ChildSignupApprovalFlow 
+          {/* Setup Content */}
+          <ChildSignupApprovalFlow
             approvalToken={approvalToken || undefined}
             inviteCode={inviteCode || undefined}
             onChildCreated={handleChildCreated}
-            childId={selectedChildId || undefined}
-            mode={context === 'setup' ? 'create' : 'edit'}
+            mode="create"
           />
-        </div>
-      ) : null}
+        </>
+      )}
 
-      {/* Child Management Section - Shows when a child is selected */}
-      {selectedChildId && (
+      {/* Manage Mode Content */}
+      {context === 'manage' && (
         <>
-          <div className="mt-6">
-            <MultipleParentsManager 
-              childId={selectedChildId} 
-              childName={children.find(c => c.id === selectedChildId)?.name || 'Child'} 
-            />
-          </div>
-          <div className="mt-6">
-            <ChildActivityLogs 
-              childId={selectedChildId} 
-              childName={children.find(c => c.id === selectedChildId)?.name || 'Child'} 
-            />
-          </div>
-          <div className="mt-6">
-            <LiveCliqMonitoring 
-              childId={selectedChildId} 
-              childName={children.find(c => c.id === selectedChildId)?.name || 'Child'} 
-            />
-          </div>
+          {/* Pending Approvals Section */}
+          <PendingApprovalsSection />
+
+          {/* Child Management Interface */}
+          {children.length > 0 ? (
+            <>
+              {/* Child Selector */}
+              <div className="border border-gray-300 rounded-lg p-4 bg-white">
+                <label htmlFor="childSelector" className="block text-sm font-semibold mb-2">
+                  Select Child to Manage
+                </label>
+                <Select
+                  value={selectedChildId ?? ''}
+                  onValueChange={(value) => setSelectedChildId(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a child" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {children.map((child) => (
+                      <SelectItem key={child.id} value={child.id}>
+                        {child.name || child.email || `Child ${child.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Child Management Tools */}
+              {selectedChildId && (
+                <>
+                  <ChildPermissionManager childId={selectedChildId} />
+                  <MultipleParentsManager
+                    childId={selectedChildId}
+                    childName={children.find(c => c.id === selectedChildId)?.name || 'Child'}
+                  />
+                  <ChildActivityLogs
+                    childId={selectedChildId}
+                    childName={children.find(c => c.id === selectedChildId)?.name || 'Child'}
+                  />
+                  <LiveCliqMonitoring
+                    childId={selectedChildId}
+                    childName={children.find(c => c.id === selectedChildId)?.name || 'Child'}
+                  />
+                </>
+              )}
+            </>
+          ) : (
+            /* No Children State */
+            <div className="text-center py-8">
+              <div className="bg-gray-100 rounded-lg p-8 max-w-md mx-auto">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Children Yet</h3>
+                <p className="text-gray-600 mb-4">
+                  Get started by creating your first child account or approving a child invitation.
+                </p>
+                <Button
+                  onClick={() => router.push('/parents/hq/setup')}
+                  className="bg-black text-white hover:bg-gray-800"
+                >
+                  + Create Your First Child Account
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

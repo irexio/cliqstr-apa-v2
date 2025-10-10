@@ -1,39 +1,31 @@
 export const dynamic = 'force-dynamic';
 
 /**
- * 🔐 UNIFIED PARENT HQ: Single Entry Point
- * 
+ * 🔐 PARENT HQ: Smart Router
+ *
  * Purpose:
- *   - Unified entry point for all parent-related functionality
- *   - Handles both child invite approval (setup mode) and ongoing child management (manage mode)
- *   - Uses context prop to switch between modes seamlessly
+ *   - Determines the correct parent experience based on context
+ *   - Routes to appropriate sub-pages for setup vs manage modes
  */
 
-import ParentDashboard from '@/components/parents/ParentDashboard';
+import { redirect } from 'next/navigation';
 
 interface ParentsHQPageProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export default function ParentsHQPage({ searchParams }: ParentsHQPageProps) {
+export default async function ParentsHQPage({ searchParams }: ParentsHQPageProps) {
   const approvalToken = searchParams?.approvalToken as string || null;
   const inviteCode = searchParams?.inviteCode as string || null;
-  
-  // Determine context: setup mode if any approval token/code present, otherwise manage mode
-  const context = (approvalToken || inviteCode) ? 'setup' : 'manage';
-  
-  // For backward compatibility, convert inviteCode to approvalToken
-  const token = approvalToken || inviteCode;
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-      <ParentDashboard 
-        context={context as 'setup' | 'manage'} 
-        approvalToken={token}
-        inviteCode={inviteCode}
-      />
-      </div>
-    </div>
-  );
+  // If there's an approval token or invite code, this is setup mode
+  if (approvalToken || inviteCode) {
+    redirect(`/parents/hq/setup?${new URLSearchParams({
+      ...(approvalToken && { approvalToken }),
+      ...(inviteCode && { inviteCode })
+    }).toString()}`);
+  }
+
+  // Otherwise, this is manage mode (existing children or first-time setup)
+  redirect('/parents/hq/manage');
 }

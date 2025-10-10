@@ -162,8 +162,8 @@ export function MobileMenu({
 
               {/* Show Parents HQ only for parents */}
               {userData?.role === 'PARENT' && (
-                <Link 
-                  href="/parents/hq" 
+                <Link
+                  href="/parents/hq/manage"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

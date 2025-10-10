@@ -112,8 +112,8 @@ export default function AccountHeader({ user }: AccountHeaderProps) {
                   
                   {/* Show Parents HQ only for parents */}
                   {user.role === 'PARENT' && (
-                    <Link 
-                      href="/parents/hq" 
+                    <Link
+                      href="/parents/hq/manage"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsMenuOpen(false)}
                     >
