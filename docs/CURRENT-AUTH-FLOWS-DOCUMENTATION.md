@@ -36,8 +36,7 @@
 9. User clicks verification email
 10. **Account verified** → can access platform
 
-**Plan Check**: No plan required for adults (plan=null)  //WRONG!!!!
-
+**Plan Check**: No plan required for adults (plan=null)  //temp plan until Stripe is set up.
 ---
 
 ### 2. Sign Up Child → New Parent
@@ -96,7 +95,7 @@
 13. Parent creates child account and sets permissions
 14. **Child can sign in** with credentials
 
-**Plan Check**: Existing parent already has plan
+**Plan Check**: Existing parent already has plan - MUST CHECK IF PLAN SUPPORTS NEW CHILD
 
 ---
 
@@ -120,7 +119,7 @@
 10. Parent clicks link → `/parent-approval?approvalToken={token}`
 11. **System detects** existing adult (parentState="existing_adult")
 12. **Redirects to** `/sign-up?email={parentEmail}&approvalToken={token}`
-13. Adult fills signup form (upgrades to parent)
+13. Adult fills signup form (upgrades to parent) 
 14. **API Call**: `POST /api/parent-approval/signup`
 15. **Updates**: Account role from "Adult" to "Parent"
 16. **Redirects to** `/choose-plan?approvalToken={token}`
@@ -137,11 +136,11 @@
 
 ### 5. Adult Invites Adult
 
-**Entry Point**: Cliq invite page → `InviteClient` component  
+**Entry Point**: Cliq invite page → `InviteClient` component  - invite button on cliqcard or cliq header.
 **API Endpoint**: `POST /api/invites/create`
 
 **Steps**:
-1. Adult goes to cliq invite page
+1. Adult goes to cliq invite 
 2. Selects "Adult (18+)"
 3. Fills form: Adult email, optional message
 4. **API Call**: `POST /api/invites/create`

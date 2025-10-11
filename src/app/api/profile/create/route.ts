@@ -15,23 +15,14 @@ import { z } from 'zod';
 import { getAgeGroup } from '@/lib/ageUtils';
 
 const schema = z.object({
+  // ❌ SECURITY: Account fields should NOT be editable through profile creation
+  // firstName: z.string().min(1), // REMOVED
+  // lastName: z.string().min(1),  // REMOVED
+  // birthdate: z.string().transform(...), // REMOVED
+
+  // ✅ MyProfile fields only (social profile)
   username: z.string().min(3).max(15).regex(/^[a-zA-Z0-9_]+$/),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  birthdate: z.string().transform((val) => {
-    // Handle both MM/DD/YYYY and YYYY-MM-DD formats
-    let dateStr = val.trim();
-    
-    // If it contains slashes, assume MM/DD/YYYY format
-    if (dateStr.includes('/')) {
-      const [month, day, year] = dateStr.split('/').map(Number);
-      return new Date(year, month - 1, day);
-    }
-    
-    // Otherwise assume YYYY-MM-DD format
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day);
-  }),
+  displayName: z.string().max(50).optional(), // Nickname for social display
   about: z.string().optional(),
   image: z.string().url().optional().or(z.literal('')),
   bannerImage: z.string().url().optional().or(z.literal('')),
@@ -60,7 +51,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const { username, firstName, lastName, birthdate, about, image, bannerImage, showYear } = parsed.data;
+    const { username, displayName, about, image, bannerImage, showYear } = parsed.data;
 
     // Check if username is taken using Convex
     const existingProfile = await convexHttp.query(api.profiles.getProfileByUsername, {
@@ -71,13 +62,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
     }
 
-    // Calculate age group
-    const { group } = getAgeGroup(birthdate.toISOString());
+    // Get account data for age calculation
+    const account = await convexHttp.query(api.accounts.getAccountByUserId, {
+      userId: user.id as any,
+    });
 
-    // Create MyProfile using Convex
+    if (!account) {
+      return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+    }
+
+    // Calculate age group from Account birthdate
+    const { group } = getAgeGroup(new Date(account.birthdate).toISOString());
+
+    // SECURITY: Only create MyProfile fields - Account data comes from Account table
     const profileId = await convexHttp.mutation(api.profiles.createProfile, {
       userId: user.id as any,
       username,
+      displayName: displayName || undefined,
       about: about || '',
       image: image || '',
       bannerImage: bannerImage || '',

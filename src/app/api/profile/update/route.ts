@@ -18,15 +18,20 @@ import { z } from 'zod';
 export const dynamic = 'force-dynamic';
 
 const updateProfileSchema = z.object({
-  firstName: z.string().max(50).optional().nullable(),
-  lastName: z.string().max(50).optional().nullable(),
-  username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_-]+$/, 
+  // ❌ SECURITY: Account fields should NOT be editable through MyProfile
+  // firstName: z.string().max(50).optional().nullable(), // REMOVED
+  // lastName: z.string().max(50).optional().nullable(),  // REMOVED
+  // birthdate: z.string().datetime().optional().nullable(), // REMOVED
+
+  // ✅ MyProfile fields only (social profile)
+  username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_-]+$/,
     'Username can only contain letters, numbers, underscores and hyphens').optional(),
+  displayName: z.string().max(50).optional().nullable(), // Nickname for social display
   about: z.string().max(500).optional().nullable(),
-  birthdate: z.string().datetime().optional().nullable(),
   image: z.string().url().optional().nullable(),
   bannerImage: z.string().url().optional().nullable(),
   showYear: z.boolean().optional(),
+  aiModerationLevel: z.enum(['strict', 'moderate', 'relaxed']).optional(),
 });
 
 export async function POST(req: Request) {
@@ -44,7 +49,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { firstName, lastName, username, about, birthdate, image, bannerImage, showYear } = parsed.data;
+    const { username, displayName, about, image, bannerImage, showYear, aiModerationLevel } = parsed.data;
 
     // Get current profile to get profileId
     const currentProfile = await convexHttp.query(api.profiles.getProfileByUserId, {
@@ -66,16 +71,18 @@ export async function POST(req: Request) {
       }
     }
 
-    // Build update data object with only provided fields
+    // SECURITY: All Account fields have been removed from the schema
+    // Only MyProfile fields (username, displayName, about, etc.) are allowed
+
+    // Build update data object with only MyProfile fields
     const updateData: any = {};
-    if (firstName !== undefined) updateData.firstName = firstName || null;
-    if (lastName !== undefined) updateData.lastName = lastName || null;
     if (username !== undefined) updateData.username = username;
+    if (displayName !== undefined) updateData.displayName = displayName || null;
     if (about !== undefined) updateData.about = about || null;
-    if (birthdate !== undefined) updateData.birthdate = birthdate ? new Date(birthdate).getTime() : null;
     if (image !== undefined) updateData.image = image || null;
     if (bannerImage !== undefined) updateData.bannerImage = bannerImage || null;
     if (showYear !== undefined) updateData.showYear = showYear;
+    if (aiModerationLevel !== undefined) updateData.aiModerationLevel = aiModerationLevel;
 
     // Update profile using Convex
     await convexHttp.mutation(api.profiles.updateProfile, {

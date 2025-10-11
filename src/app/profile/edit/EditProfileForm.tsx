@@ -8,6 +8,7 @@ interface MyProfile {
   firstName: string | null; // Read-only from Account
   lastName: string | null;  // Read-only from Account
   username: string;
+  displayName?: string | null; // Nickname for social display
   about: string | null;
   birthdate: Date | null;   // Read-only from Account
   showYear: boolean;
@@ -24,6 +25,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
   
   // firstName, lastName, and birthdate are read-only from Account
   const [username, setUsername] = useState(profile.username);
+  const [displayName, setDisplayName] = useState((profile as any).displayName || '');
   const [about, setAbout] = useState(profile.about || '');
   const [showYear, setShowYear] = useState(profile.showYear);
   
@@ -39,6 +41,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
       const payload = {
         // firstName, lastName, and birthdate are managed by Account - not editable here
         username: username.trim(),
+        displayName: displayName.trim() || null, // Nickname for social display
         about: about.trim() || null,
         showYear,
         image: avatarUrl,
@@ -124,6 +127,24 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
             required
           />
         </div>
+      </div>
+
+      {/* Display Name (Nickname) */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Display Name <span className="text-gray-500 text-xs">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Nickname or preferred name"
+          maxLength={50}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          This is how you'll appear in Cliqs. Leave blank to use your account name.
+        </p>
       </div>
 
       {/* About */}

@@ -197,6 +197,36 @@ export default function ChildSignupApprovalFlow({ approvalToken, inviteCode, onC
   const handleSubmitApproval = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // SECURITY: Check authentication before allowing form submission
+    try {
+      const authResponse = await fetch('/api/auth/status');
+      if (!authResponse.ok) {
+        // Redirect to sign-in with the approval token
+        const signInUrl = `/sign-in?approvalToken=${encodeURIComponent(approvalToken || inviteCode || '')}`;
+        window.location.href = signInUrl;
+        return;
+      }
+
+      const { user } = await authResponse.json();
+      if (!user) {
+        // Redirect to sign-in with the approval token
+        const signInUrl = `/sign-in?approvalToken=${encodeURIComponent(approvalToken || inviteCode || '')}`;
+        window.location.href = signInUrl;
+        return;
+      }
+
+      // If user is Adult, redirect to sign-in for auto-upgrade
+      if (user.account?.role === 'Adult') {
+        const signInUrl = `/sign-in?approvalToken=${encodeURIComponent(approvalToken || inviteCode || '')}`;
+        window.location.href = signInUrl;
+        return;
+      }
+    } catch (error) {
+      console.error('[CHILD_SIGNUP] Authentication check failed:', error);
+      setError('Authentication check failed. Please refresh the page and try again.');
+      return;
+    }
+
     if (mode === 'create') {
       if (!redAlertAccepted) {
         setError('You must accept the Red Alert monitoring agreement');

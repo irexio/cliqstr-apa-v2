@@ -23,6 +23,7 @@ export default defineSchema({
 
   myProfiles: defineTable({
     username: v.string(),
+    displayName: v.optional(v.string()), // Nickname for social display
     createdAt: v.number(),
     userId: v.id("users"),
     ageGroup: v.optional(v.string()),

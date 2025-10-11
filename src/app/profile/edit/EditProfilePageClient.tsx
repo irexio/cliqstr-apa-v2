@@ -9,6 +9,7 @@ interface EditProfilePageClientProps {
   profile: {
     id: string;
     username: string;
+    displayName?: string | null;
     firstName: string | null;
     lastName: string | null;
     about: string | null;

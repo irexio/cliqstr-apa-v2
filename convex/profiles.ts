@@ -69,11 +69,12 @@ export const getProfileByUserId = query({
   },
 });
 
-// Create profile
+// Create profile - SECURITY: Only MyProfile fields allowed
 export const createProfile = mutation({
   args: {
     userId: v.id("users"),
     username: v.string(),
+    displayName: v.optional(v.string()), // Nickname for social display
     about: v.optional(v.string()),
     image: v.optional(v.string()),
     bannerImage: v.optional(v.string()),
@@ -106,6 +107,7 @@ export const createProfile = mutation({
     
     const profileId = await ctx.db.insert("myProfiles", {
       username: args.username,
+      displayName: args.displayName, // Nickname for social display
       createdAt: now,
       updatedAt: now,
       userId: args.userId,
@@ -123,12 +125,13 @@ export const createProfile = mutation({
   },
 });
 
-// Update profile
+// Update profile - SECURITY: Only MyProfile (social) fields allowed
 export const updateProfile = mutation({
   args: {
     profileId: v.id("myProfiles"),
     updates: v.object({
       username: v.optional(v.string()),
+      displayName: v.optional(v.string()), // Nickname for social display
       about: v.optional(v.string()),
       image: v.optional(v.string()),
       bannerImage: v.optional(v.string()),
