@@ -287,6 +287,37 @@ export async function POST(req: NextRequest) {
 
       console.log(`[PARENT-CHILDREN] Created parent link with ID: ${parentLinkId}`);
 
+      // Step 7: Auto-join child to invited cliq if present on approval
+      try {
+        if (approval && approval.cliqId) {
+          console.log(`[PARENT-CHILDREN] Attempting to auto-join child ${childUserId} to cliq ${approval.cliqId}`);
+
+          // Avoid duplicate membership
+          const alreadyMember = await convexHttp.query(api.cliqs.isCliqMember, {
+            userId: childUserId as any,
+            cliqId: approval.cliqId as any,
+          });
+
+          if (!alreadyMember) {
+            await convexHttp.mutation(api.cliqs.joinCliq, {
+              userId: childUserId as any,
+              cliqId: approval.cliqId as any,
+              role: 'Member',
+            });
+            console.log(`[PARENT-CHILDREN] Child ${childUserId} auto-joined to cliq ${approval.cliqId}`);
+          } else {
+            console.log(`[PARENT-CHILDREN] Child ${childUserId} is already a member of cliq ${approval.cliqId}, skipping join`);
+          }
+        } else {
+          console.log(`[PARENT-CHILDREN] No cliqId present on approval; skipping auto-join`);
+        }
+      } catch (joinError: any) {
+        console.error(`[PARENT-CHILDREN] Auto-join to cliq failed (non-fatal):`, {
+          message: joinError?.message,
+          stack: joinError?.stack,
+        });
+      }
+
     } catch (complianceError: any) {
       console.error(`[PARENT-CHILDREN] ATOMIC WRITE FAILED - Rolling back child account creation:`, complianceError);
       console.error(`[PARENT-CHILDREN] Error details:`, {

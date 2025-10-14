@@ -38,7 +38,7 @@ function InviteAcceptContent() {
           // This is a parent approval token - handle as before
           if (parentData.approval.parentState === 'existing_parent') {
             console.log('[INVITE_ACCEPT] Redirecting existing parent to Parents HQ');
-            router.push(`/parents/hq?approvalToken=${encodeURIComponent(token)}`);
+            router.push(`/parents/hq?token=${encodeURIComponent(token)}`);
           } else {
             console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
             router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
@@ -101,10 +101,51 @@ function InviteAcceptContent() {
         }
       }
 
+      // If the user is already authenticated, handle auto-join for eligible cases
+      try {
+        const authRes = await fetch('/api/auth/status', { method: 'GET', cache: 'no-store', credentials: 'include' });
+        if (authRes.ok) {
+          const { user } = await authRes.json();
+          if (user?.id) {
+            // If this is an ADULT invite and the user already has a plan, auto-join immediately
+            const hasPlan = !!(user.account?.plan || user.plan);
+            if (inviteType === 'adult' && inviteData.cliqId && hasPlan) {
+              console.log('[INVITE_ACCEPT] Authenticated adult with plan detected. Auto-joining to cliq:', inviteData.cliqId);
+              try {
+                const joinRes = await fetch(`/api/cliqs/${inviteData.cliqId}/join`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                });
+                if (joinRes.ok) {
+                  console.log('[INVITE_ACCEPT] Auto-join successful. Redirecting to My Cliqs Dashboard');
+                  router.push('/my-cliqs-dashboard');
+                  return;
+                } else {
+                  console.warn('[INVITE_ACCEPT] Auto-join failed with status:', joinRes.status, '— proceeding with normal flow');
+                }
+              } catch (joinErr) {
+                console.error('[INVITE_ACCEPT] Auto-join error:', joinErr);
+              }
+            }
+          }
+        }
+      } catch (authErr) {
+        console.error('[INVITE_ACCEPT] Auth status check failed (non-fatal):', authErr);
+      }
+
       // Route based on invite type
-      
+
       if (inviteType === 'adult') {
         console.log('[INVITE_ACCEPT] Routing adult to choose-plan');
+        // Store invite context for auto-join after plan selection
+        sessionStorage.setItem('adultInviteContext', JSON.stringify({
+          inviteCode: token,
+          inviteType: 'adult',
+          cliqName: inviteData.cliqName,
+          inviterName: inviteData.inviterName,
+          recipientEmail: inviteData.recipientEmail
+        }));
         router.push('/choose-plan');
       } else if (inviteType === 'parent') {
         console.log('[INVITE_ACCEPT] Routing parent to invite/parent');
@@ -115,6 +156,14 @@ function InviteAcceptContent() {
       } else {
         // Fallback to adult flow
         console.log('[INVITE_ACCEPT] Unknown invite type, defaulting to choose-plan');
+        // Store invite context for auto-join after plan selection
+        sessionStorage.setItem('adultInviteContext', JSON.stringify({
+          inviteCode: token,
+          inviteType: 'adult',
+          cliqName: inviteData.cliqName,
+          inviterName: inviteData.inviterName,
+          recipientEmail: inviteData.recipientEmail
+        }));
         router.push('/choose-plan');
       }
 

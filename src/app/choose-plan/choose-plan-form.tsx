@@ -79,9 +79,9 @@ export default function ChoosePlanForm() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             approvalToken: approvalToken,
-            plan: planKey 
+            plan: planKey
           }),
         });
 
@@ -126,6 +126,28 @@ export default function ChoosePlanForm() {
       if (!result.success) throw new Error('Failed to save plan selection');
       console.log('Plan saved successfully:', result);
 
+      // 🛠️ SOL'S FIX: Store invite context for auto-join after plan selection
+      let inviteContext = null;
+      if (typeof window !== 'undefined') {
+        try {
+          // Store invite context before clearing for auto-join
+          const adultInviteContext = sessionStorage.getItem('adultInviteContext');
+          const manualInviteContext = sessionStorage.getItem('manualInviteContext');
+          const inviteRole = sessionStorage.getItem('inviteRole') || localStorage.getItem('inviteRole');
+
+          if (adultInviteContext || manualInviteContext || inviteRole) {
+            inviteContext = {
+              adultInviteContext: adultInviteContext ? JSON.parse(adultInviteContext) : null,
+              manualInviteContext: manualInviteContext ? JSON.parse(manualInviteContext) : null,
+              inviteRole: inviteRole
+            };
+            console.log('[APA] Stored invite context for auto-join:', inviteContext);
+          }
+        } catch (error) {
+          console.error('[APA] Error storing invite data:', error);
+        }
+      }
+
       // Check session status after plan selection
       try {
         const statusResponse = await fetch('/api/auth/status', {
@@ -137,12 +159,48 @@ export default function ChoosePlanForm() {
         if (statusResponse.ok) {
           const statusData = await statusResponse.json();
           console.log('[APA] Session status after plan selection:', statusData?.user?.account?.plan);
+
+          // 🛠️ SOL'S FIX: Auto-join to invited cliq after successful plan selection
+          if (inviteContext && statusData?.user) {
+            console.log('[APA] Attempting auto-join to invited cliq:', inviteContext);
+
+            try {
+              // Get invite details to find the cliq ID
+              if (inviteContext.adultInviteContext?.inviteCode || inviteContext.manualInviteContext?.inviteCode) {
+                const inviteCode = inviteContext.adultInviteContext?.inviteCode || inviteContext.manualInviteContext?.inviteCode;
+
+                const validateResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(inviteCode)}`);
+                if (validateResponse.ok) {
+                  const inviteData = await validateResponse.json();
+                  if (inviteData.valid && inviteData.cliqId) {
+                    console.log('[APA] Auto-joining user to cliq:', inviteData.cliqId);
+
+                    // Join the user to the cliq
+                    const joinResponse = await fetch(`/api/cliqs/${inviteData.cliqId}/join`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                    });
+
+                    if (joinResponse.ok) {
+                      console.log('[APA] Successfully auto-joined user to invited cliq');
+                    } else {
+                      console.error('[APA] Failed to auto-join user to cliq:', joinResponse.status);
+                    }
+                  }
+                }
+              }
+            } catch (joinError) {
+              console.error('[APA] Auto-join error:', joinError);
+              // Don't fail the plan selection if auto-join fails
+            }
+          }
         }
       } catch (statusErr) {
         console.error('Session status check error:', statusErr);
       }
 
-      // 🛠️ SOL'S FIX: Clear invite role data after successful plan selection
+      // Clear invite role data after auto-join attempt
       if (typeof window !== 'undefined') {
         try {
           sessionStorage.removeItem('adultInviteContext');
@@ -150,7 +208,7 @@ export default function ChoosePlanForm() {
           sessionStorage.removeItem('manualInviteContext');
           sessionStorage.removeItem('inviteRole');
           localStorage.removeItem('inviteRole');
-          console.log('[APA] Cleared invite role data after successful plan selection');
+          console.log('[APA] Cleared invite role data after auto-join attempt');
         } catch (error) {
           console.error('[APA] Error clearing invite data:', error);
         }
@@ -159,26 +217,48 @@ export default function ChoosePlanForm() {
       // Show success message for any plan
       setStatus('success');
       
+      // Check for successful auto-join
+      let autoJoinedCliq = null;
+      if (typeof window !== 'undefined') {
+        const joinedCliqData = sessionStorage.getItem('autoJoinedCliq');
+        if (joinedCliqData) {
+          try {
+            autoJoinedCliq = JSON.parse(joinedCliqData);
+            sessionStorage.removeItem('autoJoinedCliq');
+          } catch (e) {
+            console.error('[APA] Error parsing auto-joined cliq data:', e);
+          }
+        }
+      }
+
       // Determine redirect based on user role, not approval token
       // Check if this is a parent (either from approval flow or regular parent signup)
       const isParent = result.user?.role === 'Parent' || approvalToken;
-      
+
       if (isParent) {
-        setMessage(`${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! Redirecting to Parents HQ...`);
-        
+        if (autoJoinedCliq) {
+          setMessage(`🎉 ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! You were automatically joined to "${autoJoinedCliq.cliqName}". Redirecting to Parents HQ...`);
+        } else {
+          setMessage(`${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! Redirecting to Parents HQ...`);
+        }
+
         // Redirect to Parents HQ for parents (no refresh to avoid flash)
         setTimeout(() => {
           console.log('[PARENT] Redirecting to Parents HQ');
           if (approvalToken) {
             // For parent approval flow, go directly to child creation
-            router.push(`/parents/hq?approvalToken=${encodeURIComponent(approvalToken)}`);
+            router.push(`/parents/hq?token=${encodeURIComponent(approvalToken)}`);
           } else {
             router.push('/parents/hq');
           }
         }, 2000);
       } else {
-        setMessage(`${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! Redirecting to your dashboard...`);
-        
+        if (autoJoinedCliq) {
+          setMessage(`🎉 ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! You were automatically joined to "${autoJoinedCliq.cliqName}". Redirecting to your dashboard...`);
+        } else {
+          setMessage(`${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan activated! Redirecting to your dashboard...`);
+        }
+
         // For adults, redirect to My Cliqs dashboard (no refresh to avoid flash)
         setTimeout(() => {
           console.log('[ADULT] Redirecting to My Cliqs dashboard');

@@ -354,7 +354,7 @@ export async function POST(request: NextRequest) {
         
         // Use direct Parents HQ link for child invites (bypassing smart router)
         // For child invites, use the approvalToken to get approval data
-        const inviteLink = `${BASE_URL}/parents/hq?approvalToken=${encodeURIComponent(approvalToken || '')}`;
+        const inviteLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken || '')}`;
         
         await sendChildInviteEmail({
           to: targetEmail,
