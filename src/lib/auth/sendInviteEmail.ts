@@ -8,12 +8,14 @@ export async function sendInviteEmail({
   inviterName,
   inviteLink,
   inviteCode,
+  inviteNote,
 }: {
   to: string;
   cliqName: string;
   inviterName: string;
   inviteLink: string;
   inviteCode: string;
+  inviteNote?: string;
 }) {
   // Extra detailed logging for debugging
   console.log(`📨 [sendInviteEmail] STARTING - Sending invite to: ${to}`);
@@ -26,30 +28,29 @@ export async function sendInviteEmail({
     return { success: false, error: 'Missing required parameters for invite email' };
   }
   
-  // Improved subject line with inviter's real name
-  const subject = `${inviterName} invited you to join ${cliqName} on Cliqstr!`;
+  const declineLink = `${BASE_URL}/api/invite/decline?code=${encodeURIComponent(inviteCode)}`;
+  const subject = `${inviterName} invited you to ${cliqName} — join?`;
 
   const html = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto; font-size: 16px;">
-      <h2 style="margin: 0 0 8px; font-size: 24px;">${inviterName} has invited you to join their cliq on <strong>Cliqstr</strong>.</h2>
-      <p style="margin: 0 0 16px; color: #555;">Group: <strong>${cliqName}</strong></p>
-      <p><strong>${inviterName}</strong> thinks you'd love it.</p>
-      <p>
-        Cliqstr is a safe, private space for families, kids, and trusted groups.
-        No ads. No tracking. Just your people.
-      </p>
-      <div style="margin: 30px 0;">
-        <a href="${inviteLink}" style="display:inline-block; padding:16px 32px; background:#000000; color:white; border-radius:8px; text-decoration:none; font-weight: 600; font-size: 18px;">
-          Accept Invite
-        </a>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;background:#ffffff;padding:32px 20px;color:#333;">
+      <h1 style="font-size:20px;font-weight:700;margin:0 0 12px;">Join ${inviterName}'s Cliq: ${cliqName}</h1>
+      ${inviteNote ? `<blockquote style="margin:0 0 12px;padding-left:12px;border-left:3px solid #ddd;color:#555;">${inviteNote}</blockquote>` : ''}
+      <p style="margin:0 0 16px;color:#555;">Cliqstr is a simple, invite‑only space — no ads, no strangers. You’ll choose a plan (free test plan available) and be ready in minutes.</p>
+      <div style="text-align:center;margin:20px 0 8px;">
+        <a href="${inviteLink}" style="display:inline-block;padding:12px 20px;background:#000;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Accept Invite</a>
       </div>
-      
-      <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 5px;">
-        <p style="margin: 0 0 8px; font-weight: bold; color: #333;">Your Cliq Code: <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 3px;">${inviteCode}</span></p>
-        <p style="margin: 0; font-size: 16px; color: #666;">Joining from another device? Visit <a href="https://cliqstr.com/invite/manual" style="color: #000;">cliqstr.com/invite/manual</a> and enter this code.</p>
+      <div style="text-align:center;margin-top:10px;">
+        <a href="${inviteLink}" style="color:#111;text-decoration:underline;font-size:14px;">Open invite</a>
+        <span style="color:#aaa;margin:0 8px;">·</span>
+        <a href="${declineLink}" style="color:#666;text-decoration:underline;font-size:14px;">Decline</a>
       </div>
-      
-      <p style="font-size: 16px; color: #888;">This invite link is valid for 36 hours.</p>
+      <div style="margin:16px 0;padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:6px;">
+        <p style="margin:0 0 6px;color:#333;font-weight:600;">Cliq Code: <span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:3px;">${inviteCode}</span></p>
+        <p style="margin:0;color:#666;font-size:13px;">Or visit cliqstr.com/invite/manual and enter this code.</p>
+      </div>
+      <div style="margin-top:20px;text-align:center;color:#888;font-size:12px;">
+        <p style="margin:0;">No ads. No public feeds. Your people only.</p>
+      </div>
     </div>
   `;
 
