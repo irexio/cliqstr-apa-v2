@@ -351,7 +351,7 @@ export function HeaderComponent() {
           {/* Logo */}
           <Link href="/" className="inline-flex items-center" aria-label="Cliqstr Home">
             <span className="p-1">
-              <img src="/MASTERLOGO-BLACK.png" alt="Cliqstr" className="block h-7 sm:h-8 md:h-9 lg:h-9 w-auto object-contain" />
+              <img src="/MASTERLOGO-BLACK.png" alt="Cliqstr" className="block h-9 sm:h-10 md:h-12 lg:h-12 w-auto object-contain" />
             </span>
           </Link>
 
