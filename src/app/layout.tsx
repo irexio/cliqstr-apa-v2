@@ -28,6 +28,11 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: 'Cliqstr',
   description: 'Private social media for families and kids',
+  icons: {
+    icon: [
+      { url: '/icon_16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({

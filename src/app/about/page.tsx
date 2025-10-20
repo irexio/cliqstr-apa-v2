@@ -7,7 +7,7 @@ export default function AboutPage() {
         {/* Main Introduction */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <p className="text-gray-600 leading-relaxed text-base">
-            Cliqstr is a family-first, ad-free, algorithm-free social platform created to give families, children, and trusted groups a safe and private place to connect online. Unlike mainstream social media, Cliqstr was designed from the ground up for privacy, parental partnership, and healthier conversations.
+            Cliqstr is a privacy-first, family-friendly, ad-free, algorithm-free social platform created to give families, children, and trusted groups a safe and private place to connect online. Unlike mainstream social media, Cliqstr was designed from the ground up for privacy, parental partnership, and healthier conversations.
           </p>
         </div>
 

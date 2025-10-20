@@ -349,8 +349,8 @@ export function HeaderComponent() {
       <div className="max-w-7xl mx-auto px-4 py-6 font-poppins min-h-[88px]">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-4xl font-bold text-[#202020] lowercase font-poppins">
-            cliqstr
+          <Link href="/" className="inline-flex items-center" aria-label="Cliqstr Home">
+            <img src="/icon.svg" alt="Cliqstr" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
