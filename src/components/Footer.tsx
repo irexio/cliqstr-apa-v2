@@ -9,7 +9,9 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand / Intro */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold lowercase text-white font-poppins">cliqstr</h2>
+            <div className="flex items-center">
+              <img src="/cliqstr-logo-white.png" alt="Cliqstr" className="h-6 sm:h-7 md:h-8 lg:h-9 w-auto" />
+            </div>
             <p className="text-sm text-neutral-300">
               Cliqstr is a private social platform for families, friends, and safe online communities.
             </p>
