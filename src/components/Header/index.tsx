@@ -350,7 +350,9 @@ export function HeaderComponent() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center" aria-label="Cliqstr Home">
-            <img src="/icon.svg" alt="Cliqstr" className="h-8 w-auto" />
+            <span className="p-1">
+              <img src="/MASTERLOGO-BLACK.png" alt="Cliqstr" className="block h-9 sm:h-10 md:h-12 lg:h-12 w-auto object-contain" />
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

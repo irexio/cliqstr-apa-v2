@@ -46,7 +46,7 @@ export default function SignUpPage() {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black bg-opacity-50">
+    <div className="min-h-screen flex items-center justify-center bg-black/80">
       <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300 w-full max-w-md mx-auto space-y-4">
         <Suspense fallback={<div>Loading form...</div>}>
           <SignUpForm />
