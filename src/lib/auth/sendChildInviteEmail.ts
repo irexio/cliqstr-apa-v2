@@ -46,25 +46,69 @@ export async function sendChildInviteEmail({
   console.log(`[CHILD_INVITE_EMAIL] Sending invite for ${childFullName} to ${to}`);
   
   const declineLink = `${BASE_URL}/api/invite/decline?code=${encodeURIComponent(inviteCode)}`;
-  const subject = `${inviterName} invited ${childFullName} to ${cliqName} — approve?`;
+  const subject = `Your child ${childFullName} was invited to a private Cliq on Cliqstr`;
+
+  // Render HTML using the provided copy (no new deps)
+  const logoSrc = `${BASE_URL}/MASTERLOGO-BLACK.png`;
+  const learnMoreLink = `${BASE_URL}/for-parents`;
+  const preheader = 'Review and approve — private, ad-free, no DMs.';
 
   const html = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;background:#ffffff;padding:32px 20px;color:#333;">
-      <h1 style="font-size:20px;font-weight:700;margin:0 0 12px;">${inviterName} invited ${childFullName}</h1>
-      <p style="margin:0 0 16px;color:#555;">They’d like ${childFullName} to join their private Cliq “${cliqName}” on Cliqstr.</p>
-      <p style="margin:0 0 16px;color:#555;">Cliqstr is a safer, invite‑only space. Before ${childFullName} can join, your approval is required.</p>
-      <div style="text-align:center;margin:20px 0 8px;">
-        <a href="${inviteLink}" style="display:inline-block;padding:12px 20px;background:#000;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Approve & Continue</a>
-      </div>
-      <p style="margin:8px 0 16px;text-align:center;color:#666;font-size:13px;">${parentAccountExists ? 'You’ll review and confirm in Parent HQ.' : 'You’ll create a quick Parent account, then confirm in Parent HQ.'}</p>
-      ${inviteNote ? `<div style="background:#f8f9fa;border-left:4px solid #000;padding:12px 14px;margin:16px 0;"><p style=\"margin:0;color:#333;\"><strong>Note from ${inviterName}:</strong> ${inviteNote}</p></div>` : ''}
-      <div style="text-align:center;margin-top:8px;">
-        <a href="${inviteLink}" style="color:#111;text-decoration:underline;font-size:14px;">Open invite</a>
-        <span style="color:#aaa;margin:0 8px;">·</span>
-        <a href="${declineLink}" style="color:#666;text-decoration:underline;font-size:14px;">Decline</a>
-      </div>
-      <div style="margin-top:28px;text-align:center;color:#888;font-size:12px;">
-        <p style="margin:0;">No ads. No strangers. You stay in control.</p>
+    <div style="font-family:Poppins,Arial,sans-serif;background:#ffffff;margin:0;padding:40px 0;color:#000;">
+      <!-- Preheader -->
+      <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;">${preheader}</div>
+      <div style="max-width:600px;margin:0 auto;padding:0 20px;">
+        <!-- Logo -->
+        <div style="text-align:center;margin-bottom:32px;">
+          <img src="${logoSrc}" alt="Cliqstr" width="200" style="display:inline-block;" />
+        </div>
+
+        <!-- Intro -->
+        <p style="font-size:18px;font-weight:600;margin:0 0 8px;">Your child ${childFullName} was invited to join a private Cliq on Cliqstr</p>
+        <p style="margin:12px 0;line-height:1.6;">
+          ${inviterName} invited your child <strong>${childFullName}</strong> to join <strong>${cliqName}</strong> on <strong>Cliqstr</strong> — a private, ad‑free social platform for families and trusted friends.
+        </p>
+        <p style="margin:12px 0;line-height:1.6;">
+          The cliq in this invite is <strong>private and moderated</strong>, with verified connections and parent involvement. Cliqstr also has <strong>no private messages (DMs)</strong>; all communication happens in group spaces you can see.
+        </p>
+
+        <!-- Why -->
+        <p style="font-weight:600;font-size:16px;margin:24px 0 6px;">Why parents choose Cliqstr</p>
+        <ul style="margin:6px 0 0 20px;padding:0;line-height:1.6;">
+          <li>No ads or strangers — every member is verified.</li>
+          <li>No private messages (DMs); conversations happen in group spaces.</li>
+          <li>Parents can see what their child is invited to and posts.</li>
+          <li>Built-in AI monitoring and Red Alerts for safety.</li>
+          <li>Optional Silent Monitoring for quiet oversight.</li>
+        </ul>
+
+        <!-- Steps -->
+        <p style="font-weight:600;font-size:16px;margin:24px 0 6px;">Before your child can join</p>
+        <ol style="margin:6px 0 0 20px;padding:0;line-height:1.6;">
+          <li>Create your account (or sign in).</li>
+          <li>Confirm your identity with a credit card <span style="color:#555;">(verification only — includes a free 30‑day trial)</span>.</li>
+          <li>Set up your child’s permissions in the Parents HQ Dashboard.</li>
+        </ol>
+
+        <!-- CTA -->
+        <div style="text-align:center;margin-top:32px;">
+          <a href="${inviteLink}" style="background:#000;color:#fff;padding:14px 28px;border-radius:9999px;font-weight:600;text-decoration:none;display:inline-block;">Approve Invite</a>
+        </div>
+
+        <!-- Secondary Links -->
+        <div style="text-align:center;margin-top:16px;">
+          <a href="${declineLink}" style="font-size:14px;text-decoration:underline;margin-right:12px;color:#000;">Decline</a>
+          <a href="${learnMoreLink}" style="font-size:14px;text-decoration:underline;color:#000;">Learn how Cliqstr keeps families safe</a>
+        </div>
+
+        <!-- Footer -->
+        <hr style="border:0;border-top:1px solid #eee;margin:32px 0 16px;" />
+        <p style="font-size:13px;color:#555;line-height:1.6;">
+          If you weren’t expecting this, you can safely decline. No account will be created for your child without verified parent approval.
+          <br /><br />
+          Built for families and friends — not followers.
+        </p>
+        ${inviteNote ? `<div style="background:#f8f9fa;border-left:4px solid #000;padding:12px 14px;margin:16px 0;"><p style=\"margin:0;color:#333;\"><strong>Note from ${inviterName}:</strong> ${inviteNote}</p></div>` : ''}
       </div>
     </div>
   `;
