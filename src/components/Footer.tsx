@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Brand / Intro */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <img src="/cliqstr-logo-white.png" alt="Cliqstr" className="h-6 sm:h-7 md:h-8 lg:h-9 w-auto" />
+              <img src="/MASTERLOGO-WHITE.png" alt="Cliqstr" className="h-6 sm:h-7 md:h-8 lg:h-9 w-auto" />
             </div>
             <p className="text-sm text-neutral-300">
               Cliqstr is a private social platform for families, friends, and safe online communities.
