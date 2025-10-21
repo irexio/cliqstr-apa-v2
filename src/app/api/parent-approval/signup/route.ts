@@ -81,11 +81,10 @@ export async function POST(req: NextRequest) {
         // Upgrade the existing Adult to Parent role
         parentUser = existingUser._id;
         
-        await convexHttp.mutation(api.accounts.updateAccount, {
+        // Directly patch the account to upgrade role (updateAccount mutation doesn't support role updates)
+        await convexHttp.mutation(api.accounts.patchAccountRole, {
           userId: parentUser,
-          updates: {
-            role: 'Parent',
-          },
+          newRole: 'Parent',
         });
 
         console.log(`[PARENT-APPROVAL-SIGNUP] Successfully upgraded Adult to Parent: ${email}`);

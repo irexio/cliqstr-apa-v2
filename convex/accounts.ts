@@ -92,3 +92,24 @@ export const updateAccount = mutation({
     return account._id;
   },
 });
+
+// Patch account role (for Adult → Parent upgrade)
+export const patchAccountRole = mutation({
+  args: {
+    userId: v.id("users"),
+    newRole: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const account = await ctx.db
+      .query("accounts")
+      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .first();
+
+    if (!account) {
+      throw new Error("Account not found");
+    }
+
+    await ctx.db.patch(account._id, { role: args.newRole });
+    return account._id;
+  },
+});
