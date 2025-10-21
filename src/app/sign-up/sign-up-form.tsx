@@ -337,7 +337,7 @@ export default function SignUpForm() {
             id="firstName"
             type="text"
             required
-            autoComplete="given-name"
+            autoComplete="off"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
           />
@@ -349,7 +349,7 @@ export default function SignUpForm() {
             id="lastName"
             type="text"
             required
-            autoComplete="family-name"
+            autoComplete="off"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
@@ -361,6 +361,7 @@ export default function SignUpForm() {
             id="birthdate"
             type="date"
             required
+            autoComplete="off"
             value={birthdate}
             onChange={(e) => setBirthdate(e.target.value)}
           />
@@ -453,7 +454,7 @@ export default function SignUpForm() {
                   id="firstName"
                   type="text"
                   required
-                  autoComplete="given-name"
+                  autoComplete="off"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
@@ -465,7 +466,7 @@ export default function SignUpForm() {
                   id="lastName"
                   type="text"
                   required
-                  autoComplete="family-name"
+                  autoComplete="off"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                 />
@@ -477,6 +478,7 @@ export default function SignUpForm() {
                   id="birthdate"
                   type="date"
                   required
+                  autoComplete="off"
                   value={birthdate}
                   onChange={(e) => setBirthdate(e.target.value)}
                 />
