@@ -195,6 +195,58 @@ export default function ChoosePlanForm() {
               // Don't fail the plan selection if auto-join fails
             }
           }
+
+          // 🆕 ENHANCEMENT: Fetch ALL pending invites for this email and auto-join to all cliqs
+          try {
+            if (statusData?.user?.email) {
+              console.log('[APA] Fetching ALL pending invites for:', statusData.user.email);
+              
+              const pendingResponse = await fetch(
+                `/api/invites/pending?email=${encodeURIComponent(statusData.user.email)}`
+              );
+              
+              if (pendingResponse.ok) {
+                const pendingData = await pendingResponse.json();
+                console.log('[APA] Found pending invites:', pendingData.count);
+                
+                if (pendingData.invites && pendingData.invites.length > 0) {
+                  const cliqIds = new Set<string>();
+                  
+                  // Join to all pending cliqs (avoiding duplicates)
+                  for (const invite of pendingData.invites) {
+                    if (invite.cliqId && !cliqIds.has(invite.cliqId)) {
+                      cliqIds.add(invite.cliqId);
+                      console.log('[APA] Auto-joining to pending cliq:', invite.cliqName);
+                      
+                      try {
+                        const joinResp = await fetch(`/api/cliqs/${invite.cliqId}/join`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                        });
+                        
+                        if (joinResp.ok) {
+                          console.log('[APA] ✅ Joined to cliq:', invite.cliqName);
+                        } else {
+                          console.warn('[APA] Failed to join cliq:', invite.cliqName, joinResp.status);
+                        }
+                      } catch (joinErr) {
+                        console.error('[APA] Error joining cliq:', invite.cliqName, joinErr);
+                      }
+                    }
+                  }
+                  
+                  if (cliqIds.size > 0) {
+                    console.log(`[APA] ✅ Auto-joined to ${cliqIds.size} cliq(s)`);
+                    setMessage(`Great! You've been added to ${cliqIds.size} cliq${cliqIds.size > 1 ? 's' : ''}.`);
+                  }
+                }
+              }
+            }
+          } catch (pendingErr) {
+            console.error('[APA] Error fetching pending invites:', pendingErr);
+            // Don't fail - this is enhancement only
+          }
         }
       } catch (statusErr) {
         console.error('Session status check error:', statusErr);

@@ -243,6 +243,84 @@ export async function POST(request: NextRequest) {
       }
     }
 
+             // Step 3.5: Check for duplicate invites (for adults only)
+             if (inviteType === 'adult' && cliqId) {
+               console.log(`[INVITE_CREATE] Checking for duplicate adult invite to: ${emailNorm}, cliqId: ${cliqId}`);
+               
+               const existingInvites = await convexHttp.query(api.invites.getInvitesByEmail, {
+                 email: emailNorm,
+               });
+               
+               // Filter for pending invites to the same cliq
+               const duplicateInvite = existingInvites.find((inv: any) => 
+                 inv.status === 'pending' && 
+                 !inv.used && 
+                 inv.cliqId?.toString() === cliqId &&
+                 inv.inviteType === 'adult'
+               );
+               
+               if (duplicateInvite) {
+                 console.log(`[INVITE_CREATE] Duplicate invite found! ID: ${duplicateInvite._id}`);
+                 
+                 // Check if invite is older than 24 hours - if so, resend
+                 const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                 
+                 if (duplicateInvite.createdAt < oneDayAgo) {
+                   console.log(`[INVITE_CREATE] Resending old invite (created ${Math.round((Date.now() - duplicateInvite.createdAt) / (60 * 60 * 1000))} hours ago)`);
+                   
+                   try {
+                     // Get cliq and inviter info for resend
+                     const cliq = await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: cliqId as any });
+                     const cliqName = cliq?.name || 'a Cliq';
+                     
+                     const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
+                     const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
+                     
+                     const inviteLink = `${BASE_URL}/invite/accept?code=${duplicateInvite.code || duplicateInvite.joinCode}`;
+                     
+                     await sendInviteEmail({
+                       to: emailNorm,
+                       cliqName: cliqName,
+                       inviterName: inviterName,
+                       inviteLink: inviteLink,
+                       inviteCode: (duplicateInvite.code || duplicateInvite.joinCode || ''),
+                       inviteNote: inviteNote
+                     });
+                     
+                     console.log(`[INVITE_CREATE] Resent invite email to ${emailNorm}`);
+                     
+                     return NextResponse.json({
+                       ok: true,
+                       inviteId: duplicateInvite._id,
+                       message: `Invite resent to ${emailNorm} - it was previously invited to this cliq`,
+                       duplicate: true,
+                       resent: true
+                     }, { status: 200 });
+                   } catch (resendError) {
+                     console.error(`[INVITE_CREATE] Failed to resend old invite:`, resendError);
+                     // Fall through to return success anyway
+                     return NextResponse.json({
+                       ok: true,
+                       inviteId: duplicateInvite._id,
+                       message: `Invite already sent to ${emailNorm} for this cliq`,
+                       duplicate: true,
+                       resent: false
+                     }, { status: 200 });
+                   }
+                 } else {
+                   // Recent duplicate - just return success
+                   console.log(`[INVITE_CREATE] Recent duplicate detected (created ${Math.round((Date.now() - duplicateInvite.createdAt) / (60 * 1000))} minutes ago)`);
+                   return NextResponse.json({
+                     ok: true,
+                     inviteId: duplicateInvite._id,
+                     message: `Invite already sent to ${emailNorm} - try again later if they haven't responded`,
+                     duplicate: true,
+                     resent: false
+                   }, { status: 200 });
+                 }
+               }
+             }
+
              // Step 4: Create invite or parent approval based on type
              let inviteId;
              let approvalToken;

@@ -169,3 +169,16 @@ export const declineInvite = mutation({
     };
   },
 });
+
+// Get all invites by email (for auto-joining after signup)
+export const getInvitesByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const invites = await ctx.db
+      .query("invites")
+      .withIndex("by_target_email", (q) => q.eq("targetEmailNormalized", args.email))
+      .collect();
+
+    return invites;
+  },
+});
