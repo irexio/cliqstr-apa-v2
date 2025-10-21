@@ -152,6 +152,13 @@ function InviteAcceptContent() {
 
       if (inviteType === 'adult') {
         console.log('[INVITE_ACCEPT] Routing adult to choose-plan');
+        console.log('[INVITE_ACCEPT] Adult invite data:', {
+          recipientEmail: inviteData.recipientEmail,
+          cliqId: inviteData.cliqId,
+          cliqName: inviteData.cliqName,
+          inviterName: inviteData.inviterName
+        });
+        
         // Store invite context for auto-join after plan selection
         sessionStorage.setItem('adultInviteContext', JSON.stringify({
           inviteCode: token,
@@ -164,11 +171,11 @@ function InviteAcceptContent() {
         // For new users, route to sign-up first
         // For existing users who are authenticated, route to choose-plan
         if (!inviteData.recipientEmail || inviteData.recipientEmail.trim() === '') {
-          console.log('[INVITE_ACCEPT] No recipient email provided, routing to choose-plan');
+          console.log('[INVITE_ACCEPT] ⚠️ No recipient email provided, routing to choose-plan');
           router.push('/choose-plan');
         } else {
           // Route to sign-up with email pre-filled
-          console.log('[INVITE_ACCEPT] Routing new adult to sign-up with email:', inviteData.recipientEmail);
+          console.log('[INVITE_ACCEPT] ✅ Routing new adult to sign-up with email:', inviteData.recipientEmail);
           router.push(`/sign-up?email=${encodeURIComponent(inviteData.recipientEmail)}`);
         }
       } else if (inviteType === 'parent') {
