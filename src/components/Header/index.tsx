@@ -36,7 +36,9 @@ export function HeaderComponent() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [isMobile, setIsMobile] = useState(true); // Default to mobile for SSR
+  // Navigation/menu collapses on tablets and phones; auth pills stay on tablets
+  const [isCompactNav, setIsCompactNav] = useState(true); // <1024 => hamburger
+  const [isPhone, setIsPhone] = useState(true); // <768 => hide auth pills
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Define public pages that don't need auth checks
@@ -111,11 +113,13 @@ export function HeaderComponent() {
     return false;
   };
 
-  // Custom mobile detection
+  // Custom responsive detection (separate thresholds for nav vs auth buttons)
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      console.log('[Header] Window width:', window.innerWidth, 'isMobile:', window.innerWidth < 768);
+      const width = window.innerWidth;
+      setIsCompactNav(width < 1024);
+      setIsPhone(width < 768);
+      console.log('[Header] Window width:', width, 'isCompactNav(<1024):', width < 1024, 'isPhone(<768):', width < 768);
     };
     
     checkMobile();
@@ -356,11 +360,11 @@ export function HeaderComponent() {
           </Link>
 
           {/* Desktop Navigation */}
-          {!isMobile && <DesktopNav isLoggedIn={isLoggedIn} isApproved={isApproved} />}
+          {!isCompactNav && <DesktopNav isLoggedIn={isLoggedIn} isApproved={isApproved} />}
 
           {/* Desktop Auth Buttons */}
-          {!isMobile && (
-            <div className="flex items-center gap-4 text-sm">
+          {!isPhone && (
+            <div className="flex items-center gap-2 md:gap-4 text-sm flex-wrap">
             {isLoggedIn ? (
               <div className="relative">
                 <button 
@@ -446,19 +450,19 @@ export function HeaderComponent() {
               <>
                 <button
                   onClick={() => setInviteModalOpen(true)}
-                  className="flex items-center bg-gradient-to-r from-gray-100 to-gray-200 text-black border border-gray-300 hover:border-[#c032d1] px-4 py-2 rounded-full shadow-sm transition-all hover:shadow"
+                  className="flex items-center bg-gradient-to-r from-gray-100 to-gray-200 text-black border border-gray-300 hover:border-[#c032d1] px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-sm transition-all hover:shadow whitespace-nowrap"
                 >
                   <span>Join with <span className="font-bold">Invite</span></span>
                 </button>
                 <Link
                   href="/sign-in"
-                  className="px-4 py-2 border border-black text-black rounded-full hover:bg-gray-100 transition"
+                  className="px-3 py-1.5 md:px-4 md:py-2 border border-black text-black rounded-full hover:bg-gray-100 transition whitespace-nowrap"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="px-4 py-2 bg-black text-white rounded-full hover:bg-[#c032d1] transition"
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-black text-white rounded-full hover:bg-[#c032d1] transition whitespace-nowrap"
                 >
                   Sign Up
                 </Link>
@@ -468,7 +472,7 @@ export function HeaderComponent() {
           )}
 
           {/* Mobile Menu Button */}
-          {isMobile && (
+          {isCompactNav && (
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-[#202020] hover:text-black transition"

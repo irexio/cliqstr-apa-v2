@@ -56,6 +56,16 @@ export default defineSchema({
     visibilityLevel: v.optional(v.string()),
     inviteRequiresApproval: v.boolean(),
     receiveAiAlerts: v.boolean(), // New: Whether parents receive AI-triggered Red Alerts
+    // NEW: Receiving invites permissions
+    canReceiveInvites: v.boolean(), // Default: true
+    receiveInvitesRequireApproval: v.boolean(), // If true, invites auto-accept; if false, parent must approve first
+    // NEW: Sending invites permissions
+    canSendInvitesToChildren: v.boolean(), // Default: true
+    sendInvitesToChildrenRequireApproval: v.boolean(), // If true, invites auto-send; if false, parent must approve first
+    canSendInvitesToAdults: v.boolean(), // Default: true
+    sendInvitesToAdultsRequireApproval: v.boolean(), // If true, invites auto-send; if false, parent must approve first
+    canSendInvitesToParents: v.boolean(), // Default: true
+    sendInvitesToParentsRequireApproval: v.boolean(), // If true, invites auto-send; if false, parent must approve first
   })
     .index("by_profile_id", ["profileId"]),
 

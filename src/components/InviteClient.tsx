@@ -275,6 +275,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
                 placeholder="First name"
                 required
                 className="mt-1"
+                autoComplete="off"
               />
             </div>
             <div>
@@ -287,6 +288,7 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
                 placeholder="Last name"
                 required
                 className="mt-1"
+                autoComplete="off"
               />
             </div>
           </div>

@@ -850,6 +850,18 @@ export const createChildSettings = mutation({
     canShareYouTube: v.optional(v.boolean()),
     visibilityLevel: v.optional(v.string()),
     receiveAiAlerts: v.optional(v.boolean()),
+    // NEW: Receiving invites permissions
+    canReceiveInvites: v.optional(v.boolean()),
+    receiveInvitesRequireApproval: v.optional(v.boolean()),
+    // NEW: Sending invites to children
+    canSendInvitesToChildren: v.optional(v.boolean()),
+    sendInvitesToChildrenRequireApproval: v.optional(v.boolean()),
+    // NEW: Sending invites to adults
+    canSendInvitesToAdults: v.optional(v.boolean()),
+    sendInvitesToAdultsRequireApproval: v.optional(v.boolean()),
+    // NEW: Sending invites to parents
+    canSendInvitesToParents: v.optional(v.boolean()),
+    sendInvitesToParentsRequireApproval: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const settingsId = await ctx.db.insert("childSettings", {
@@ -868,6 +880,18 @@ export const createChildSettings = mutation({
       visibilityLevel: args.visibilityLevel,
       inviteRequiresApproval: args.inviteRequiresApproval ?? true,
       receiveAiAlerts: args.receiveAiAlerts ?? true, // Default: parents receive AI alerts
+      // NEW: Set defaults for receiving invites
+      canReceiveInvites: args.canReceiveInvites ?? true, // Default: can receive
+      receiveInvitesRequireApproval: args.receiveInvitesRequireApproval ?? false, // Default: auto-accept
+      // NEW: Set defaults for sending to children
+      canSendInvitesToChildren: args.canSendInvitesToChildren ?? false, // Default: cannot send
+      sendInvitesToChildrenRequireApproval: args.sendInvitesToChildrenRequireApproval ?? false,
+      // NEW: Set defaults for sending to adults
+      canSendInvitesToAdults: args.canSendInvitesToAdults ?? false, // Default: cannot send
+      sendInvitesToAdultsRequireApproval: args.sendInvitesToAdultsRequireApproval ?? false,
+      // NEW: Set defaults for sending to parents
+      canSendInvitesToParents: args.canSendInvitesToParents ?? false, // Default: cannot send
+      sendInvitesToParentsRequireApproval: args.sendInvitesToParentsRequireApproval ?? false,
     });
 
     return settingsId;
@@ -893,6 +917,18 @@ export const updateChildSettings = mutation({
     canShareYouTube: v.optional(v.boolean()),
     visibilityLevel: v.optional(v.string()),
     receiveAiAlerts: v.optional(v.boolean()),
+    // NEW: Receiving invites permissions
+    canReceiveInvites: v.optional(v.boolean()),
+    receiveInvitesRequireApproval: v.optional(v.boolean()),
+    // NEW: Sending invites to children
+    canSendInvitesToChildren: v.optional(v.boolean()),
+    sendInvitesToChildrenRequireApproval: v.optional(v.boolean()),
+    // NEW: Sending invites to adults
+    canSendInvitesToAdults: v.optional(v.boolean()),
+    sendInvitesToAdultsRequireApproval: v.optional(v.boolean()),
+    // NEW: Sending invites to parents
+    canSendInvitesToParents: v.optional(v.boolean()),
+    sendInvitesToParentsRequireApproval: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Find the existing child settings
@@ -927,6 +963,15 @@ export const updateChildSettings = mutation({
       visibilityLevel: existingSettings.visibilityLevel,
       inviteRequiresApproval: existingSettings.inviteRequiresApproval,
       receiveAiAlerts: existingSettings.receiveAiAlerts,
+      // NEW: Old invite permission values
+      canReceiveInvites: existingSettings.canReceiveInvites,
+      receiveInvitesRequireApproval: existingSettings.receiveInvitesRequireApproval,
+      canSendInvitesToChildren: existingSettings.canSendInvitesToChildren,
+      sendInvitesToChildrenRequireApproval: existingSettings.sendInvitesToChildrenRequireApproval,
+      canSendInvitesToAdults: existingSettings.canSendInvitesToAdults,
+      sendInvitesToAdultsRequireApproval: existingSettings.sendInvitesToAdultsRequireApproval,
+      canSendInvitesToParents: existingSettings.canSendInvitesToParents,
+      sendInvitesToParentsRequireApproval: existingSettings.sendInvitesToParentsRequireApproval,
     };
 
     // Update the settings
@@ -945,6 +990,15 @@ export const updateChildSettings = mutation({
       visibilityLevel: args.visibilityLevel ?? existingSettings.visibilityLevel,
       inviteRequiresApproval: args.inviteRequiresApproval ?? existingSettings.inviteRequiresApproval,
       receiveAiAlerts: args.receiveAiAlerts ?? existingSettings.receiveAiAlerts,
+      // NEW: Update invite permission values
+      canReceiveInvites: args.canReceiveInvites ?? existingSettings.canReceiveInvites,
+      receiveInvitesRequireApproval: args.receiveInvitesRequireApproval ?? existingSettings.receiveInvitesRequireApproval,
+      canSendInvitesToChildren: args.canSendInvitesToChildren ?? existingSettings.canSendInvitesToChildren,
+      sendInvitesToChildrenRequireApproval: args.sendInvitesToChildrenRequireApproval ?? existingSettings.sendInvitesToChildrenRequireApproval,
+      canSendInvitesToAdults: args.canSendInvitesToAdults ?? existingSettings.canSendInvitesToAdults,
+      sendInvitesToAdultsRequireApproval: args.sendInvitesToAdultsRequireApproval ?? existingSettings.sendInvitesToAdultsRequireApproval,
+      canSendInvitesToParents: args.canSendInvitesToParents ?? existingSettings.canSendInvitesToParents,
+      sendInvitesToParentsRequireApproval: args.sendInvitesToParentsRequireApproval ?? existingSettings.sendInvitesToParentsRequireApproval,
     };
 
     await ctx.db.patch(existingSettings._id, newSettings);

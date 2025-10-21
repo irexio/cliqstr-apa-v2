@@ -10,6 +10,7 @@ import InviteModal from '@/components/cliqs/InviteModal';
 import MembersModal from '@/components/cliqs/MembersModal';
 import CliqManageModal from '@/components/cliqs/CliqManageModal';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CliqCardProps {
   cliq: {
@@ -25,6 +26,7 @@ interface CliqCardProps {
 }
 
 export default function CliqCard({ cliq, currentUserId, onDelete }: CliqCardProps) {
+  const router = useRouter();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [membersModalOpen, setMembersModalOpen] = useState(false);
   const [manageModalOpen, setManageModalOpen] = useState(false);
@@ -43,10 +45,24 @@ export default function CliqCard({ cliq, currentUserId, onDelete }: CliqCardProp
     hasOnDelete: !!onDelete
   });
 
+  const shouldIgnore = (target: HTMLElement) =>
+    !!target.closest('a, button, [role="button"], input, textarea, select');
 
+  const handleCardClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    // On mobile, ensure taps anywhere on the card navigate, except on interactive elements
+    const target = e.target as HTMLElement;
+    if (shouldIgnore(target)) return;
+    router.push(`/cliqs/${cliq.id}`);
+  };
+
+  const handleCardTouchEnd: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    const target = e.target as HTMLElement;
+    if (shouldIgnore(target)) return;
+    router.push(`/cliqs/${cliq.id}`);
+  };
 
   return (
-    <BaseCard className="p-0 group hover:shadow-lg transition-shadow relative">
+    <BaseCard className="p-0 group hover:shadow-lg transition-shadow relative cursor-pointer" onClick={handleCardClick} onTouchEnd={handleCardTouchEnd}>
       {/* Card Clickable Area */}
       <Link href={`/cliqs/${cliq.id}`} className="block focus:outline-none focus:ring-2 focus:ring-primary">
         {/* Cover Image or Gradient */}
