@@ -67,33 +67,61 @@ export async function POST(req: NextRequest) {
       email: email.toLowerCase().trim(),
     });
 
+    let parentUser: any;
+
     if (existingUser) {
-      return NextResponse.json({ 
-        error: 'An account with this email already exists. Please sign in instead.' 
-      }, { status: 400 });
+      // User already exists - check if they're an Adult and upgrade to Parent
+      const existingAccount = await convexHttp.query(api.accounts.getAccountByUserId, {
+        userId: existingUser._id,
+      });
+
+      if (existingAccount?.role === 'Adult') {
+        console.log(`[PARENT-APPROVAL-SIGNUP] Existing Adult found, upgrading to Parent: ${email}`);
+        
+        // Upgrade the existing Adult to Parent role
+        parentUser = existingUser._id;
+        
+        await convexHttp.mutation(api.accounts.updateAccount, {
+          userId: parentUser,
+          updates: {
+            role: 'Parent',
+          },
+        });
+
+        console.log(`[PARENT-APPROVAL-SIGNUP] Successfully upgraded Adult to Parent: ${email}`);
+      } else if (existingAccount?.role === 'Parent') {
+        // Already a parent - just use their ID
+        console.log(`[PARENT-APPROVAL-SIGNUP] Existing Parent found: ${email}`);
+        parentUser = existingUser._id;
+      } else {
+        // Some other role - reject
+        return NextResponse.json({ 
+          error: 'An account with this email already exists with an incompatible role' 
+        }, { status: 400 });
+      }
+    } else {
+      // New user - create parent account
+      console.log(`[PARENT-APPROVAL-SIGNUP] Creating new Parent account: ${email}`);
+      
+      // Hash the password
+      const bcrypt = await import('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create the parent user
+      parentUser = await convexHttp.mutation(api.users.createUserWithAccount, {
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        birthdate: new Date(birthdate).getTime(),
+        role: 'Parent',
+        isApproved: true,
+        plan: undefined, // No plan set yet - will be selected during plan selection
+        isVerified: true, // Skip email verification for parent approval flow
+        firstName: firstName,
+        lastName: lastName,
+      });
+
+      console.log(`[PARENT-APPROVAL-SIGNUP] Successfully created new parent account`);
     }
-
-    // Hash the password
-    const bcrypt = await import('bcryptjs');
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create the parent user
-    const parentUser = await convexHttp.mutation(api.users.createUserWithAccount, {
-      email: email.toLowerCase().trim(),
-      password: hashedPassword,
-      birthdate: new Date(birthdate).getTime(),
-      role: 'Parent',
-      isApproved: true,
-      plan: undefined, // No plan set yet - will be selected during plan selection
-      isVerified: true, // Skip email verification for parent approval flow
-      firstName: firstName,
-      lastName: lastName,
-    });
-
-    // Note: Parent will create their own social media profile later
-    // Note: Approval will now track parent progress through setup stages
-
-    console.log(`[PARENT-APPROVAL-SIGNUP] Successfully created parent account`);
 
     // Set setup stage to 'started' - parent has account but no plan yet
     await convexHttp.mutation(api.accounts.updateAccount, {
