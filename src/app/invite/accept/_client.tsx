@@ -160,7 +160,17 @@ function InviteAcceptContent() {
           inviterName: inviteData.inviterName,
           recipientEmail: inviteData.recipientEmail
         }));
-        router.push('/choose-plan');
+        
+        // For new users, route to sign-up first
+        // For existing users who are authenticated, route to choose-plan
+        if (!inviteData.recipientEmail || inviteData.recipientEmail.trim() === '') {
+          console.log('[INVITE_ACCEPT] No recipient email provided, routing to choose-plan');
+          router.push('/choose-plan');
+        } else {
+          // Route to sign-up with email pre-filled
+          console.log('[INVITE_ACCEPT] Routing new adult to sign-up with email:', inviteData.recipientEmail);
+          router.push(`/sign-up?email=${encodeURIComponent(inviteData.recipientEmail)}`);
+        }
       } else if (inviteType === 'parent') {
         console.log('[INVITE_ACCEPT] Routing parent to invite/parent');
         router.push(`/invite/parent?code=${token}`);
@@ -168,8 +178,8 @@ function InviteAcceptContent() {
         console.log('[INVITE_ACCEPT] Routing child invite to Parents HQ');
         router.push(`/parents/hq?inviteCode=${encodeURIComponent(token)}`);
       } else {
-        // Fallback to adult flow
-        console.log('[INVITE_ACCEPT] Unknown invite type, defaulting to choose-plan');
+        // Fallback to sign-up for unknown invite types
+        console.log('[INVITE_ACCEPT] Unknown invite type, defaulting to sign-up');
         // Store invite context for auto-join after plan selection
         sessionStorage.setItem('adultInviteContext', JSON.stringify({
           inviteCode: token,
@@ -178,7 +188,11 @@ function InviteAcceptContent() {
           inviterName: inviteData.inviterName,
           recipientEmail: inviteData.recipientEmail
         }));
-        router.push('/choose-plan');
+        if (inviteData.recipientEmail && inviteData.recipientEmail.trim() !== '') {
+          router.push(`/sign-up?email=${encodeURIComponent(inviteData.recipientEmail)}`);
+        } else {
+          router.push('/sign-up');
+        }
       }
 
     } catch (err) {
