@@ -107,6 +107,20 @@ function InviteAcceptContent() {
         if (authRes.ok) {
           const { user } = await authRes.json();
           if (user?.id) {
+            // 🔐 SECURITY: Verify the authenticated user's email matches the invite recipient
+            // This prevents session hijacking where someone accepts an invite meant for another email
+            const userEmail = user.email?.toLowerCase().trim();
+            const inviteEmail = inviteData.recipientEmail?.toLowerCase().trim();
+            
+            console.log('[INVITE_ACCEPT] Auth check - User email:', userEmail, 'Invite email:', inviteEmail);
+            
+            if (userEmail !== inviteEmail) {
+              console.warn('[INVITE_ACCEPT] ⚠️ EMAIL MISMATCH - User is logged in as different account!');
+              console.warn(`[INVITE_ACCEPT] User: ${userEmail}, Invite for: ${inviteEmail}`);
+              // Force re-authentication - redirect to sign-out then sign-in with correct email
+              return router.push(`/sign-out?redirect=/sign-in?email=${encodeURIComponent(inviteEmail)}`);
+            }
+            
             // If this is an ADULT invite and the user already has a plan, auto-join immediately
             const hasPlan = !!(user.account?.plan || user.plan);
             if (inviteType === 'adult' && inviteData.cliqId && hasPlan) {
