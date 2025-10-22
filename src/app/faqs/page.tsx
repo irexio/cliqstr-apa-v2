@@ -24,7 +24,7 @@ export default function FAQPage() {
     },
     {
       question: "How does moderation work?",
-      answer: "Cliqstr uses a hybrid approach: AI scans posts and images in real time, while trained, background-checked adult moderators review anything flagged. Parents are notified of issues that involve their child."
+      answer: "Cliqstr's moderation team currently consists of verified internal members of our founding team. As we grow, we plan to introduce third-party background screening for all moderators to ensure ongoing trust and safety."
     },
     {
       question: "What happens if a child breaks the rules?",
@@ -39,12 +39,12 @@ export default function FAQPage() {
       answer: "Children may access age-appropriate public cliqs if permitted by their designated parent/guardian. Parents can control this permission in their Parent HQ dashboard."
     },
     {
-      question: "What about custody or abuse situations?",
-      answer: "Cliqstr is building additional safeguards for complex family situations. Our roadmap includes protections for custody, divorce, and abuse cases, ensuring parents and guardians can maintain oversight."
-    },
-    {
       question: "Is homework help safe?",
       answer: "Yes. Our Homework Help feature is under development and will use AI for academic support only, with filters blocking unsafe conversations. Human oversight is planned as funding allows."
+    },
+    {
+      question: "How are complex family safeguards addressed?",
+      answer: "Cliqstr has developed safeguards to support families in diverse situations -- including shared custody and guardianship. The current system allows multiple approved parents or guardians to oversee a child's account through Parent HQ. Future updates will expand protections for verified custody and abuse-sensitive cases in collaboration with legal and child-safety advisors. If you have a unique or special-needs situation, please email support@cliqstr.com"
     }
   ];
 
@@ -86,3 +86,6 @@ export default function FAQPage() {
     </main>
   );
 }
+
+
+

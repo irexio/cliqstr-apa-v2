@@ -415,9 +415,23 @@ export async function POST(request: NextRequest) {
         const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
         const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
         
+        // Map targetState to parentState for child invites
+        let parentState: 'new_parent' | 'existing_adult' | 'existing_parent';
+        if (targetState === 'new') {
+          parentState = 'new_parent';
+        } else if (targetState === 'existing_user_non_parent') {
+          parentState = 'existing_adult';
+        } else if (targetState === 'existing_parent') {
+          parentState = 'existing_parent';
+        } else {
+          parentState = 'new_parent'; // Fallback
+        }
+        
+        console.log(`[INVITE_CREATE] Child invite parentState: ${parentState} (targetState: ${targetState})`);
+        
         // Use direct Parents HQ link for child invites (bypassing smart router)
         // For child invites, use the approvalToken to get approval data
-        const inviteLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken || '')}`;
+        const inviteLink = `${BASE_URL}/parent-approval?token=${encodeURIComponent(approvalToken || '')}&parentState=${parentState}`;
         
         await sendChildInviteEmail({
           to: targetEmail,
