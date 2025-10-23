@@ -202,6 +202,7 @@ export default defineSchema({
   parentLinks: defineTable({
     parentId: v.id("users"),
     email: v.string(),
+    secondParentEmail: v.optional(v.string()), // Secondary parent/guardian email for Red Alerts
     childId: v.id("users"),
     type: v.string(),
     inviteContext: v.optional(v.string()),
@@ -212,6 +213,9 @@ export default defineSchema({
       canViewActivity: v.boolean(),
       receivesNotifications: v.boolean(),
     })),
+    // Red Alert contact information
+    mobileNumber: v.optional(v.string()), // Primary parent mobile for SMS alerts
+    secondParentMobileNumber: v.optional(v.string()), // Secondary parent mobile for SMS alerts
     createdAt: v.number(),
   })
     .index("by_parent_id", ["parentId"])
@@ -347,6 +351,11 @@ export default defineSchema({
     childLastName: v.string(),
     childBirthdate: v.string(),
     parentEmail: v.string(),
+    
+    // Parent contact information for Red Alert notifications
+    parentMobileNumber: v.optional(v.string()), // Primary parent mobile for SMS alerts
+    secondParentEmail: v.optional(v.string()), // Secondary parent/guardian email
+    secondParentMobileNumber: v.optional(v.string()), // Secondary parent mobile for SMS alerts
     
     // Approval tracking
     approvalToken: v.string(),
