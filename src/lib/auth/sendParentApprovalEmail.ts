@@ -24,35 +24,77 @@ export async function sendParentApprovalEmail({
   const defaultSubject = `${childName} wants to join Cliqstr - Parent Approval Required`;
 
   const approvalLink = `${BASE_URL}/parent-approval?code=${approvalCode}`;
+  const logoSrc = `${BASE_URL}/MASTERLOGO-BLACK.png`;
+  const learnMoreLink = `${BASE_URL}/for-parents`;
 
   const defaultHtml = `
-    <div style="font-family: sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-      <h2>Your child wants to join Cliqstr</h2>
-      <p>Hello!</p>
-      <p>Your child <strong>${childName}</strong> (age ${childAge}) would like to create an account on Cliqstr, a safe and private space for families and close friends to connect.</p>
-      
-      <div style="background: #f8f9fa; border-left: 4px solid #000000; padding: 15px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #000000;">What is Cliqstr?</h3>
-        <p style="margin-bottom: 0;">Cliqstr is designed specifically for families and trusted groups. It's not a public social network - it's a private space where your child can safely connect with family members and close friends you approve.</p>
-      </div>
+    <div style="font-family:Poppins,Arial,sans-serif;background:#ffffff;margin:0;padding:40px 0;color:#000;">
+      <!-- Preheader -->
+      <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;">Your child wants to join Cliqstr — a safe, private space for families.</div>
+      <div style="max-width:600px;margin:0 auto;padding:0 20px;">
+        <!-- Logo -->
+        <div style="text-align:center;margin-bottom:32px;">
+          <img src="${logoSrc}" alt="Cliqstr" width="200" style="display:inline-block;" />
+        </div>
 
-      <p><strong>To approve ${childName}'s account, please click the link below:</strong></p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${approvalLink}" style="background: #000000; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-          Approve ${childName}'s Account
-        </a>
+        <!-- Intro -->
+        <p style="font-size:18px;font-weight:600;margin:0 0 8px;">Your child ${childName} wants to join Cliqstr</p>
+        <p style="margin:12px 0;line-height:1.6;">
+          <strong>${childName}</strong> (age ${childAge}) is asking permission to create an account on <strong>Cliqstr</strong> — a private, ad‑free social platform for families and trusted friends.
+        </p>
+        <p style="margin:12px 0;line-height:1.6;">
+          This is <strong>not a public social network</strong>. Cliqstr is specifically designed for close connections with verified members, parental oversight, and built-in safety features.
+        </p>
+
+        <!-- Why -->
+        <p style="font-weight:600;font-size:16px;margin:24px 0 6px;">Why parents choose Cliqstr</p>
+        <ul style="margin:6px 0 0 20px;padding:0;line-height:1.6;">
+          <li>No ads or strangers — every member is verified.</li>
+          <li>No private messages (DMs); conversations happen in group spaces.</li>
+          <li>You can see what your child is invited to and posts.</li>
+          <li>Built-in AI monitoring and Red Alerts for safety.</li>
+          <li>Optional Silent Monitoring for quiet oversight.</li>
+        </ul>
+
+        <!-- Action -->
+        <p style="font-weight:600;font-size:16px;margin:24px 0 12px;">To approve ${childName}'s request</p>
+        <ol style="margin:6px 0 0 20px;padding:0;line-height:1.6;">
+          <li>Click the button below to approve.</li>
+          <li>Set up ${childName}'s permissions in Parents HQ.</li>
+          <li>Confirm your identity with a credit card (verification only — includes a free 30‑day trial).</li>
+        </ol>
+
+        <!-- CTA -->
+        <div style="text-align:center;margin-top:32px;">
+          <a href="${approvalLink}" style="background:#000;color:#fff;padding:14px 28px;border-radius:9999px;font-weight:600;text-decoration:none;display:inline-block;">Approve ${childName}'s Request</a>
+        </div>
+
+        <!-- Expiration Notice -->
+        <div style="text-align:center;margin-top:16px;">
+          <p style="font-size:13px;color:#666;margin:0;">This approval link expires in 7 days.</p>
+        </div>
+
+        <!-- Footer -->
+        <hr style="border:0;border-top:1px solid #eee;margin:32px 0 16px;" />
+        <p style="font-size:13px;color:#555;line-height:1.6;">
+          If you didn't expect this request, you can safely ignore this email. No account will be created without your approval.
+          <br /><br />
+          Built for families and friends — not followers.
+        </p>
+
+        <!-- Support Link -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+          <p style="font-size:12px;color:#666;margin:0;">Having trouble with this email?</p>
+          <p style="font-size:12px;margin:6px 0 0;">
+            <a href="mailto:support@cliqstr.com" style="color:#000;text-decoration:underline;font-weight:600;">📧 Get help</a>
+          </p>
+        </div>
       </div>
-      
-      <p style="font-size: 14px; color: #666;">
-        <strong>This approval link will expire in 7 days.</strong><br>
-        If you did not expect this request, you can safely ignore this email.
-      </p>
-      
-      <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-      <p style="font-size: 12px; color: #888;">
-        Questions about Cliqstr? Visit our website or contact support.<br>
-        This email was sent because ${childName} entered your email address during sign-up.
-      </p>
+      <!-- 🔧 Unique identifier to prevent MailChannels duplicate-content bounces
+           When multiple approval requests are sent to the same parent,
+           email providers use content fingerprinting to detect spam.
+           This invisible comment ensures each email has a unique hash. -->
+      <!-- unique:\${Date.now()}-\${Math.random().toString(36).substr(2, 9)} -->
     </div>
   `;
 
