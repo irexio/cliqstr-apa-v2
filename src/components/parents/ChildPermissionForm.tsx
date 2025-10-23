@@ -103,6 +103,8 @@ export default function ChildPermissionForm({
           if (!response.ok) throw new Error('Failed to load approval');
           const data = await response.json();
           
+          console.log('[CHILD_PERMISSION_FORM] Approval data:', data.approval);
+          
           setChildFirstName(data.approval.childFirstName || '');
           setChildLastName(data.approval.childLastName || '');
           setChildBirthdate(data.approval.childBirthdate || '');
@@ -110,6 +112,8 @@ export default function ChildPermissionForm({
           
           const age = new Date().getFullYear() - new Date(data.approval.childBirthdate).getFullYear();
           setChildAge(age);
+          
+          console.log('[CHILD_PERMISSION_FORM] Set child name:', data.approval.childFirstName, data.approval.childLastName);
         } else if (inviteCode) {
           // Load from invite
           const response = await fetch(`/api/invites/validate?code=${encodeURIComponent(inviteCode)}`, { cache: 'no-store' });
@@ -248,9 +252,15 @@ export default function ChildPermissionForm({
           <CardTitle className="text-base sm:text-lg">Child Information</CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0 space-y-3 text-sm sm:text-base">
-          <p><strong>Name:</strong> {childFirstName} {childLastName}</p>
-          {childAge !== null && <p><strong>Age:</strong> {childAge} years old</p>}
-          <p><strong>Username:</strong> @{username}</p>
+          {!childFirstName && !childLastName ? (
+            <p className="text-gray-500 italic">Loading child information...</p>
+          ) : (
+            <>
+              <p><strong>Name:</strong> {childFirstName} {childLastName}</p>
+              {childAge !== null && <p><strong>Age:</strong> {childAge} years old</p>}
+              <p><strong>Username:</strong> @{username}</p>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -517,22 +527,25 @@ export default function ChildPermissionForm({
               {[
                 { id: 'canCreateCliqs', label: 'Can create cliqs' },
                 { id: 'canCreatePublicCliqs', label: 'Can create public cliqs' },
-                { id: 'canJoinPublicCliqs', label: 'Can join public cliqs' },
+                { id: 'canJoinPublicCliqs', label: 'Can join public cliqs', note: 'Age appropriate only' },
                 { id: 'canPost', label: 'Can create posts' },
                 { id: 'canComment', label: 'Can comment on posts' },
                 { id: 'canReact', label: 'Can react to posts' },
                 { id: 'canViewProfiles', label: 'Can view other profiles' },
                 { id: 'canUploadVideos', label: 'Can upload videos' },
-              ].map(({ id, label }) => (
-                <div key={id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={id}
-                    checked={(permissions as any)[id]}
-                    onCheckedChange={(checked) =>
-                      setPermissions((prev) => ({ ...prev, [id]: checked as boolean }))
-                    }
-                  />
-                  <Label htmlFor={id} className="text-sm sm:text-base">{label}</Label>
+              ].map(({ id, label, note }) => (
+                <div key={id}>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={id}
+                      checked={(permissions as any)[id]}
+                      onCheckedChange={(checked) =>
+                        setPermissions((prev) => ({ ...prev, [id]: checked as boolean }))
+                      }
+                    />
+                    <Label htmlFor={id} className="text-sm sm:text-base">{label}</Label>
+                  </div>
+                  {note && <p className="text-xs text-gray-500 ml-6 mt-1">{note}</p>}
                 </div>
               ))}
             </div>
