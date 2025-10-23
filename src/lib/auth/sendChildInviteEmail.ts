@@ -109,6 +109,16 @@ export async function sendChildInviteEmail({
           Built for families and friends — not followers.
         </p>
         ${inviteNote ? `<div style="background:#f8f9fa;border-left:4px solid #000;padding:12px 14px;margin:16px 0;"><p style=\"margin:0;color:#333;\"><strong>Note from ${inviterName}:</strong> ${inviteNote}</p></div>` : ''}
+        
+        <!-- Support Link -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+          <p style="font-size:12px;color:#666;margin:0;">Having trouble with your invite?</p>
+          <p style="font-size:12px;margin:6px 0 0;">
+            <a href="${BASE_URL}/invite/manual" style="color:#000;text-decoration:underline;font-weight:600;">📝 Enter code manually</a>
+            &nbsp;•&nbsp;
+            <a href="mailto:support@cliqstr.com" style="color:#000;text-decoration:underline;font-weight:600;">📧 Get help</a>
+          </p>
+        </div>
       </div>
       <!-- 🔧 Unique identifier to prevent MailChannels duplicate-content bounces
            When multiple child invites are sent to the same parent in quick succession,

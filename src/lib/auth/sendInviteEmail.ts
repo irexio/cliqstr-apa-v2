@@ -51,6 +51,15 @@ export async function sendInviteEmail({
       <div style="margin-top:20px;text-align:center;color:#888;font-size:12px;">
         <p style="margin:0;">No ads. No public feeds. Your people only.</p>
       </div>
+      <!-- Support Link -->
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;text-align:center;">
+        <p style="font-size:12px;color:#666;margin:0;">Having trouble with your invite?</p>
+        <p style="font-size:12px;margin:6px 0 0;">
+          <a href="${BASE_URL}/invite/manual" style="color:#000;text-decoration:underline;font-weight:600;">📝 Enter code manually</a>
+          &nbsp;•&nbsp;
+          <a href="mailto:support@cliqstr.com" style="color:#000;text-decoration:underline;font-weight:600;">📧 Get help</a>
+        </p>
+      </div>
       <!-- 🔧 Unique identifier to prevent MailChannels duplicate-content bounces
            When multiple invites are sent to the same recipient in quick succession,
            email providers like MailChannels use content fingerprinting to detect spam.
