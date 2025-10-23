@@ -298,8 +298,9 @@ export default function ChoosePlanForm() {
         setTimeout(() => {
           console.log('[PARENT] Redirecting to Parents HQ');
           if (approvalToken) {
-            // For parent approval flow, go directly to child creation
-            router.push(`/parents/hq?token=${encodeURIComponent(approvalToken)}`);
+            // For parent approval flow, go directly to child creation form with approval token
+            console.log('[PARENT] Redirecting to child permission form with approval token');
+            router.push(`/parents/hq/child/new?approvalToken=${encodeURIComponent(approvalToken)}`);
           } else {
             router.push('/parents/hq');
           }
