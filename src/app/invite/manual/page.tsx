@@ -96,7 +96,47 @@ function ManualInviteContent() {
         router.push(`/invite/parent?code=${cleanCode}`);
       } else if (inviteType === 'child') {
         console.log('[MANUAL_INVITE] Routing child to parent-approval');
-        router.push('/parent-approval');
+        
+        // For child invites, we need to look up the approvalToken from the invite code
+        try {
+          const inviteResponse = await fetch(`/api/invites/validate?code=${cleanCode}`, {
+            method: 'GET',
+            cache: 'no-cache'
+          });
+          
+          if (inviteResponse.ok) {
+            const inviteData = await inviteResponse.json();
+            
+            // Fetch the parent approval data to get the token and parentState
+            if (inviteData.approvalToken) {
+              const approvalResponse = await fetch(
+                `/api/parent-approval/check?token=${encodeURIComponent(inviteData.approvalToken)}`,
+                { cache: 'no-store' }
+              );
+              
+              if (approvalResponse.ok) {
+                const approvalData = await approvalResponse.json();
+                const parentState = approvalData.approval?.parentState || 'new_parent';
+                
+                console.log('[MANUAL_INVITE] Found approval token, routing with parentState:', parentState);
+                router.push(
+                  `/parent-approval?token=${encodeURIComponent(inviteData.approvalToken)}&parentState=${parentState}`
+                );
+              } else {
+                console.error('[MANUAL_INVITE] Failed to fetch approval data');
+                throw new Error('Unable to process this invite');
+              }
+            } else {
+              console.error('[MANUAL_INVITE] No approval token found in invite data');
+              throw new Error('Invalid invite code');
+            }
+          } else {
+            throw new Error('Invite code not found');
+          }
+        } catch (err) {
+          console.error('[MANUAL_INVITE] Error looking up child invite:', err);
+          throw new Error('Unable to process this invite. Please check your code and try again.');
+        }
       } else {
         // Fallback to adult flow
         console.log('[MANUAL_INVITE] Unknown invite type, defaulting to choose-plan');
