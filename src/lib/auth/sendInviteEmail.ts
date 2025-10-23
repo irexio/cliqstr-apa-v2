@@ -35,7 +35,7 @@ export async function sendInviteEmail({
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;background:#ffffff;padding:32px 20px;color:#333;">
       <h1 style="font-size:20px;font-weight:700;margin:0 0 12px;">Join ${inviterName}'s Cliq: ${cliqName}</h1>
       ${inviteNote ? `<blockquote style="margin:0 0 12px;padding-left:12px;border-left:3px solid #ddd;color:#555;">${inviteNote}</blockquote>` : ''}
-      <p style="margin:0 0 16px;color:#555;">Cliqstr is a simple, invite‑only space — no ads, no strangers. You’ll choose a plan (free test plan available) and be ready in minutes.</p>
+      <p style="margin:0 0 16px;color:#555;">Cliqstr is a simple, invite‑only space — no ads, no strangers. You'll choose a plan (free test plan available) and be ready in minutes.</p>
       <div style="text-align:center;margin:20px 0 8px;">
         <a href="${inviteLink}" style="display:inline-block;padding:12px 20px;background:#000;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Accept Invite</a>
       </div>
@@ -51,6 +51,12 @@ export async function sendInviteEmail({
       <div style="margin-top:20px;text-align:center;color:#888;font-size:12px;">
         <p style="margin:0;">No ads. No public feeds. Your people only.</p>
       </div>
+      <!-- 🔧 Unique identifier to prevent MailChannels duplicate-content bounces
+           When multiple invites are sent to the same recipient in quick succession,
+           email providers like MailChannels use content fingerprinting to detect spam.
+           This invisible comment ensures each email has a unique hash, preventing false
+           positives for legitimate sequential invites. Users never see this. -->
+      <!-- unique:${Date.now()}-${Math.random().toString(36).substr(2, 9)} -->
     </div>
   `;
 

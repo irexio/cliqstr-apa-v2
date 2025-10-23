@@ -87,7 +87,7 @@ export async function sendChildInviteEmail({
         <ol style="margin:6px 0 0 20px;padding:0;line-height:1.6;">
           <li>Create your account (or sign in).</li>
           <li>Confirm your identity with a credit card <span style="color:#555;">(verification only — includes a free 30‑day trial)</span>.</li>
-          <li>Set up your child’s permissions in the Parents HQ Dashboard.</li>
+          <li>Set up your child's permissions in the Parents HQ Dashboard.</li>
         </ol>
 
         <!-- CTA -->
@@ -104,12 +104,18 @@ export async function sendChildInviteEmail({
         <!-- Footer -->
         <hr style="border:0;border-top:1px solid #eee;margin:32px 0 16px;" />
         <p style="font-size:13px;color:#555;line-height:1.6;">
-          If you weren’t expecting this, you can safely decline. No account will be created for your child without verified parent approval.
+          If you weren't expecting this, you can safely decline. No account will be created for your child without verified parent approval.
           <br /><br />
           Built for families and friends — not followers.
         </p>
         ${inviteNote ? `<div style="background:#f8f9fa;border-left:4px solid #000;padding:12px 14px;margin:16px 0;"><p style=\"margin:0;color:#333;\"><strong>Note from ${inviterName}:</strong> ${inviteNote}</p></div>` : ''}
       </div>
+      <!-- 🔧 Unique identifier to prevent MailChannels duplicate-content bounces
+           When multiple child invites are sent to the same parent in quick succession,
+           email providers like MailChannels use content fingerprinting to detect spam.
+           This invisible comment ensures each email has a unique hash, preventing false
+           positives for legitimate sequential invites. Users never see this. -->
+      <!-- unique:${Date.now()}-${Math.random().toString(36).substr(2, 9)} -->
     </div>
   `;
 
