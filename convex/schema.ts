@@ -416,4 +416,42 @@ export default defineSchema({
     .index("by_category", ["category"])
     .index("by_status", ["status"])
     .index("by_created_at", ["createdAt"]),
+
+  // Cliq Events - for Calendar tool
+  events: defineTable({
+    cliqId: v.id("cliqs"),
+    createdBy: v.id("users"),
+    title: v.string(),
+    description: v.string(),
+    eventTime: v.number(), // Unix timestamp
+    where: v.string(), // Plain text location only
+    eventType: v.union(v.literal("offline"), v.literal("online")),
+    
+    // Birthday tracking
+    isBirthday: v.boolean(), // true for auto-generated birthdays
+    birthdayUserId: v.optional(v.id("users")), // User whose birthday this is
+    
+    // Parent approval workflow
+    pendingParentApproval: v.boolean(), // true if created by child, needs parent approval
+    approvedAt: v.optional(v.number()),
+    approvedBy: v.optional(v.id("users")), // Parent who approved
+    
+    // RSVPs: array of {userId, status, respondedAt}
+    rsvps: v.array(v.object({
+      userId: v.id("users"),
+      status: v.union(v.literal("in"), v.literal("maybe"), v.literal("raincheck")),
+      respondedAt: v.number(),
+    })),
+    
+    // Timestamps and auto-cleanup
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()), // Soft delete for archiving
+  })
+    .index("by_cliq_id", ["cliqId"])
+    .index("by_created_by", ["createdBy"])
+    .index("by_event_time", ["eventTime"])
+    .index("by_pending_approval", ["pendingParentApproval"])
+    .index("by_cliq_event_time", ["cliqId", "eventTime"])
+    .index("by_cliq_pending", ["cliqId", "pendingParentApproval"]),
 });
