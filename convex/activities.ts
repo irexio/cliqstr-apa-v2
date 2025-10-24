@@ -146,7 +146,7 @@ export const createActivity = mutation({
       : args.location;
 
     const now = Date.now();
-    const seriesId = args.recurrenceRule ? crypto.getRandomValues(new Uint8Array(16)).toString() : undefined;
+    const seriesId = args.recurrenceRule ? crypto.randomUUID() : undefined;
 
     // If recurrence rule provided, expand into individual instances
     if (args.recurrenceRule) {
