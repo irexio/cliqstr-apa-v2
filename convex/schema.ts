@@ -66,6 +66,10 @@ export default defineSchema({
     sendInvitesToAdultsRequireApproval: v.boolean(), // If true, invites auto-send; if false, parent must approve first
     canSendInvitesToParents: v.boolean(), // Default: true
     sendInvitesToParentsRequireApproval: v.boolean(), // If true, invites auto-send; if false, parent must approve first
+    // NEW: Calendar & Events permissions (PHQ controls)
+    eventsRequireApproval: v.boolean(), // Default: true for children; events need parent approval
+    eventLocationVisibilityForChildEvents: v.union(v.literal("parents"), v.literal("everyone")), // Default: 'parents'
+    maskLocationUntilApproved: v.boolean(), // Default: true; hide location on pending events
   })
     .index("by_profile_id", ["profileId"]),
 
@@ -417,41 +421,34 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_created_at", ["createdAt"]),
 
-  // Cliq Events - for Calendar tool
-  events: defineTable({
+  // Cliq Activities - for Calendar tool (offline events, meetups, etc.)
+  activities: defineTable({
     cliqId: v.id("cliqs"),
-    createdBy: v.id("users"),
     title: v.string(),
-    description: v.string(),
-    eventTime: v.number(), // Unix timestamp
-    where: v.string(), // Plain text location only
-    eventType: v.union(v.literal("offline"), v.literal("online")),
-    
-    // Birthday tracking
-    isBirthday: v.boolean(), // true for auto-generated birthdays
-    birthdayUserId: v.optional(v.id("users")), // User whose birthday this is
-    
-    // Parent approval workflow
-    pendingParentApproval: v.boolean(), // true if created by child, needs parent approval
+    description: v.optional(v.string()),
+    startAt: v.number(), // Unix timestamp (ms)
+    endAt: v.number(), // Unix timestamp (ms)
+    timezone: v.string(), // e.g., "America/New_York"
+    location: v.optional(v.string()), // Plain text location
+    locationVisibility: v.union(v.literal("everyone"), v.literal("parents"), v.literal("hidden")), // Who can see location
+    createdByUserId: v.id("users"),
+    visibilityLevel: v.string(), // Match existing scheme (e.g., "private", "semi_private", "public")
+    requiresParentApproval: v.boolean(), // true if child created it and needs approval
+    approvedByParentId: v.optional(v.id("users")), // Parent who approved (if any)
     approvedAt: v.optional(v.number()),
-    approvedBy: v.optional(v.id("users")), // Parent who approved
-    
-    // RSVPs: array of {userId, status, respondedAt}
-    rsvps: v.array(v.object({
-      userId: v.id("users"),
-      status: v.union(v.literal("in"), v.literal("maybe"), v.literal("raincheck")),
-      respondedAt: v.number(),
-    })),
-    
-    // Timestamps and auto-cleanup
+    // RSVPs stored as object: { userId: 'going'|'maybe'|'raincheck' }
+    rsvps: v.object({}), // Dynamic object, each key is userId
+    // Repeat series tracking
+    seriesId: v.optional(v.string()), // UUID for recurring series; all instances share this
+    recurrenceRule: v.optional(v.string()), // e.g., "FREQ=WEEKLY;COUNT=4" (stored for reference, not used for expansion)
+    // Timestamps
     createdAt: v.number(),
     updatedAt: v.number(),
-    deletedAt: v.optional(v.number()), // Soft delete for archiving
+    deletedAt: v.optional(v.number()), // Soft delete
   })
+    .index("by_cliq_start", ["cliqId", "startAt"])
+    .index("by_creator_start", ["createdByUserId", "startAt"])
     .index("by_cliq_id", ["cliqId"])
-    .index("by_created_by", ["createdBy"])
-    .index("by_event_time", ["eventTime"])
-    .index("by_pending_approval", ["pendingParentApproval"])
-    .index("by_cliq_event_time", ["cliqId", "eventTime"])
-    .index("by_cliq_pending", ["cliqId", "pendingParentApproval"]),
+    .index("by_created_by", ["createdByUserId"])
+    .index("by_series_id", ["seriesId"]),
 });

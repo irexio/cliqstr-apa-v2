@@ -862,6 +862,10 @@ export const createChildSettings = mutation({
     // NEW: Sending invites to parents
     canSendInvitesToParents: v.optional(v.boolean()),
     sendInvitesToParentsRequireApproval: v.optional(v.boolean()),
+    // NEW: Calendar & Events permissions (PHQ controls)
+    eventsRequireApproval: v.optional(v.boolean()),
+    eventLocationVisibilityForChildEvents: v.optional(v.string()),
+    maskLocationUntilApproved: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const settingsId = await ctx.db.insert("childSettings", {
@@ -892,6 +896,10 @@ export const createChildSettings = mutation({
       // NEW: Set defaults for sending to parents
       canSendInvitesToParents: args.canSendInvitesToParents ?? false, // Default: cannot send
       sendInvitesToParentsRequireApproval: args.sendInvitesToParentsRequireApproval ?? false,
+      // NEW: Calendar & Events permissions (PHQ controls)
+      eventsRequireApproval: args.eventsRequireApproval ?? true, // Default: true for children; events need parent approval
+      eventLocationVisibilityForChildEvents: (args.eventLocationVisibilityForChildEvents ?? "parents") as "parents" | "everyone", // Default: location visible to parents only
+      maskLocationUntilApproved: args.maskLocationUntilApproved ?? true, // Default: true; hide location on pending events
     });
 
     return settingsId;
