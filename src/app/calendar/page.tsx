@@ -14,7 +14,7 @@ interface Activity {
   startAt: number;
   endAt: number;
   location?: string;
-  locationVisibility?: 'everyone' | 'parents' | 'hidden';
+  locationVisibility?: string;
   requiresParentApproval?: boolean;
   rsvps?: Record<string, string>;
   createdByUserId?: string;
@@ -28,33 +28,79 @@ export default function CalendarPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [session, setSession] = useState<any>(null);
 
-  // Fetch activities on mount
+  // Check session and fetch activities on mount
   useEffect(() => {
-    fetchActivities();
+    checkSessionAndFetchActivities();
   }, []);
 
-  const fetchActivities = async () => {
+  const checkSessionAndFetchActivities = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/activities/list?userId=current', {
+
+      // First, check if user is authenticated
+      const sessionResponse = await fetch('/api/auth/status', {
         credentials: 'include',
       });
 
-      if (response.status === 401) {
+      if (sessionResponse.status === 401) {
         router.push('/sign-in');
         return;
       }
 
-      if (!response.ok) throw new Error('Failed to fetch activities');
+      if (!sessionResponse.ok) {
+        throw new Error('Failed to check session');
+      }
+
+      const sessionData = await sessionResponse.json();
+      
+      if (!sessionData.user) {
+        router.push('/sign-in');
+        return;
+      }
+
+      setSession(sessionData.user);
+
+      // Now fetch activities
+      await fetchActivities();
+    } catch (error) {
+      console.error('[CALENDAR] Error checking session:', error);
+      toast({
+        title: 'Error',
+        description: 'Unable to load your calendar right now. Please refresh.',
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const fetchActivities = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/activities/list', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        router.push('/sign-in');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch activities: ${response.status}`);
+      }
 
       const data = await response.json();
       setActivities(data.activities || []);
     } catch (error) {
+      console.error('[CALENDAR] Error fetching activities:', error);
+      // Show error but don't block calendar rendering
       toast({
-        title: 'Error',
-        description: 'Failed to load activities',
+        title: 'Warning',
+        description: 'Could not load activities. The calendar will show as empty.',
       });
+      setActivities([]); // Set empty array so calendar can still render
     } finally {
       setIsLoading(false);
     }
@@ -69,18 +115,29 @@ export default function CalendarPage() {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Failed to create activity');
+      if (response.status === 401) {
+        router.push('/sign-in');
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create activity');
+      }
 
       toast({
         title: 'Success',
         description: 'Activity created successfully!',
       });
 
+      // Refresh activities list
       await fetchActivities();
+      setShowForm(false);
     } catch (error) {
+      console.error('[CALENDAR] Error creating activity:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create activity',
+        description: error instanceof Error ? error.message : 'Failed to create activity',
       });
     }
   };
@@ -125,7 +182,7 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      {/* Calendar */}
+      {/* Calendar Grid - Always render, even with empty data */}
       <div className="mb-8">
         <CalendarView
           activities={activities as any}
@@ -183,8 +240,8 @@ export default function CalendarPage() {
 
       {/* Activity Detail Modal */}
       {selectedActivity && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setSelectedActivity(null)}>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setSelectedActivity(null)}>
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
             <EventCard
               id={selectedActivity._id}
               title={selectedActivity.title}

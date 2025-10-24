@@ -79,10 +79,10 @@ export default function EventForm({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-0">
         {/* Header - Sticky */}
         <div className="sticky top-0 bg-white flex justify-between items-center p-6 border-b z-10">
           <h2 className="text-xl font-bold text-gray-900">Create Activity</h2>
