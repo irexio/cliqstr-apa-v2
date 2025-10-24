@@ -147,7 +147,7 @@ export default function CalendarView({
         </button>
       </div>
 
-      {/* Calendar Grid - Hidden on Mobile */}
+      {/* Calendar Grid - Tablet and Desktop (sm and up) */}
       {view === 'month' ? (
         <div className="hidden sm:block">
           {/* Day headers */}
@@ -223,7 +223,7 @@ export default function CalendarView({
           </div>
         </div>
       ) : (
-        /* Week View - Hidden on Mobile */
+        /* Week View - Tablet and Desktop (sm and up) */
         <div className="hidden sm:block space-y-2">
           {weekDays.map((date) => {
             const dayActivities = getActivitiesForDate(date);
