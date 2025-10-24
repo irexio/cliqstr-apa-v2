@@ -271,7 +271,7 @@ export default function CalendarView({
         </div>
       )}
 
-      {/* Mobile View - List */}
+      {/* Mobile View - List (visible only on screens < 640px) */}
       <div className="sm:hidden space-y-2">
         <div className="text-sm font-medium text-gray-700 mb-3">
           Upcoming Activities

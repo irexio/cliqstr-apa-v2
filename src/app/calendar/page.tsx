@@ -228,15 +228,15 @@ export default function CalendarPage() {
         />
       </div>
 
-      {/* Upcoming Activities List */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Upcoming Activities</h2>
+      {/* Upcoming Activities List - Mobile Only */}
+      <div className="sm:hidden">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Activities</h2>
         {activities.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <p className="text-gray-600 mb-4">No activities scheduled</p>
             <button
               onClick={() => setShowForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
             >
               Create First Activity
             </button>
