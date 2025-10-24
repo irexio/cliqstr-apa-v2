@@ -147,9 +147,9 @@ export default function CalendarView({
         </button>
       </div>
 
-      {/* Calendar Grid - Tablet and Desktop (sm and up) */}
+      {/* Calendar Grid - Tablet and Desktop (md and up - 768px) */}
       {view === 'month' ? (
-        <div className="hidden sm:block">
+        <div className="hidden md:block">
           {/* Day headers */}
           <div className="grid grid-cols-7 gap-2 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -223,8 +223,8 @@ export default function CalendarView({
           </div>
         </div>
       ) : (
-        /* Week View - Tablet and Desktop (sm and up) */
-        <div className="hidden sm:block space-y-2">
+        /* Week View - Tablet and Desktop (md and up - 768px) */
+        <div className="hidden md:block space-y-2">
           {weekDays.map((date) => {
             const dayActivities = getActivitiesForDate(date);
             const isToday = date.toDateString() === new Date().toDateString();
