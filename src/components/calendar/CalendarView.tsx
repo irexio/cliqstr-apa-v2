@@ -271,34 +271,7 @@ export default function CalendarView({
         </div>
       )}
 
-      {/* Mobile View - List (visible only on screens < 640px) */}
-      <div className="sm:hidden space-y-2">
-        <div className="text-sm font-medium text-gray-700 mb-3">
-          Upcoming Activities
-        </div>
-        {activities.length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">No activities scheduled</p>
-          </div>
-        ) : (
-          activities.slice(0, 5).map((activity) => (
-            <div
-              key={activity._id}
-              onClick={() => onActivityClick?.(activity as any)}
-              className="bg-blue-50 border border-blue-200 p-3 rounded-lg cursor-pointer hover:bg-blue-100 transition"
-            >
-              <div className="font-medium text-sm truncate">{activity.title}</div>
-              <div className="text-xs text-gray-600 mt-1">
-                {new Date(activity.startAt).toLocaleDateString()} @{' '}
-                {new Date(activity.startAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {/* Mobile list is handled by the page component, not here */}
     </div>
   );
 }

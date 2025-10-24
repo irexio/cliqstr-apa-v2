@@ -43,6 +43,13 @@ export default function CalendarPage() {
     checkSessionAndFetchActivities();
   }, []);
 
+  // Fetch activities when selected cliq changes
+  useEffect(() => {
+    if (selectedCliqId) {
+      fetchActivities();
+    }
+  }, [selectedCliqId]);
+
   const checkSessionAndFetchActivities = async () => {
     try {
       setIsLoading(true);
@@ -113,7 +120,15 @@ export default function CalendarPage() {
   const fetchActivities = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/activities/list', {
+      
+      // Only fetch if we have a selected cliq
+      if (!selectedCliqId) {
+        setActivities([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      const response = await fetch(`/api/activities/list?cliqId=${selectedCliqId}`, {
         method: 'GET',
         credentials: 'include',
       });
