@@ -41,7 +41,22 @@ export default function EventForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cliqId || !title || !date) return;
+    
+    // Validate required fields
+    if (!cliqId) {
+      console.error('[EventForm] Missing cliqId');
+      return;
+    }
+    
+    if (!title.trim()) {
+      console.error('[EventForm] Missing title');
+      return;
+    }
+    
+    if (!date) {
+      console.error('[EventForm] Missing date');
+      return;
+    }
 
     const [startHour, startMin] = startTime.split(':');
     const [endHour, endMin] = endTime.split(':');
@@ -55,17 +70,22 @@ export default function EventForm({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
+      const formData = {
         cliqId,
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         startAt: startAt.getTime(),
         endAt: endAt.getTime(),
         timezone,
-        location,
+        location: location.trim(),
         recurrenceRule: recurrence !== 'none' ? `FREQ=${recurrence.toUpperCase()};COUNT=4` : undefined,
-      });
-      onClose();
+      };
+
+      console.log('[EventForm] Submitting:', formData);
+      
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('[EventForm] Submission error:', error);
     } finally {
       setIsSubmitting(false);
     }

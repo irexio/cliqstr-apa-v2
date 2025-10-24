@@ -20,10 +20,18 @@ interface Activity {
   createdByUserId?: string;
 }
 
+interface Cliq {
+  _id: string;
+  name: string;
+  description?: string;
+}
+
 export default function CalendarPage() {
   const router = useRouter();
 
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [cliqs, setCliqs] = useState<Cliq[]>([]);
+  const [selectedCliqId, setSelectedCliqId] = useState<string>('');
   const [view, setView] = useState<'month' | 'week'>('month');
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -62,6 +70,9 @@ export default function CalendarPage() {
 
       setSession(sessionData.user);
 
+      // Fetch cliqs
+      await fetchCliqs();
+
       // Now fetch activities
       await fetchActivities();
     } catch (error) {
@@ -71,6 +82,31 @@ export default function CalendarPage() {
         description: 'Unable to load your calendar right now. Please refresh.',
       });
       setIsLoading(false);
+    }
+  };
+
+  const fetchCliqs = async () => {
+    try {
+      const response = await fetch('/api/cliqs', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch cliqs');
+      }
+
+      const data = await response.json();
+      const cliqList = data.cliqs || [];
+      setCliqs(cliqList);
+
+      // Auto-select first cliq if only one exists
+      if (cliqList.length === 1) {
+        setSelectedCliqId(cliqList[0]._id);
+      } else if (cliqList.length > 0) {
+        setSelectedCliqId(cliqList[0]._id);
+      }
+    } catch (error) {
+      console.error('[CALENDAR] Error fetching cliqs:', error);
     }
   };
 
@@ -231,11 +267,29 @@ export default function CalendarPage() {
       </div>
 
       {/* Create Form Modal */}
-      {showForm && (
+      {showForm && selectedCliqId && (
         <EventForm
+          cliqId={selectedCliqId}
+          cliqName={cliqs.find(c => c._id === selectedCliqId)?.name}
           onSubmit={handleCreateActivity}
           onClose={() => setShowForm(false)}
         />
+      )}
+
+      {/* Show warning if no cliq selected */}
+      {showForm && !selectedCliqId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">No Cliq Selected</h3>
+            <p className="text-gray-600 mb-6">You need to be a member of at least one cliq to create an activity.</p>
+            <button
+              onClick={() => setShowForm(false)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Activity Detail Modal */}
