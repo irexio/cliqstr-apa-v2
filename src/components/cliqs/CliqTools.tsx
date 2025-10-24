@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   CalendarIcon, 
   Gamepad2Icon, 
@@ -10,12 +11,13 @@ import {
 } from 'lucide-react';
 
 export default function CliqTools({ cliqId }: { cliqId: string }) {
+  const router = useRouter();
 
   const tools = [
     {
       icon: CalendarIcon,
       label: 'Calendar',
-      onClick: () => console.log('Calendar clicked'),
+      onClick: () => router.push('/calendar'),
     },
     {
       icon: Gamepad2Icon,
