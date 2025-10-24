@@ -10,7 +10,7 @@ interface EventCardProps {
   startAt: number;
   endAt: number;
   location?: string;
-  locationVisibility?: 'everyone' | 'parents' | 'hidden';
+  locationVisibility?: string;
   requiresApproval?: boolean;
   rsvps?: Record<string, string>;
   createdByName?: string;

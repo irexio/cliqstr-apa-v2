@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventCard from '@/components/calendar/EventCard';
 import EventForm, { ActivityFormData } from '@/components/calendar/EventForm';
-import { useToast } from '@/components/ui/use-toast';
+import toast from '@/components/ui/use-toast';
 
 interface Activity {
   _id: string;
@@ -22,7 +22,6 @@ interface Activity {
 
 export default function CalendarPage() {
   const router = useRouter();
-  const { toast } = useToast();
 
   const [activities, setActivities] = useState<Activity[]>([]);
   const [view, setView] = useState<'month' | 'week'>('month');
@@ -55,7 +54,6 @@ export default function CalendarPage() {
       toast({
         title: 'Error',
         description: 'Failed to load activities',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -83,7 +81,6 @@ export default function CalendarPage() {
       toast({
         title: 'Error',
         description: 'Failed to create activity',
-        variant: 'destructive',
       });
     }
   };
@@ -131,9 +128,9 @@ export default function CalendarPage() {
       {/* Calendar */}
       <div className="mb-8">
         <CalendarView
-          activities={activities}
+          activities={activities as any}
           view={view}
-          onActivityClick={handleActivityClick}
+          onActivityClick={handleActivityClick as any}
           onCreateClick={() => setShowForm(true)}
         />
       </div>
