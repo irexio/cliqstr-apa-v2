@@ -97,39 +97,40 @@ export default function CalendarView({
   };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-6">
+    <div className="w-full bg-white rounded-lg shadow-md p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
             {currentDate.toLocaleDateString('en-US', {
               month: 'long',
               year: 'numeric',
             })}
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500">
             {view === 'month' ? 'Month View' : 'Week View'}
           </p>
         </div>
 
         <button
           onClick={onCreateClick}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm sm:text-base"
         >
           + Create Activity
         </button>
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 gap-2">
         <button
           onClick={view === 'month' ? prevMonth : prevWeek}
           className="p-2 hover:bg-gray-100 rounded-lg transition"
+          aria-label="Previous"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
-        <div className="text-sm text-gray-600">
+        <div className="text-xs sm:text-sm text-gray-600 text-center flex-1">
           {view === 'week' && (
             <span>
               {formatDate(weekStart)} - {formatDate(weekDays[6])}
@@ -140,20 +141,21 @@ export default function CalendarView({
         <button
           onClick={view === 'month' ? nextMonth : nextWeek}
           className="p-2 hover:bg-gray-100 rounded-lg transition"
+          aria-label="Next"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
 
-      {/* Calendar Grid */}
+      {/* Calendar Grid - Hidden on Mobile */}
       {view === 'month' ? (
-        <div>
+        <div className="hidden sm:block">
           {/* Day headers */}
           <div className="grid grid-cols-7 gap-2 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div
                 key={day}
-                className="text-center font-semibold text-gray-700 py-2"
+                className="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm"
               >
                 {day}
               </div>
@@ -187,7 +189,7 @@ export default function CalendarView({
                   }`}
                 >
                   <div
-                    className={`font-semibold mb-1 ${
+                    className={`font-semibold mb-1 text-sm ${
                       isToday ? 'text-blue-600' : 'text-gray-900'
                     }`}
                   >
@@ -200,7 +202,7 @@ export default function CalendarView({
                         key={activity._id}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onActivityClick?.(activity);
+                          onActivityClick?.(activity as any);
                         }}
                         className="text-xs bg-blue-100 text-blue-900 px-2 py-1 rounded truncate cursor-pointer hover:bg-blue-200 transition"
                         title={activity.title}
@@ -221,8 +223,8 @@ export default function CalendarView({
           </div>
         </div>
       ) : (
-        /* Week View */
-        <div className="space-y-2">
+        /* Week View - Hidden on Mobile */
+        <div className="hidden sm:block space-y-2">
           {weekDays.map((date) => {
             const dayActivities = getActivitiesForDate(date);
             const isToday = date.toDateString() === new Date().toDateString();
@@ -235,7 +237,7 @@ export default function CalendarView({
                 }`}
               >
                 <div
-                  className={`font-semibold mb-3 ${
+                  className={`font-semibold mb-3 text-sm ${
                     isToday ? 'text-blue-600' : 'text-gray-900'
                   }`}
                 >
@@ -247,11 +249,11 @@ export default function CalendarView({
                     dayActivities.map((activity) => (
                       <div
                         key={activity._id}
-                        onClick={() => onActivityClick?.(activity)}
-                        className="bg-blue-100 text-blue-900 px-3 py-2 rounded cursor-pointer hover:bg-blue-200 transition"
+                        onClick={() => onActivityClick?.(activity as any)}
+                        className="bg-blue-100 text-blue-900 px-3 py-2 rounded cursor-pointer hover:bg-blue-200 transition text-sm"
                       >
                         <div className="font-medium truncate">{activity.title}</div>
-                        <div className="text-sm text-blue-700">
+                        <div className="text-xs text-blue-700">
                           {new Date(activity.startAt).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -268,6 +270,35 @@ export default function CalendarView({
           })}
         </div>
       )}
+
+      {/* Mobile View - List */}
+      <div className="sm:hidden space-y-2">
+        <div className="text-sm font-medium text-gray-700 mb-3">
+          Upcoming Activities
+        </div>
+        {activities.length === 0 ? (
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600">No activities scheduled</p>
+          </div>
+        ) : (
+          activities.slice(0, 5).map((activity) => (
+            <div
+              key={activity._id}
+              onClick={() => onActivityClick?.(activity as any)}
+              className="bg-blue-50 border border-blue-200 p-3 rounded-lg cursor-pointer hover:bg-blue-100 transition"
+            >
+              <div className="font-medium text-sm truncate">{activity.title}</div>
+              <div className="text-xs text-gray-600 mt-1">
+                {new Date(activity.startAt).toLocaleDateString()} @{' '}
+                {new Date(activity.startAt).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

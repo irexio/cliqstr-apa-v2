@@ -71,29 +71,40 @@ export default function EventForm({
     }
   };
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-bold">Create Activity</h2>
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header - Sticky */}
+        <div className="sticky top-0 bg-white flex justify-between items-center p-6 border-b z-10">
+          <h2 className="text-xl font-bold text-gray-900">Create Activity</h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 disabled:opacity-50 transition"
+            aria-label="Close modal"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Form */}
+        {/* Form Content - Scrollable */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {cliqName && (
-            <div className="bg-blue-50 p-3 rounded text-sm text-blue-900">
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-sm text-blue-900">
               <strong>Cliq:</strong> {cliqName}
             </div>
           )}
 
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Event Title *
@@ -105,9 +116,11 @@ export default function EventForm({
               required
               placeholder="e.g., Park Meetup"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isSubmitting}
             />
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description
@@ -117,10 +130,12 @@ export default function EventForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add details about the event..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              disabled={isSubmitting}
             />
           </div>
 
+          {/* Date and Timezone */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -132,6 +147,7 @@ export default function EventForm({
                 onChange={(e) => setDate(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -143,16 +159,20 @@ export default function EventForm({
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
               >
                 <option>America/New_York</option>
                 <option>America/Los_Angeles</option>
                 <option>America/Chicago</option>
+                <option>America/Denver</option>
                 <option>Europe/London</option>
                 <option>Europe/Paris</option>
+                <option>Asia/Tokyo</option>
               </select>
             </div>
           </div>
 
+          {/* Start and End Time */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -163,6 +183,7 @@ export default function EventForm({
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -175,10 +196,12 @@ export default function EventForm({
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
               />
             </div>
           </div>
 
+          {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Location
@@ -189,9 +212,11 @@ export default function EventForm({
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g., Central Park, NYC"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isSubmitting}
             />
           </div>
 
+          {/* Repeat */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Repeat
@@ -200,6 +225,7 @@ export default function EventForm({
               value={recurrence}
               onChange={(e) => setRecurrence(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isSubmitting}
             >
               <option value="none">No Repeat</option>
               <option value="daily">Daily (4 times)</option>
@@ -208,8 +234,8 @@ export default function EventForm({
             </select>
           </div>
 
-          {/* Buttons */}
-          <div className="flex gap-3 pt-4 border-t">
+          {/* Action Buttons - Sticky */}
+          <div className="flex gap-3 pt-6 border-t mt-6">
             <button
               type="button"
               onClick={onClose}
