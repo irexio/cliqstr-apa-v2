@@ -17,7 +17,7 @@ export default function CliqTools({ cliqId }: { cliqId: string }) {
     {
       icon: CalendarIcon,
       label: 'Calendar',
-      onClick: () => router.push('/calendar'),
+      onClick: () => router.push(`/calendar?cliqId=${cliqId}`),
     },
     {
       icon: Gamepad2Icon,

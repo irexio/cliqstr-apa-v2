@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventCard from '@/components/calendar/EventCard';
 import EventForm, { ActivityFormData } from '@/components/calendar/EventForm';
@@ -28,6 +28,7 @@ interface Cliq {
 
 export default function CalendarPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [activities, setActivities] = useState<Activity[]>([]);
   const [cliqs, setCliqs] = useState<Cliq[]>([]);
@@ -40,8 +41,13 @@ export default function CalendarPage() {
 
   // Check session and fetch activities on mount
   useEffect(() => {
+    // Get cliqId from URL params (passed from CliqTools)
+    const cliqIdParam = searchParams.get('cliqId');
+    if (cliqIdParam) {
+      setSelectedCliqId(cliqIdParam);
+    }
     checkSessionAndFetchActivities();
-  }, []);
+  }, [searchParams]);
 
   // Fetch activities when selected cliq changes
   useEffect(() => {
@@ -77,11 +83,8 @@ export default function CalendarPage() {
 
       setSession(sessionData.user);
 
-      // Fetch cliqs
-      await fetchCliqs();
-
-      // Now fetch activities
-      await fetchActivities();
+      // Now fetch activities (will use selectedCliqId from state)
+      // fetchCliqs is no longer needed - cliqId comes from URL
     } catch (error) {
       console.error('[CALENDAR] Error checking session:', error);
       toast({
@@ -104,13 +107,14 @@ export default function CalendarPage() {
 
       const data = await response.json();
       const cliqList = data.cliqs || [];
+      console.log('[CALENDAR] Fetched cliqs:', cliqList);
       setCliqs(cliqList);
 
-      // Auto-select first cliq if only one exists
-      if (cliqList.length === 1) {
-        setSelectedCliqId(cliqList[0]._id);
-      } else if (cliqList.length > 0) {
-        setSelectedCliqId(cliqList[0]._id);
+      // Auto-select first cliq
+      if (cliqList.length > 0) {
+        const firstCliqId = cliqList[0]._id;
+        console.log('[CALENDAR] Setting selectedCliqId to:', firstCliqId);
+        setSelectedCliqId(firstCliqId);
       }
     } catch (error) {
       console.error('[CALENDAR] Error fetching cliqs:', error);
