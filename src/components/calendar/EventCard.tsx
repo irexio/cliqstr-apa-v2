@@ -19,6 +19,7 @@ interface EventCardProps {
   onApprove?: () => void;
   onDelete?: () => void;
   isParent?: boolean;
+  canDelete?: boolean; // NEW: true if user is creator, parent, or cliq owner
 }
 
 export default function EventCard({
@@ -37,6 +38,7 @@ export default function EventCard({
   onApprove,
   onDelete,
   isParent,
+  canDelete,
 }: EventCardProps) {
   const start = new Date(startAt);
   const end = new Date(endAt);
@@ -129,7 +131,7 @@ export default function EventCard({
       <div className="flex gap-2 pt-3 border-t border-gray-200">
         <button
           onClick={onViewDetails}
-          className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-3 rounded transition text-sm"
+          className="flex-1 bg-gray-50 hover:bg-gray-100 text-black font-medium py-2 px-3 rounded transition text-sm"
         >
           View Details
         </button>
@@ -149,6 +151,15 @@ export default function EventCard({
               Decline
             </button>
           </>
+        )}
+
+        {canDelete && !requiresApproval && (
+          <button
+            onClick={onDelete}
+            className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-4 rounded transition text-sm"
+          >
+            Delete
+          </button>
         )}
       </div>
     </div>

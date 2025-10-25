@@ -319,3 +319,84 @@ export const getChildCliqsForParentMonitoring = query({
   },
 });
 
+// ============================================================================
+// MEMBER MANAGEMENT MUTATIONS
+// ============================================================================
+
+/**
+ * Promote a member to moderator
+ * Only cliq owner can do this
+ */
+export const promoteMemberToModerator = mutation({
+  args: {
+    cliqId: v.id("cliqs"),
+    memberId: v.id("users"),
+    requesterId: v.id("users"), // Who is making the request (must be owner)
+  },
+  handler: async (ctx, args) => {
+    // Verify requester is cliq owner
+    const cliq = await ctx.db.get(args.cliqId);
+    if (!cliq) throw new Error("Cliq not found");
+    if (cliq.ownerId !== args.requesterId) {
+      throw new Error("Only cliq owner can promote members");
+    }
+
+    // Find the membership to promote
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_cliq", (q) => 
+        q.eq("userId", args.memberId).eq("cliqId", args.cliqId)
+      )
+      .first();
+
+    if (!membership) throw new Error("Member not found in cliq");
+
+    // Update role to moderator
+    await ctx.db.patch(membership._id, { role: "moderator" });
+
+    console.log(`[CLIQS] User ${args.memberId} promoted to moderator in cliq ${args.cliqId}`);
+    return { success: true };
+  },
+});
+
+/**
+ * Remove a member from cliq
+ * Only cliq owner can do this
+ */
+export const removeMemberFromCliq = mutation({
+  args: {
+    cliqId: v.id("cliqs"),
+    memberId: v.id("users"),
+    requesterId: v.id("users"), // Who is making the request (must be owner)
+  },
+  handler: async (ctx, args) => {
+    // Verify requester is cliq owner
+    const cliq = await ctx.db.get(args.cliqId);
+    if (!cliq) throw new Error("Cliq not found");
+    if (cliq.ownerId !== args.requesterId) {
+      throw new Error("Only cliq owner can remove members");
+    }
+
+    // Cannot remove yourself
+    if (args.memberId === args.requesterId) {
+      throw new Error("Owner cannot remove themselves");
+    }
+
+    // Find the membership to remove
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_cliq", (q) => 
+        q.eq("userId", args.memberId).eq("cliqId", args.cliqId)
+      )
+      .first();
+
+    if (!membership) throw new Error("Member not found in cliq");
+
+    // Delete the membership
+    await ctx.db.delete(membership._id);
+
+    console.log(`[CLIQS] User ${args.memberId} removed from cliq ${args.cliqId}`);
+    return { success: true };
+  },
+});
+

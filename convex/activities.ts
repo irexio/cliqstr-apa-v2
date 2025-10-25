@@ -327,7 +327,7 @@ export const deleteActivity = mutation({
     const activity = await ctx.db.get(args.activityId);
     if (!activity) throw new Error("Activity not found");
 
-    // Check permissions: creator or parent
+    // Check permissions: creator, parent, or cliq owner
     const isCreator = activity.createdByUserId === args.userId;
     const isParent = await isParentOf(
       ctx,
@@ -335,8 +335,12 @@ export const deleteActivity = mutation({
       activity.createdByUserId
     );
 
-    if (!isCreator && !isParent) {
-      throw new Error("Only creator or parent can delete");
+    // Check if user is cliq owner
+    const cliq = await ctx.db.get(activity.cliqId);
+    const isCliqOwner = cliq && cliq.ownerId === args.userId;
+
+    if (!isCreator && !isParent && !isCliqOwner) {
+      throw new Error("Only creator, parent, or cliq owner can delete");
     }
 
     const now = Date.now();
