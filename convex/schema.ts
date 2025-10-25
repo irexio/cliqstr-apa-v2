@@ -435,7 +435,7 @@ export default defineSchema({
     approvedByParentId: v.optional(v.id("users")), // Parent who approved (if any)
     approvedAt: v.optional(v.number()),
     // RSVPs stored as object: { userId: 'going'|'maybe'|'raincheck' }
-    rsvps: v.object({}), // Dynamic object, each key is userId
+    rsvps: v.any(), // Dynamic object allowing any userId keys with string values
     // Repeat series tracking
     seriesId: v.optional(v.string()), // UUID for recurring series; all instances share this
     recurrenceRule: v.optional(v.string()), // e.g., "FREQ=WEEKLY;COUNT=4" (stored for reference, not used for expansion)

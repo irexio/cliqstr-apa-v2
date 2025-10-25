@@ -167,7 +167,7 @@ export const createActivity = mutation({
         const instanceEnd = instanceStart + duration;
 
         const rsvpRecord: Record<string, string> = {};
-        rsvpRecord[args.createdByUserId] = "going";
+        rsvpRecord[args.createdByUserId.toString()] = "going";
 
         const activityId = await ctx.db.insert("activities", {
           cliqId: args.cliqId,
@@ -208,7 +208,7 @@ export const createActivity = mutation({
 
     // Single activity
     const rsvpRecord: Record<string, string> = {};
-    rsvpRecord[args.createdByUserId] = "going";
+    rsvpRecord[args.createdByUserId.toString()] = "going";
 
     const activityId = await ctx.db.insert("activities", {
       cliqId: args.cliqId,
@@ -388,7 +388,7 @@ export const setRsvp = mutation({
     if (!activity) throw new Error("Activity not found");
 
     const updatedRsvps: Record<string, string> = { ...activity.rsvps };
-    updatedRsvps[args.userId] = args.status;
+    updatedRsvps[args.userId.toString()] = args.status;
 
     const now = Date.now();
     await ctx.db.patch(args.activityId, {
