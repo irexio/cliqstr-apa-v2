@@ -70,36 +70,40 @@ export default function AvatarUploader({
           </Avatar>
         </div>
 
+        {/* Description Text */}
+        <p className="text-xs text-gray-500 mb-4">Ideal size: 400 x 400 pixels (square image works best)</p>
+
         {/* Upload Button */}
         <div className="flex justify-center mb-4">
-          <p className="text-xs text-gray-500 mb-3">Ideal size: 400 x 400 pixels (square image works best)</p>
-          <UploadButton
-            endpoint="avatar"
-            config={{ mode: 'auto' }}
-            onClientUploadComplete={handleUploadSuccess}
-            onUploadError={handleUploadError}
-            onUploadBegin={() => {
-              setIsUploading(true);
-              setMessage(null);
-            }}
-            appearance={{
-              button: "bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors shadow-sm",
-              allowedContent: "text-xs text-gray-500 mt-2"
-            }}
-            content={{
-              button: isUploading ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  Uploading...
-                </div>
-              ) : 'Select Profile Photo'
-            }}
-          />
+          <div className="!bg-black [&>button]:!bg-black [&>button]:hover:!bg-gray-800 [&>button]:!text-white [&>button]:!px-6 [&>button]:!py-3 [&>button]:!rounded-lg [&>button]:!text-sm [&>button]:!font-medium [&>button]:!transition-colors">
+            <UploadButton
+              endpoint="avatar"
+              config={{ mode: 'auto' }}
+              onClientUploadComplete={handleUploadSuccess}
+              onUploadError={handleUploadError}
+              onUploadBegin={() => {
+                setIsUploading(true);
+                setMessage(null);
+              }}
+              appearance={{
+                button: "!bg-black hover:!bg-gray-800 !text-white !px-6 !py-3 !rounded-lg !text-sm !font-medium !transition-colors",
+                allowedContent: "!text-xs !text-gray-500 !mt-2"
+              }}
+              content={{
+                button: isUploading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Uploading...
+                  </div>
+                ) : 'Select Profile Photo'
+              }}
+            />
+          </div>
         </div>
 
         {/* Loading State */}
         {isUploading && (
-          <div className="mb-4 text-sm text-blue-600 font-medium bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="mb-4 text-sm text-gray-600 font-medium bg-gray-50 p-3 rounded-lg border border-gray-200">
             📷 Uploading avatar...
           </div>
         )}

@@ -77,10 +77,14 @@ export async function POST(req: Request) {
     // Build update data object with only MyProfile fields
     const updateData: any = {};
     if (username !== undefined) updateData.username = username;
-    if (displayName !== undefined) updateData.displayName = displayName || null;
-    if (about !== undefined) updateData.about = about || null;
-    if (image !== undefined) updateData.image = image || null;
-    if (bannerImage !== undefined) updateData.bannerImage = bannerImage || null;
+    if (displayName !== undefined && displayName !== null) updateData.displayName = displayName;
+    if (displayName === null) updateData.displayName = null; // Allow explicit null to clear
+    if (about !== undefined && about !== null) updateData.about = about;
+    if (about === null) updateData.about = null; // Allow explicit null to clear
+    if (image !== undefined && image !== null) updateData.image = image;
+    // Don't send image: null if no image provided
+    if (bannerImage !== undefined && bannerImage !== null) updateData.bannerImage = bannerImage;
+    // Don't send bannerImage: null if no banner provided
     if (showYear !== undefined) updateData.showYear = showYear;
     if (aiModerationLevel !== undefined) updateData.aiModerationLevel = aiModerationLevel;
 
