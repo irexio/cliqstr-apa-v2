@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/useAuth';
 import InviteModal from './InviteModal';
 
@@ -24,6 +25,7 @@ interface CliqProfileContentProps {
 
 export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   
   // Check if user can invite (owner or public cliq member)
@@ -45,19 +47,29 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
         {/* Cliq Info Card - Same Width as Banner */}
         <div className="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-6">
           <div className="space-y-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-900">{cliq.name}</h1>
                 {cliq.description && <p className="text-gray-600">{cliq.description}</p>}
               </div>
-              {canInvite && (
-                <button
-                  onClick={() => setInviteModalOpen(true)}
-                  className="ml-4 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                  Invite
-                </button>
-              )}
+              <div className="flex gap-2">
+                {isOwner && (
+                  <button
+                    onClick={() => router.push(`/cliqs/${cliqId}/edit`)}
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
+                  >
+                    Edit Cliq
+                  </button>
+                )}
+                {canInvite && (
+                  <button
+                    onClick={() => setInviteModalOpen(true)}
+                    className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  >
+                    Invite
+                  </button>
+                )}
+              </div>
             </div>
             
             {/* Cliq Status */}
