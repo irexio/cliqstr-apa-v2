@@ -306,7 +306,7 @@ export async function POST(request: NextRequest) {
                }
              }
 
-             // Step 4: Create invite or parent approval based on type
+             // Step 4: Create parent approval for child invites (before email sending)
              let inviteId;
              let approvalToken;
              const inviteToken = crypto.randomUUID();
@@ -330,6 +330,12 @@ export async function POST(request: NextRequest) {
       approvalToken = crypto.randomUUID();
       const expiresAt = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 days
       
+      // Get inviter name and cliq name early for the approval record
+      const cliq = cliqId ? await convexHttp.query(api.cliqs.getCliqBasic, { cliqId: cliqId as any }) : null;
+      const cliqName = cliq?.name || 'a Cliq';
+      const inviterAccount = await convexHttp.query(api.accounts.getAccountByUserId, { userId: user.id as any });
+      const inviterName = inviterAccount ? `${inviterAccount.firstName || ''} ${inviterAccount.lastName || ''}`.trim() : 'Someone';
+      
       console.log(`[INVITE_CREATE] Creating parent approval for child invite...`);
       try {
         await convexHttp.mutation(api.parentApprovals.createParentApproval, {
@@ -340,8 +346,8 @@ export async function POST(request: NextRequest) {
           context: 'child_invite',
           inviteId: undefined, // Will be set after invite creation
           cliqId: cliqId ? cliqId as any : undefined,
-          inviterName: undefined, // Will be set when sending email
-          cliqName: undefined, // Will be set when sending email
+          inviterName: inviterName, // ✅ Now populated with actual inviter name
+          cliqName: cliqName, // ✅ Now populated with actual cliq name
           parentState: targetState === 'existing_user_non_parent' ? 'existing_adult' : targetState,
           existingParentId: targetState === 'existing_parent' ? targetUserId as any : undefined,
           approvalToken: approvalToken,
