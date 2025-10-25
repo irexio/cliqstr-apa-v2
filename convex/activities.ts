@@ -112,7 +112,24 @@ export const createActivity = mutation({
     recurrenceRule: v.optional(v.string()), // "FREQ=WEEKLY;COUNT=4", etc.
   },
   handler: async (ctx, args) => {
-    // Temporarily skip membership check to debug
+    // Verify user is member of cliq - simplified query
+    try {
+      const memberships = await ctx.db
+        .query("memberships")
+        .collect();
+      
+      const membership = memberships.find(
+        (m: any) => m.userId === args.createdByUserId && m.cliqId === args.cliqId
+      );
+
+      if (!membership) {
+        throw new Error(`User is not a member of this cliq`);
+      }
+    } catch (membershipError: any) {
+      console.error('[ACTIVITIES] Membership check failed:', membershipError?.message);
+      throw membershipError;
+    }
+
     console.log('[ACTIVITIES] Creating activity with args:', {
       cliqId: args.cliqId,
       title: args.title,
