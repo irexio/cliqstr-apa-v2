@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     await sendParentApprovalEmail({
       to: emailNorm,
       childName: childFullName,
-      childAge: '—', // Age not stored in approval record during recovery
+      childAge: 0, // Age not stored in approval record during recovery - use placeholder
       approvalCode: pendingApproval.approvalToken,
       subject: `Continue Setting Up ${childFullName} on Cliqstr`,
       html,

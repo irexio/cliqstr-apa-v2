@@ -17,7 +17,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if user is logged in
-    const session = await getIronSession<SessionData>(req, sessionOptions);
+    const session = await getIronSession<SessionData>(
+      req,
+      NextResponse.next(),
+      sessionOptions
+    );
     if (!session || !session.userId) {
       // Redirect to login with return URL
       const returnUrl = encodeURIComponent(`/parent-approval/resume?approvalId=${approvalId}`);
