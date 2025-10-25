@@ -30,9 +30,9 @@ export default function CalendarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // CRITICAL: cliqId MUST come from URL, NEVER from state
-  const urlCliqId = searchParams.get('cliqId');
-
+  // CRITICAL: cliqId MUST come from URL, read it immediately
+  const [urlCliqId, setUrlCliqId] = useState<string | null>(null);
+  
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedCliqName, setSelectedCliqName] = useState<string>('');
   const [view, setView] = useState<'month' | 'week'>('month');
@@ -45,6 +45,25 @@ export default function CalendarPage() {
   useEffect(() => {
     checkSessionAndFetchActivities();
   }, []);
+
+  // Read cliqId from URL params immediately - with fallback
+  useEffect(() => {
+    // First try searchParams (should work in most cases)
+    let cliqId = searchParams.get('cliqId');
+    console.log('[CALENDAR] searchParams.get cliqId:', cliqId);
+    
+    // Fallback: read directly from window.location if on client
+    if (!cliqId && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      cliqId = params.get('cliqId');
+      console.log('[CALENDAR] Fallback from window.location cliqId:', cliqId);
+    }
+    
+    console.log('[CALENDAR] Final cliqId to use:', cliqId);
+    console.log('[CALENDAR] Full URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
+    
+    setUrlCliqId(cliqId);
+  }, [searchParams]);
 
   // Fetch activities and cliq name whenever URL cliqId changes
   useEffect(() => {
@@ -135,7 +154,7 @@ export default function CalendarPage() {
       }
 
       const data = await response.json();
-      console.log('[CALENDAR] Fetched activities:', data.activities?.length || 0);
+      console.log('[CALENDAR] Fetched activities:', data.activities?.length || 0, data.activities);
       setActivities(data.activities || []);
     } catch (error) {
       console.error('[CALENDAR] Error fetching activities:', error);
