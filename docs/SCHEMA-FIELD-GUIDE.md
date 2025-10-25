@@ -45,6 +45,35 @@ This schema includes multiple safeguards to prevent adults from impersonating ch
 
 ---
 
+## Community-Based Safety: No Direct Messages
+
+**Architectural Choice:** Cliqstr does NOT implement direct messages (DMs).
+
+**Why:**
+- **Private channels enable grooming:** DMs are the primary tool used by predators to isolate children
+- **Public visibility = community protection:** All conversations happen in cliq feeds where multiple adults and family members can observe
+- **Red Alert crowd-sourcing:** Friends, family, and other cliq members can flag suspicious conversations in real-time
+- **No private corners:** There are no hidden spaces where unsafe dialog can happen unobserved
+
+**How It Works:**
+1. All member interactions happen in **public cliq feeds** (visible to all cliq members)
+2. Posts and comments are **observable by parents and guardians**
+3. **Red Alert system** allows any member to flag suspicious content immediately
+4. Multiple eyes on conversations = faster detection of grooming behavior
+
+**Schema Implications:**
+- `posts` and `replies` tables contain all member interactions (visible, auditable, public)
+- No `directMessages`, `privateChats`, or hidden communication tables exist
+- All member-to-member communication goes through cliq feeds (not schema-hidden)
+
+**Safety Advantage:**
+This is more protective than privacy-focused apps that offer "end-to-end encrypted DMs." Cliqstr trades absolute privacy for **community safety** - a deliberate choice that makes grooming much harder because:
+- Predators have no private channel to isolate victims
+- Unsafe conversation patterns are visible to protective adults
+- The community itself becomes a safety mechanism
+
+---
+
 ## Critical Field Mappings
 
 ### User Name Information
