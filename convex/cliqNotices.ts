@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 // Create cliq notice
@@ -19,5 +19,20 @@ export const createNotice = mutation({
     });
 
     return noticeId;
+  },
+});
+
+// Get notices by cliq
+export const getByCliqId = query({
+  args: {
+    cliqId: v.id("cliqs"),
+  },
+  handler: async (ctx, args) => {
+    const notices = await ctx.db
+      .query("cliqNotices")
+      .withIndex("by_cliq_id", (q) => q.eq("cliqId", args.cliqId))
+      .collect();
+
+    return notices.filter((n) => !n.expiresAt || new Date(n.expiresAt).getTime() > Date.now());
   },
 });

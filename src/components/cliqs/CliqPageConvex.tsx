@@ -7,8 +7,7 @@ import CliqProfileContent from '@/components/cliqs/CliqProfileContent';
 import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
-import UpcomingActivities from '@/components/cliqs/UpcomingActivities';
-import CliqNoticeBar from '@/components/cliqs/CliqNoticeBar';
+import CliqAnnouncementsSection from '@/components/cliqs/CliqAnnouncementsSection';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
@@ -103,11 +102,8 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-        {/* Cliq Notice Bar */}
-        <CliqNoticeBar cliqId={cliqId} />
-        
-        {/* Upcoming Activities */}
-        <UpcomingActivities cliqId={cliqId} />
+        {/* Announcements & Events Section (merged: notices + upcoming activities) */}
+        <CliqAnnouncementsSection cliqId={cliqId} />
         
         {/* Cliq Profile Content */}
         <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />

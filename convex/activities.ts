@@ -207,17 +207,8 @@ export const createActivity = mutation({
 
         createdIds.push(activityId);
 
-        // Auto-post to feed
-        await ctx.db.insert("posts", {
-          content: `📅 **${args.title}** - ${new Date(instanceStart).toLocaleDateString()}${
-            locationForStorage ? ` at ${locationForStorage}` : ""
-          }`,
-          createdAt: now,
-          deleted: false,
-          authorId: args.createdByUserId,
-          cliqId: args.cliqId,
-          moderationStatus: requiresApproval ? "pending" : "approved",
-        });
+        // NOTE: Activities are NO LONGER auto-posted to feed
+        // They appear only in Calendar/Announcements section to prevent cliqId corruption
       }
 
       return { success: true, activityIds: createdIds, isRecurrence: true };
@@ -244,17 +235,8 @@ export const createActivity = mutation({
       updatedAt: now,
     });
 
-    // Auto-post to feed
-    await ctx.db.insert("posts", {
-      content: `📅 **${args.title}** - ${new Date(args.startAt).toLocaleDateString()}${
-        locationForStorage ? ` at ${locationForStorage}` : ""
-      }`,
-      createdAt: now,
-      deleted: false,
-      authorId: args.createdByUserId,
-      cliqId: args.cliqId,
-      moderationStatus: requiresApproval ? "pending" : "approved",
-    });
+    // NOTE: Activities are NO LONGER auto-posted to feed
+    // They appear only in Calendar/Announcements section to prevent cliqId corruption
 
     console.log(`[ACTIVITIES_CREATE] Activity ${activityId} created by user ${args.createdByUserId}`);
 
