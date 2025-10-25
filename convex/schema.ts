@@ -14,8 +14,6 @@ export default defineSchema({
     resetTokenExpires: v.optional(v.number()),
     isVerified: v.boolean(),
     isParent: v.boolean(),
-    firstName: v.optional(v.string()), // Temporary: for existing data compatibility
-    lastName: v.optional(v.string()), // Temporary: for existing data compatibility
   })
     .index("by_email", ["email"])
     .index("by_verification_token", ["verificationToken"])
