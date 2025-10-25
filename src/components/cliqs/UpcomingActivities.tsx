@@ -36,7 +36,7 @@ export default function UpcomingActivities({ cliqId }: UpcomingActivitiesProps) 
         const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000;
         
         const upcomingActivities = (data.activities || [])
-          .filter((a: Activity) => a.startAt >= now && a.startAt <= sevenDaysFromNow && !a.requiresParentApproval)
+          .filter((a: Activity) => a.startAt >= now && a.startAt <= sevenDaysFromNow)
           .sort((a: Activity, b: Activity) => a.startAt - b.startAt)
           .slice(0, 3); // Show only next 3 activities
 
@@ -77,7 +77,14 @@ export default function UpcomingActivities({ cliqId }: UpcomingActivitiesProps) 
         {activities.map((activity) => (
           <div key={activity._id} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-gray-300 transition">
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-black truncate">{activity.title}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-black truncate">{activity.title}</p>
+                {activity.requiresParentApproval && (
+                  <span className="inline-block px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded whitespace-nowrap">
+                    Pending
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-gray-600">{formatDate(activity.startAt)}</p>
               {activity.location && (
                 <p className="text-sm text-gray-500 truncate">📍 {activity.location}</p>

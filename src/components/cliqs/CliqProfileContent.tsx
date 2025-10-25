@@ -32,6 +32,15 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
   const isOwner = user?.id === cliq.ownerId;
   const canInvite = user?.id && (isOwner || cliq.privacy === 'public' || cliq.privacy === 'semi_private');
 
+  // Debug logging
+  console.log('[CliqProfileContent] Debug:', {
+    userId: user?.id,
+    cliqOwnerId: cliq.ownerId,
+    isOwner,
+    cliqId,
+    userName: user?.email,
+  });
+
   return (
     <>
       <div className="w-full max-w-4xl mx-auto">
