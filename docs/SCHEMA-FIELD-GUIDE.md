@@ -5,6 +5,22 @@ This document clarifies which fields are **source-of-truth** vs. **derived/cache
 
 ---
 
+## ⚠️ CRITICAL SECURITY: Grooming Prevention Tactics
+
+This schema includes multiple safeguards to prevent adults from impersonating children:
+
+1. **Profile Name Locking:** Child's social profile name is LOCKED to their account name (from parent setup). Adults cannot create fake child accounts with false identities to pose as minors in cliqs.
+
+2. **Location Masking for Events:** When a child creates an activity, location can be hidden until parent approval, preventing location exposure to unknown contacts.
+
+3. **Parent Approval Workflows:** Child-created events and invites require parent approval before visibility, giving parents control over what children share.
+
+4. **Invite Permission Controls:** Parents can disable child's ability to send/receive invites entirely via PHQ settings.
+
+**These are NOT optional features** - they are core to the safety architecture. Any changes to name handling, profile creation, or visibility rules must preserve these protections.
+
+---
+
 ## Critical Field Mappings
 
 ### User Name Information
@@ -86,6 +102,13 @@ const fullName = `${account?.firstName || ''} ${account?.lastName || ''}`.trim()
 
 **Purpose:** Store per-child permissions managed by parents in Parent HQ  
 **Location:** One record per child (via `profileId`)
+
+**CRITICAL SECURITY:** Profile name is LOCKED to account name  
+- Child's account name (from parent setup) cannot be changed in social profile
+- Prevents adults from creating fake child accounts and impersonating minors
+- **Grooming prevention tactic:** Adults cannot pose as children in cliqs
+- `displayName` is optional for nicknames, but real name always comes from `accounts`
+- myProfiles.createProfile validates that names match accounts data
 
 **Calendar-Related Fields:**
 ```typescript
