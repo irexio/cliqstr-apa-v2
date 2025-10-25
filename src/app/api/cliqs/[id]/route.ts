@@ -24,7 +24,7 @@ import { isValidPlan } from '@/lib/utils/planUtils';
 // Note: Membership verification is now handled by Convex functions automatically
 
 const ParamsSchema = z.object({
-  id: z.string().cuid(),
+  id: z.string().min(1, 'Cliq ID is required'),
 });
 
 const PatchSchema = z.object({
