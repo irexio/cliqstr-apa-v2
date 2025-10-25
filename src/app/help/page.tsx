@@ -129,7 +129,7 @@ export default function HelpPage() {
 
         {/* FAQs */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-black mb-6">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold text-black mb-6">Frequently Asked Questions about Invites & Signing Up</h2>
 
           <div className="space-y-6">
             <div>
@@ -146,7 +146,7 @@ export default function HelpPage() {
                 I already have an account. What do I do?
               </h3>
               <p className="text-gray-700">
-                If you have an existing Cliqstr account, you can click the "Already have account? Resume here" link in the approval email to log in and continue setting up your child.
+                If you have an existing Cliqstr account, look for the "Already have an account? Resume here" link in the child invite email to log in and continue setting up your child. If you can't find it, use the recovery form above to get a new link.
               </p>
             </div>
 

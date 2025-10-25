@@ -51,6 +51,7 @@ export async function sendChildInviteEmail({
   // Render HTML using the provided copy (no new deps)
   const logoSrc = `${BASE_URL}/MASTERLOGO-BLACK.png`;
   const learnMoreLink = `${BASE_URL}/for-parents`;
+  const resumeLink = `${BASE_URL}/sign-in?invite=${encodeURIComponent(inviteLink)}`; // Resume link for existing accounts
   const preheader = 'Review and approve — private, ad-free, no DMs.';
 
   const html = `
@@ -89,6 +90,14 @@ export async function sendChildInviteEmail({
           <li>Confirm your identity with a credit card <span style="color:#555;">(verification only — includes a free 30‑day trial)</span>.</li>
           <li>Set up your child's permissions in the Parents HQ Dashboard.</li>
         </ol>
+
+        <!-- Existing Account Link -->
+        <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:24px 0;text-align:center;">
+          <p style="margin:0 0 12px;font-size:14px;color:#666;">
+            Already have a Cliqstr account?
+          </p>
+          <a href="${resumeLink}" style="color:#000;text-decoration:underline;font-weight:600;">Resume here to continue</a>
+        </div>
 
         <!-- CTA -->
         <div style="text-align:center;margin-top:32px;">
