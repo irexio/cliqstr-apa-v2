@@ -11,7 +11,7 @@ const createActivitySchema = z.object({
   cliqId: z.string(),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(1000).optional(),
-  startAt: z.number().min(Date.now() - 60000, 'Event time must be in the future'),
+  startAt: z.number(), // Allow any time, validation happens in Convex
   endAt: z.number(),
   timezone: z.string(),
   location: z.string().max(500).optional(),
@@ -27,9 +27,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    console.log('[ACTIVITIES_CREATE] Request body:', body);
+    
     const parsed = createActivitySchema.safeParse(body);
 
     if (!parsed.success) {
+      console.error('[ACTIVITIES_CREATE] Validation errors:', parsed.error.errors);
       return NextResponse.json(
         { error: parsed.error.errors[0]?.message || 'Invalid request' },
         { status: 400 }
@@ -39,6 +42,7 @@ export async function POST(req: NextRequest) {
     const { cliqId, title, description, startAt, endAt, timezone, location, recurrenceRule } = parsed.data;
 
     console.log(`[ACTIVITIES_CREATE] User ${session.userId} creating activity in cliq ${cliqId}`);
+    console.log(`[ACTIVITIES_CREATE] Activity: title="${title}", startAt=${startAt}, endAt=${endAt}, location="${location}"`);
 
     // Create activity via Convex
     const result = await convexHttp.mutation(api.activities.createActivity, {
@@ -56,10 +60,14 @@ export async function POST(req: NextRequest) {
     console.log(`[ACTIVITIES_CREATE] Activity created:`, result);
 
     return NextResponse.json(result);
-  } catch (error) {
-    console.error('[ACTIVITIES_CREATE] Error:', error);
+  } catch (error: any) {
+    console.error('[ACTIVITIES_CREATE] Error:', {
+      message: error?.message,
+      stack: error?.stack,
+      details: error?.data || error,
+    });
     return NextResponse.json(
-      { error: 'Failed to create activity' },
+      { error: error?.message || 'Failed to create activity' },
       { status: 500 }
     );
   }
