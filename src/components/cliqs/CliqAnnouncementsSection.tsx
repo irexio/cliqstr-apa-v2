@@ -34,6 +34,9 @@ interface CliqAnnouncementsSectionProps {
   cliqId: string;
 }
 
+// Configurable: Show events up to N days in the future
+const DAYS_AHEAD = 30;
+
 export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSectionProps) {
   const [items, setItems] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,16 +56,17 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
           if (noticesRes.ok) {
             const noticesData = await noticesRes.json();
             notices = noticesData.notices || [];
+            console.log('[ANNOUNCEMENTS] Retrieved notices:', notices.length);
           }
         } catch (err) {
           console.error('[ANNOUNCEMENTS] Failed to fetch notices:', err);
         }
 
-        // Fetch upcoming activities (next 7 days, max 3)
+        // Fetch upcoming activities
         let activities: Activity[] = [];
         try {
           const now = Date.now();
-          const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000;
+          const rangeEnd = now + DAYS_AHEAD * 24 * 60 * 60 * 1000;
 
           const activitiesRes = await fetch(
             `/api/activities/list?cliqId=${cliqId}`,
@@ -71,16 +75,21 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
 
           if (activitiesRes.ok) {
             const activitiesData = await activitiesRes.json();
-            console.log('[ANNOUNCEMENTS] Raw activities from API:', activitiesData.activities);
-            console.log('[ANNOUNCEMENTS] Now:', now, 'SevenDaysFromNow:', sevenDaysFromNow);
+            console.log('[ANNOUNCEMENTS] Raw activities from API:', activitiesData.activities?.length || 0, activitiesData.activities);
+            console.log('[ANNOUNCEMENTS] Date range - Now:', new Date(now).toISOString(), 'End:', new Date(rangeEnd).toISOString());
             
-            // TEMPORARILY DISABLED: Date filter to debug - show ALL activities first
             activities = (activitiesData.activities || [])
-              // .filter((a: Activity) => a.startAt >= now && a.startAt <= sevenDaysFromNow)
+              .filter((a: Activity) => {
+                const isInRange = a.startAt >= now && a.startAt <= rangeEnd;
+                if (!isInRange) {
+                  console.log(`[ANNOUNCEMENTS] Activity "${a.title}" excluded - startAt: ${new Date(a.startAt).toISOString()}`);
+                }
+                return isInRange;
+              })
               .sort((a: Activity, b: Activity) => a.startAt - b.startAt)
               .slice(0, 10); // Show more for testing
             
-            console.log('[ANNOUNCEMENTS] Filtered activities:', activities.length, activities);
+            console.log('[ANNOUNCEMENTS] Retrieved activities after filter:', activities.length, activities);
           }
         } catch (err) {
           console.error('[ANNOUNCEMENTS] Failed to fetch activities:', err);
@@ -123,6 +132,7 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
           return a.timestamp - b.timestamp; // Activities: oldest first
         });
 
+        console.log('[ANNOUNCEMENTS] Final combined items:', combinedItems.length, combinedItems);
         setItems(combinedItems);
       } finally {
         setLoading(false);
