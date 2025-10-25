@@ -7,6 +7,7 @@ import CliqProfileContent from '@/components/cliqs/CliqProfileContent';
 import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
+import UpcomingActivities from '@/components/cliqs/UpcomingActivities';
 import CliqNoticeBar from '@/components/cliqs/CliqNoticeBar';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
@@ -59,7 +60,7 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
   if (authLoading) {
     return (
       <main className="p-6 max-w-xl mx-auto text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading...</p>
       </main>
     );
@@ -83,7 +84,7 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
   if (cliq === undefined) {
     return (
       <main className="p-6 max-w-xl mx-auto text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading cliq...</p>
       </main>
     );
@@ -104,6 +105,9 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Cliq Notice Bar */}
         <CliqNoticeBar cliqId={cliqId} />
+        
+        {/* Upcoming Activities */}
+        <UpcomingActivities cliqId={cliqId} />
         
         {/* Cliq Profile Content */}
         <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />

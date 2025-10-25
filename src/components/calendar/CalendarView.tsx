@@ -114,7 +114,7 @@ export default function CalendarView({
 
         <button
           onClick={onCreateClick}
-          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm sm:text-base"
+          className="w-full sm:w-auto bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition text-sm sm:text-base"
         >
           + Create Activity
         </button>
@@ -184,7 +184,7 @@ export default function CalendarView({
                   onClick={() => onDateSelect?.(date)}
                   className={`min-h-24 p-2 rounded border-2 cursor-pointer transition ${
                     isToday
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-black bg-gray-50'
                       : 'border-gray-200 bg-white hover:bg-gray-50'
                   }`}
                 >
@@ -204,7 +204,7 @@ export default function CalendarView({
                           e.stopPropagation();
                           onActivityClick?.(activity as any);
                         }}
-                        className="text-xs bg-blue-100 text-blue-900 px-2 py-1 rounded truncate cursor-pointer hover:bg-blue-200 transition"
+                        className="text-xs bg-black text-white px-2 py-1 rounded truncate cursor-pointer hover:bg-gray-800 transition"
                         title={activity.title}
                       >
                         {activity.title}
@@ -233,7 +233,7 @@ export default function CalendarView({
               <div
                 key={date.toDateString()}
                 className={`p-4 rounded-lg border-2 ${
-                  isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  isToday ? 'border-black bg-gray-50' : 'border-gray-200'
                 }`}
               >
                 <div
@@ -250,7 +250,7 @@ export default function CalendarView({
                       <div
                         key={activity._id}
                         onClick={() => onActivityClick?.(activity as any)}
-                        className="bg-blue-100 text-blue-900 px-3 py-2 rounded cursor-pointer hover:bg-blue-200 transition text-sm"
+                        className="bg-black text-white px-3 py-2 rounded cursor-pointer hover:bg-gray-800 transition text-sm"
                       >
                         <div className="font-medium truncate">{activity.title}</div>
                         <div className="text-xs text-blue-700">

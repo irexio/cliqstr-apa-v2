@@ -207,6 +207,9 @@ export default function CalendarPage() {
         description: 'Activity created successfully!',
       });
 
+      // Small delay to allow Convex to sync
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Refresh activities list
       await fetchActivities();
       setShowForm(false);
@@ -227,7 +230,7 @@ export default function CalendarPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-gray-600">Loading calendar...</p>
         </div>
       </div>
@@ -250,7 +253,7 @@ export default function CalendarPage() {
             onClick={() => setView(v as 'month' | 'week')}
             className={`px-4 py-2 rounded font-medium transition ${
               view === v
-                ? 'bg-blue-600 text-white'
+                ? 'bg-black text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -277,7 +280,7 @@ export default function CalendarPage() {
             <p className="text-gray-600 mb-4">No activities scheduled</p>
             <button
               onClick={() => setShowForm(true)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
+              className="w-full bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-lg font-medium transition"
             >
               Create First Activity
             </button>
@@ -325,7 +328,7 @@ export default function CalendarPage() {
             <p className="text-gray-600 mb-6">You need to be a member of at least one cliq to create an activity.</p>
             <button
               onClick={() => setShowForm(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
+              className="w-full bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition"
             >
               Close
             </button>

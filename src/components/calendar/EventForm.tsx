@@ -122,19 +122,19 @@ export default function EventForm({
           <h2 className="text-xl font-bold text-gray-900">Create Activity</h2>
           <button
             onClick={onClose}
-            disabled={isSubmitting}
-            className="text-gray-500 hover:text-gray-700 disabled:opacity-50 transition"
-            aria-label="Close modal"
+            className="absolute top-4 right-4 text-gray-500 hover:text-black transition text-2xl font-light"
+            aria-label="Close"
           >
-            <X className="w-6 h-6" />
+            ✕
           </button>
         </div>
 
         {/* Form Content - Scrollable */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {cliqName && (
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-sm text-blue-900">
-              <strong>Cliq:</strong> {cliqName}
+            <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-900">
+              <p className="font-medium mb-2">💡 Tip:</p>
+              <p>Create recurring events to avoid scheduling conflicts.</p>
             </div>
           )}
 
@@ -260,7 +260,7 @@ export default function EventForm({
                 type="button"
                 onClick={() => setEmoji('')}
                 className={`p-2 rounded text-xl transition ${
-                  emoji === '' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-gray-100 border-2 border-gray-200'
+                  emoji === '' ? 'bg-black text-white border-2 border-black' : 'bg-gray-100 border-2 border-gray-200'
                 }`}
                 title="None"
                 disabled={isSubmitting}
@@ -273,7 +273,7 @@ export default function EventForm({
                   type="button"
                   onClick={() => setEmoji(h.emoji)}
                   className={`p-2 rounded text-xl transition ${
-                    emoji === h.emoji ? 'bg-blue-100 border-2 border-blue-500' : 'bg-gray-100 border-2 border-gray-200'
+                    emoji === h.emoji ? 'bg-black text-white border-2 border-black' : 'bg-gray-100 border-2 border-gray-200'
                   }`}
                   title={h.label}
                   disabled={isSubmitting}
@@ -315,7 +315,7 @@ export default function EventForm({
             <button
               type="submit"
               disabled={isSubmitting || !title || !date}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+              className="flex-1 bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-900 disabled:opacity-50 transition"
             >
               {isSubmitting ? 'Creating...' : 'Create Event'}
             </button>
