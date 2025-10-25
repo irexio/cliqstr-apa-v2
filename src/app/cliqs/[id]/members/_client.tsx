@@ -16,7 +16,7 @@ export default function MembersClient({ cliqId, currentUserId }: { cliqId: strin
     return (
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
           <p className="mt-2 text-gray-600">Loading members...</p>
         </div>
       </main>
@@ -51,7 +51,7 @@ export default function MembersClient({ cliqId, currentUserId }: { cliqId: strin
                 </div>
 
                 {isOwner && member.id !== currentUserId && (
-                  <div className="space-x-2">
+                  <div className="space-x-2 flex items-center">
                     {role === 'Member' && (
                       <form action={`/api/cliqs/${cliqId}/member-actions`} method="POST">
                         <input type="hidden" name="targetUserId" value={member.id} />
@@ -66,6 +66,15 @@ export default function MembersClient({ cliqId, currentUserId }: { cliqId: strin
                         <Button type="submit" variant="secondary">Demote to Member</Button>
                       </form>
                     )}
+                    <form action={`/api/cliqs/${cliqId}/member-actions`} method="POST" onSubmit={(e) => {
+                      if (!confirm(`Remove ${name} from this cliq?`)) {
+                        e.preventDefault();
+                      }
+                    }}>
+                      <input type="hidden" name="targetUserId" value={member.id} />
+                      <input type="hidden" name="action" value="remove" />
+                      <Button type="submit" variant="destructive">Delete</Button>
+                    </form>
                   </div>
                 )}
               </li>
