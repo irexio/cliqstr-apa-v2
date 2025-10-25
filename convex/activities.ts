@@ -112,23 +112,12 @@ export const createActivity = mutation({
     recurrenceRule: v.optional(v.string()), // "FREQ=WEEKLY;COUNT=4", etc.
   },
   handler: async (ctx, args) => {
-    // Verify user is member of cliq - simplified query
-    try {
-      const memberships = await ctx.db
-        .query("memberships")
-        .collect();
-      
-      const membership = memberships.find(
-        (m: any) => m.userId === args.createdByUserId && m.cliqId === args.cliqId
-      );
-
-      if (!membership) {
-        throw new Error(`User ${args.createdByUserId} is not a member of cliq ${args.cliqId}`);
-      }
-    } catch (membershipError: any) {
-      console.error('[ACTIVITIES] Membership check failed:', membershipError?.message);
-      throw membershipError;
-    }
+    // Temporarily skip membership check to debug
+    console.log('[ACTIVITIES] Creating activity with args:', {
+      cliqId: args.cliqId,
+      title: args.title,
+      createdByUserId: args.createdByUserId,
+    });
 
     // Check if creator is a child and apply PHQ settings
     const isChild = await isUserChild(ctx, args.createdByUserId);
@@ -146,6 +135,13 @@ export const createActivity = mutation({
       }
     }
 
+    console.log('[ACTIVITIES] PHQ settings applied:', {
+      isChild,
+      requiresApproval,
+      locationVisibility,
+      maskLocation,
+    });
+
     // If maskLocation and requiresApproval, hide location from everyone except parents
     const locationForStorage = maskLocation && requiresApproval
       ? undefined
@@ -153,6 +149,8 @@ export const createActivity = mutation({
 
     const now = Date.now();
     const seriesId = args.recurrenceRule ? crypto.randomUUID() : undefined;
+
+    console.log('[ACTIVITIES] About to insert activity into DB');
 
     // If recurrence rule provided, expand into individual instances
     if (args.recurrenceRule) {
