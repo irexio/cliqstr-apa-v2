@@ -33,6 +33,7 @@ export default function CalendarPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [cliqs, setCliqs] = useState<Cliq[]>([]);
   const [selectedCliqId, setSelectedCliqId] = useState<string>('');
+  const [selectedCliqName, setSelectedCliqName] = useState<string>('');
   const [view, setView] = useState<'month' | 'week'>('month');
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -45,6 +46,8 @@ export default function CalendarPage() {
     const cliqIdParam = searchParams.get('cliqId');
     if (cliqIdParam) {
       setSelectedCliqId(cliqIdParam);
+      // Fetch the cliq name for display
+      fetchCliqName(cliqIdParam);
     }
     checkSessionAndFetchActivities();
   }, [searchParams]);
@@ -118,6 +121,25 @@ export default function CalendarPage() {
       }
     } catch (error) {
       console.error('[CALENDAR] Error fetching cliqs:', error);
+    }
+  };
+
+  const fetchCliqName = async (cliqId: string) => {
+    try {
+      const response = await fetch(`/api/cliqs/${cliqId}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch cliq');
+      }
+
+      const data = await response.json();
+      const cliq = data.cliq || data;
+      console.log('[CALENDAR] Fetched cliq name:', cliq.name);
+      setSelectedCliqName(cliq.name || '');
+    } catch (error) {
+      console.error('[CALENDAR] Error fetching cliq name:', error);
     }
   };
 
@@ -289,7 +311,7 @@ export default function CalendarPage() {
       {showForm && selectedCliqId && (
         <EventForm
           cliqId={selectedCliqId}
-          cliqName={cliqs.find(c => c._id === selectedCliqId)?.name}
+          cliqName={selectedCliqName}
           onSubmit={handleCreateActivity}
           onClose={() => setShowForm(false)}
         />
