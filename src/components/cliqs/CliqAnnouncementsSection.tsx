@@ -71,10 +71,16 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
 
           if (activitiesRes.ok) {
             const activitiesData = await activitiesRes.json();
+            console.log('[ANNOUNCEMENTS] Raw activities from API:', activitiesData.activities);
+            console.log('[ANNOUNCEMENTS] Now:', now, 'SevenDaysFromNow:', sevenDaysFromNow);
+            
+            // TEMPORARILY DISABLED: Date filter to debug - show ALL activities first
             activities = (activitiesData.activities || [])
-              .filter((a: Activity) => a.startAt >= now && a.startAt <= sevenDaysFromNow)
+              // .filter((a: Activity) => a.startAt >= now && a.startAt <= sevenDaysFromNow)
               .sort((a: Activity, b: Activity) => a.startAt - b.startAt)
-              .slice(0, 3);
+              .slice(0, 10); // Show more for testing
+            
+            console.log('[ANNOUNCEMENTS] Filtered activities:', activities.length, activities);
           }
         } catch (err) {
           console.error('[ANNOUNCEMENTS] Failed to fetch activities:', err);
