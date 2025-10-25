@@ -51,7 +51,7 @@ export const createParentApproval = mutation({
 });
 
 /**
- * Get parent approval by approval token
+ * Get parent approval by token
  */
 export const getParentApprovalByToken = query({
   args: {
@@ -73,6 +73,47 @@ export const getParentApprovalByToken = query({
     }
 
     return approval;
+  },
+});
+
+/**
+ * Get parent approval by ID (for resume flow)
+ */
+export const getApprovalById = query({
+  args: {
+    approvalId: v.id("parentApprovals"),
+  },
+  handler: async (ctx, args) => {
+    const approval = await ctx.db.get(args.approvalId);
+
+    if (!approval) {
+      return null;
+    }
+
+    // Check if expired
+    if (Date.now() > approval.expiresAt) {
+      return null;
+    }
+
+    return approval;
+  },
+});
+
+/**
+ * Get parent approvals by email (for recovery/resend)
+ */
+export const getApprovalsByEmail = query({
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const approvals = await ctx.db
+      .query("parentApprovals")
+      .withIndex("by_parent_email", (q) => q.eq("parentEmail", args.email.toLowerCase()))
+      .collect();
+
+    // Return only non-expired approvals
+    return approvals.filter((a) => Date.now() < a.expiresAt);
   },
 });
 
