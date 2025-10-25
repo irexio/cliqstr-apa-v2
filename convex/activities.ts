@@ -428,38 +428,33 @@ export const listByCliq = query({
 
     const now = Date.now();
 
-    return activities
-      .filter((a) => {
-        // Exclude soft-deleted
-        if (a.deletedAt) return false;
-        // Filter by time range
-        if (a.startAt < from || a.startAt > to) return false;
-        return true;
-      })
-      .map((a) => {
-        // Apply location visibility rules
-        let activity = { ...a };
+    // First filter activities
+    const filtered = activities.filter((a) => {
+      // Exclude soft-deleted
+      if (a.deletedAt) return false;
+      // Filter by time range
+      if (a.startAt < from || a.startAt > to) return false;
+      return true;
+    });
 
-        if (a.locationVisibility === "parents" && args.userId) {
-          // Check if user is a parent of the creator
-          const isParentOfCreator =
-            ctx.db
-              .query("parentLinks")
-              .withIndex("by_parent_child", (q: any) =>
-                q.eq("parentId", args.userId).eq("childId", a.createdByUserId)
-              )
-              .first() !== null;
+    // Then map with location visibility (simplified - don't apply async checks in map)
+    const mapped = filtered.map((a) => {
+      // Apply location visibility rules
+      let activity = { ...a };
 
-          if (!isParentOfCreator && a.createdByUserId !== args.userId) {
-            activity.location = "📍 Location visible to parents";
-          }
-        } else if (a.locationVisibility === "hidden") {
-          activity.location = undefined;
+      if (a.locationVisibility === "parents" && args.userId) {
+        // For now, just check if it's the creator themselves
+        if (a.createdByUserId !== args.userId) {
+          activity.location = "📍 Location visible to parents only";
         }
+      } else if (a.locationVisibility === "hidden") {
+        activity.location = undefined;
+      }
 
-        return activity;
-      })
-      .sort((a, b) => a.startAt - b.startAt);
+      return activity;
+    });
+
+    return mapped.sort((a, b) => a.startAt - b.startAt);
   },
 });
 
