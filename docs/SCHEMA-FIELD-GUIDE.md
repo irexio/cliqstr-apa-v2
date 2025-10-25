@@ -21,6 +21,30 @@ This schema includes multiple safeguards to prevent adults from impersonating ch
 
 ---
 
+## COPPA Compliance & Adult Accountability
+
+**Verified Adult Identity Layer:**
+- All adults must provide a real credit card (Stripe) with name verification
+- Adult's verified name is stored in `accounts` table and cannot be spoofed
+- Profile names are locked to verified account identity, creating accountability
+- Children can only be invited/created by verified adults
+
+**Multi-Layer Protection Against Grooming:**
+1. Verified Stripe payment method → Real identity accountability (not anonymous)
+2. Profile name locking → Adults cannot impersonate children
+3. Parent approval workflows → Parents control child visibility
+4. Location masking → Location hidden from unapproved contacts
+5. Invite controls → Parents can disable invites entirely
+
+**COPPA Compliance:**
+✅ Verifiable parental consent (credit card + verified identity)  
+✅ Privacy protection (location masking, approval workflows, permission controls)  
+✅ Data minimization (PHQ-controlled permissions)  
+✅ Accountability (verified adult identity tied to all child accounts)  
+✅ **EXCEEDS baseline COPPA:** Prevents adult impersonation of children (not required but critical safety measure)
+
+---
+
 ## Critical Field Mappings
 
 ### User Name Information
