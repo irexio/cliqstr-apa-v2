@@ -30,9 +30,10 @@ export default function CalendarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // CRITICAL: cliqId MUST come from URL, NEVER from state
+  const urlCliqId = searchParams.get('cliqId');
+
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [cliqs, setCliqs] = useState<Cliq[]>([]);
-  const [selectedCliqId, setSelectedCliqId] = useState<string>('');
   const [selectedCliqName, setSelectedCliqName] = useState<string>('');
   const [view, setView] = useState<'month' | 'week'>('month');
   const [isLoading, setIsLoading] = useState(true);
@@ -40,24 +41,23 @@ export default function CalendarPage() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [session, setSession] = useState<any>(null);
 
-  // Check session and fetch activities on mount
+  // Check session on mount
   useEffect(() => {
-    // Get cliqId from URL params (passed from CliqTools)
-    const cliqIdParam = searchParams.get('cliqId');
-    if (cliqIdParam) {
-      setSelectedCliqId(cliqIdParam);
-      // Fetch the cliq name for display
-      fetchCliqName(cliqIdParam);
-    }
     checkSessionAndFetchActivities();
-  }, [searchParams]);
+  }, []);
 
-  // Fetch activities when selected cliq changes
+  // Fetch activities and cliq name whenever URL cliqId changes
   useEffect(() => {
-    if (selectedCliqId) {
-      fetchActivities();
+    if (urlCliqId) {
+      console.log('[CALENDAR] URL cliqId changed to:', urlCliqId);
+      fetchCliqName(urlCliqId);
+      fetchActivities(urlCliqId);
+    } else {
+      console.warn('[CALENDAR] No cliqId in URL params');
+      setActivities([]);
+      setIsLoading(false);
     }
-  }, [selectedCliqId]);
+  }, [urlCliqId]);
 
   const checkSessionAndFetchActivities = async () => {
     try {
@@ -78,16 +78,13 @@ export default function CalendarPage() {
       }
 
       const sessionData = await sessionResponse.json();
-      
+
       if (!sessionData.user) {
         router.push('/sign-in');
         return;
       }
 
       setSession(sessionData.user);
-
-      // Now fetch activities (will use selectedCliqId from state)
-      // fetchCliqs is no longer needed - cliqId comes from URL
     } catch (error) {
       console.error('[CALENDAR] Error checking session:', error);
       toast({
@@ -95,32 +92,6 @@ export default function CalendarPage() {
         description: 'Unable to load your calendar right now. Please refresh.',
       });
       setIsLoading(false);
-    }
-  };
-
-  const fetchCliqs = async () => {
-    try {
-      const response = await fetch('/api/cliqs', {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch cliqs');
-      }
-
-      const data = await response.json();
-      const cliqList = data.cliqs || [];
-      console.log('[CALENDAR] Fetched cliqs:', cliqList);
-      setCliqs(cliqList);
-
-      // Auto-select first cliq
-      if (cliqList.length > 0) {
-        const firstCliqId = cliqList[0]._id;
-        console.log('[CALENDAR] Setting selectedCliqId to:', firstCliqId);
-        setSelectedCliqId(firstCliqId);
-      }
-    } catch (error) {
-      console.error('[CALENDAR] Error fetching cliqs:', error);
     }
   };
 
@@ -143,18 +114,13 @@ export default function CalendarPage() {
     }
   };
 
-  const fetchActivities = async () => {
+  const fetchActivities = async (cliqId: string) => {
     try {
       setIsLoading(true);
-      
-      // Only fetch if we have a selected cliq
-      if (!selectedCliqId) {
-        setActivities([]);
-        setIsLoading(false);
-        return;
-      }
-      
-      const response = await fetch(`/api/activities/list?cliqId=${selectedCliqId}`, {
+
+      console.log('[CALENDAR] Fetching activities for cliqId:', cliqId);
+
+      const response = await fetch(`/api/activities/list?cliqId=${cliqId}`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -169,22 +135,34 @@ export default function CalendarPage() {
       }
 
       const data = await response.json();
+      console.log('[CALENDAR] Fetched activities:', data.activities?.length || 0);
       setActivities(data.activities || []);
     } catch (error) {
       console.error('[CALENDAR] Error fetching activities:', error);
-      // Show error but don't block calendar rendering
       toast({
         title: 'Warning',
         description: 'Could not load activities. The calendar will show as empty.',
       });
-      setActivities([]); // Set empty array so calendar can still render
+      setActivities([]);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCreateActivity = async (data: ActivityFormData) => {
+    // CRITICAL VALIDATION: Ensure cliqId in form matches URL cliqId
+    if (data.cliqId !== urlCliqId) {
+      console.error('[CALENDAR] CliqId mismatch! Form:', data.cliqId, 'URL:', urlCliqId);
+      toast({
+        title: 'Error',
+        description: 'CliqId mismatch detected. Please refresh and try again.',
+      });
+      return;
+    }
+
     try {
+      console.log('[CALENDAR] Creating activity with cliqId:', data.cliqId);
+
       const response = await fetch('/api/activities/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -209,9 +187,11 @@ export default function CalendarPage() {
 
       // Small delay to allow Convex to sync
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Refresh activities list
-      await fetchActivities();
+
+      // Refresh activities list using URL cliqId
+      if (urlCliqId) {
+        await fetchActivities(urlCliqId);
+      }
       setShowForm(false);
     } catch (error) {
       console.error('[CALENDAR] Error creating activity:', error);
@@ -242,98 +222,98 @@ export default function CalendarPage() {
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">📅 Calendar</h1>
-        <p className="text-gray-600">View and manage activities across your cliqs</p>
+        <p className="text-gray-600">
+          {selectedCliqName ? `${selectedCliqName} • View and manage activities` : 'View and manage activities across your cliqs'}
+        </p>
       </div>
+
+      {/* Show error if no cliq selected */}
+      {!urlCliqId && (
+        <div className="mb-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h3 className="font-semibold text-yellow-900 mb-2">No Cliq Selected</h3>
+          <p className="text-yellow-800">Click the Calendar button from within a cliq to view or create activities.</p>
+        </div>
+      )}
 
       {/* View Toggle */}
-      <div className="flex gap-2 mb-6">
-        {['month', 'week'].map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v as 'month' | 'week')}
-            className={`px-4 py-2 rounded font-medium transition ${
-              view === v
-                ? 'bg-black text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {v === 'month' ? 'Month' : 'Week'}
-          </button>
-        ))}
-      </div>
+      {urlCliqId && (
+        <div className="flex gap-2 mb-6">
+          {['month', 'week'].map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v as 'month' | 'week')}
+              className={`px-4 py-2 rounded font-medium transition ${
+                view === v
+                  ? 'bg-black text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {v === 'month' ? 'Month' : 'Week'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Calendar Grid - Always render, even with empty data */}
-      <div className="mb-8">
-        <CalendarView
-          activities={activities as any}
-          view={view}
-          onActivityClick={handleActivityClick as any}
-          onCreateClick={() => setShowForm(true)}
-        />
-      </div>
+      {urlCliqId && (
+        <div className="mb-8">
+          <CalendarView
+            activities={activities as any}
+            view={view}
+            onActivityClick={handleActivityClick as any}
+            onCreateClick={() => setShowForm(true)}
+          />
+        </div>
+      )}
 
       {/* Upcoming Activities List - Mobile Only */}
-      <div className="sm:hidden">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Activities</h2>
-        {activities.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-600 mb-4">No activities scheduled</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="w-full bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-lg font-medium transition"
-            >
-              Create First Activity
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {activities
-              .filter((a) => a.startAt > Date.now())
-              .sort((a, b) => a.startAt - b.startAt)
-              .slice(0, 10)
-              .map((activity) => (
-                <EventCard
-                  key={activity._id}
-                  id={activity._id}
-                  title={activity.title}
-                  description={activity.description}
-                  startAt={activity.startAt}
-                  endAt={activity.endAt}
-                  location={activity.location}
-                  locationVisibility={activity.locationVisibility}
-                  requiresApproval={activity.requiresParentApproval}
-                  rsvps={activity.rsvps}
-                  onViewDetails={() => handleActivityClick(activity)}
-                />
-              ))}
-          </div>
-        )}
-      </div>
+      {urlCliqId && (
+        <div className="sm:hidden">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Activities</h2>
+          {activities.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 mb-4">No activities scheduled</p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="w-full bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-lg font-medium transition"
+              >
+                Create First Activity
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {activities
+                .filter((a) => a.startAt > Date.now())
+                .sort((a, b) => a.startAt - b.startAt)
+                .slice(0, 10)
+                .map((activity) => (
+                  <EventCard
+                    key={activity._id}
+                    id={activity._id}
+                    title={activity.title}
+                    description={activity.description}
+                    startAt={activity.startAt}
+                    endAt={activity.endAt}
+                    location={activity.location}
+                    locationVisibility={activity.locationVisibility}
+                    requiresApproval={activity.requiresParentApproval}
+                    rsvps={activity.rsvps}
+                    onViewDetails={() => handleActivityClick(activity)}
+                  />
+                ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Create Form Modal */}
-      {showForm && selectedCliqId && (
+      {showForm && urlCliqId && (
         <EventForm
-          cliqId={selectedCliqId}
+          cliqId={urlCliqId}
           cliqName={selectedCliqName}
           onSubmit={handleCreateActivity}
           onClose={() => setShowForm(false)}
         />
-      )}
-
-      {/* Show warning if no cliq selected */}
-      {showForm && !selectedCliqId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">No Cliq Selected</h3>
-            <p className="text-gray-600 mb-6">You need to be a member of at least one cliq to create an activity.</p>
-            <button
-              onClick={() => setShowForm(false)}
-              className="w-full bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
       )}
 
       {/* Activity Detail Modal */}
