@@ -40,8 +40,19 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Verify the approval belongs to the logged-in user's email
-    if (approval.parentEmail.toLowerCase() !== session.email?.toLowerCase()) {
+    // Verify the approval belongs to the logged-in user by fetching their email from Convex
+    const user = await convexHttp.query(api.users.getCurrentUser, {
+      userId: session.userId as any,
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'user_not_found' },
+        { status: 404 }
+      );
+    }
+
+    if (approval.parentEmail.toLowerCase() !== user.email.toLowerCase()) {
       return NextResponse.json(
         { error: 'unauthorized' },
         { status: 403 }
