@@ -85,6 +85,9 @@ export const createParentLink = mutation({
       receivesNotifications: v.boolean(),
     })),
     type: v.string(),
+    mobileNumber: v.optional(v.string()),
+    secondParentEmail: v.optional(v.string()),
+    secondParentMobileNumber: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -111,6 +114,9 @@ export const createParentLink = mutation({
         canViewActivity: true,
         receivesNotifications: true,
       },
+      mobileNumber: args.mobileNumber,
+      secondParentEmail: args.secondParentEmail,
+      secondParentMobileNumber: args.secondParentMobileNumber,
       createdAt: now,
     });
 

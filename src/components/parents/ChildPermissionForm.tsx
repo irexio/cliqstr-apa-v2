@@ -187,6 +187,8 @@ export default function ChildPermissionForm({
         redAlertAccepted: mode === 'create' ? redAlertAccepted : undefined,
         silentMonitoring,
         secondParentEmail: secondParentEmail.trim() || undefined,
+        parentMobileNumber: parentMobileNumber.trim() || undefined,
+        secondParentMobileNumber: secondParentMobileNumber.trim() || undefined,
         permissions,
       };
 
