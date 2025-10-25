@@ -27,8 +27,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'cliqId is required' }, { status: 400 });
     }
 
+    // Validate cliqId format
+    if (typeof cliqId !== 'string' || cliqId.length === 0) {
+      console.error('[ACTIVITIES_LIST] Invalid cliqId format:', cliqId);
+      return NextResponse.json({ error: 'Invalid cliq ID format' }, { status: 400 });
+    }
+
     const activities = await convexHttp.query(api.activities.listByCliq, {
-      cliqId: cliqId as any,
+      cliqId: cliqId as any, // cliqId comes as string, Convex validates it
       from,
       to,
       userId: session.userId as any,

@@ -44,9 +44,15 @@ export async function POST(req: NextRequest) {
     console.log(`[ACTIVITIES_CREATE] User ${session.userId} creating activity in cliq ${cliqId}`);
     console.log(`[ACTIVITIES_CREATE] Activity: title="${title}", startAt=${startAt}, endAt=${endAt}, location="${location}"`);
 
+    // Validate cliqId is a proper Convex ID (should be non-empty string)
+    if (!cliqId || typeof cliqId !== 'string' || cliqId.length === 0) {
+      console.error('[ACTIVITIES_CREATE] Invalid cliqId:', cliqId);
+      return NextResponse.json({ error: 'Invalid cliq ID' }, { status: 400 });
+    }
+
     // Create activity via Convex
     const result = await convexHttp.mutation(api.activities.createActivity, {
-      cliqId: cliqId as any,
+      cliqId: cliqId as any, // cliqId comes as string from API, Convex will validate it's proper ID format
       title,
       description,
       startAt,
