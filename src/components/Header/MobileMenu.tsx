@@ -55,11 +55,11 @@ export function MobileMenu({
     <div className="md:hidden absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-lg z-50">
       <nav className="flex flex-col px-4 py-4 text-sm font-medium text-[#202020]">
         <Link
-          href="/explore"
+          href="/help"
           className="block hover:text-black transition py-3 border-b border-gray-100"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          Explore Public Cliqs
+          Get Help
         </Link>
         <Link
           href="/how-it-works"

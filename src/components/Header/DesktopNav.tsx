@@ -13,8 +13,8 @@ export function DesktopNav({ isLoggedIn, isApproved }: DesktopNavProps) {
   
   return (
     <nav className="flex items-center gap-6 text-sm font-medium text-[#202020]">
-      <Link href="/explore" className="text-gray-700 hover:text-black transition">
-        Explore Public Cliqs
+      <Link href="/help" className="text-gray-700 hover:text-black transition">
+        Get Help
       </Link>
       <Link href="/how-it-works" className="text-gray-700 hover:text-black transition">
         How It Works

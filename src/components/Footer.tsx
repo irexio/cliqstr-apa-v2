@@ -39,6 +39,7 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Pages</h3>
             <ul className="space-y-2 text-sm text-neutral-300">
+              <li><Link href="/help" className="hover:text-white transition">Lost Your Approval Link?</Link></li>
               <li><Link href="/explore" className="hover:text-white transition">Explore Public Cliqs</Link></li>
               <li><Link href="/how-it-works" className="hover:text-white transition">How It Works</Link></li>
               <li><Link href="/about" className="hover:text-white transition">About</Link></li>
