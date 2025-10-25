@@ -354,6 +354,11 @@ export default function ChoosePlanForm() {
       <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
         <p className="text-sm text-yellow-800">{TESTING_NOTE}</p>
       </div>
+
+      {/* Clear Instruction */}
+      <div className="mb-8 p-4 bg-black text-white rounded-lg text-center">
+        <p className="text-base font-semibold">👇 Click the plan below to select and confirm</p>
+      </div>
       
       <form onSubmit={handleSubmit} className="w-full">
       
@@ -369,7 +374,6 @@ export default function ChoosePlanForm() {
         {PLANS.map((plan) => (
           <div key={plan.key} className="relative w-full max-w-md">
             <BaseCard
-              onClick={() => setSelectedPlan(plan.key)}
               className={cn(
                 'h-full transition-all hover:translate-y-[-2px]',
                 selectedPlan === plan.key && 'ring-2 ring-black',
@@ -397,29 +401,27 @@ export default function ChoosePlanForm() {
                 ))}
               </ul>
               <button
-                type="button"
-                onClick={() => setSelectedPlan(plan.key)}
+                type="submit"
+                disabled={status === 'loading'}
+                onClick={(e) => {
+                  setSelectedPlan(plan.key);
+                  // Submit the form immediately after selecting
+                  setTimeout(() => {
+                    e.currentTarget.closest('form')?.dispatchEvent(new Event('submit', { bubbles: true }));
+                  }, 0);
+                }}
                 className={cn(
-                  'w-full mt-auto py-2.5 sm:py-3 rounded transition-colors text-sm sm:text-base',
-                  'bg-black text-white hover:bg-gray-800',
-                  selectedPlan === plan.key && 'bg-black',
-                  selectedPlan !== plan.key && 'bg-gray-800'
+                  'w-full mt-auto py-2.5 sm:py-3 rounded transition-colors text-sm sm:text-base font-medium',
+                  'bg-black text-white hover:bg-gray-800 disabled:opacity-70',
+                  status === 'loading' && 'opacity-70 cursor-not-allowed'
                 )}
               >
-                Choose Plan
+                {status === 'loading' ? 'Processing...' : 'Choose Plan'}
               </button>
             </BaseCard>
           </div>
         ))}
       </div>
-
-      <button
-        type="submit"
-        disabled={status === 'loading'}
-        className="w-full max-w-md mx-auto block py-3 px-6 rounded bg-black text-white hover:bg-gray-800 disabled:opacity-70 transition-colors text-sm sm:text-base font-medium"
-      >
-        {status === 'loading' ? 'Processing...' : 'Confirm Selection'}
-      </button>
 
       {message && status === 'success' && (
         <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded text-center">
