@@ -64,6 +64,7 @@
     "@types/classnames": "^2.3.0",
     "@uploadthing/react": "^7.3.2",
     "bcryptjs": "^3.0.2",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",

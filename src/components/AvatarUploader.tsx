@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { UploadButton } from '@/lib/uploadthing-client';
+import { useState, useRef } from 'react';
+import imageCompression from 'browser-image-compression';
+import { uploadFiles } from '@/lib/uploadthing-client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface AvatarUploaderProps {
@@ -18,43 +19,60 @@ export default function AvatarUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const displayImage = uploadedImage || currentImage;
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-  const handleUploadSuccess = async (res: any[]) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
     try {
-      const uploadedUrl = res[0]?.url;
-      if (!uploadedUrl) {
+      setIsUploading(true);
+      const file = files[0];
+
+      // Auto-compress image
+      const originalSizeMB = (file.size / 1024 / 1024).toFixed(2);
+      console.log(`Original file size: ${originalSizeMB}MB`);
+      
+      const compressedBlob = await imageCompression(file, {
+        maxSizeMB: 0.8, // Keep well under 1MB limit
+        maxWidthOrHeight: 400, // Ideal profile photo size
+        useWebWorker: true,
+      });
+
+      const compressedSizeMB = (compressedBlob.size / 1024 / 1024).toFixed(2);
+      console.log(`Compressed file size: ${compressedSizeMB}MB`);
+
+      // Create a File from the compressed blob
+      const compressedFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
+
+      // Upload using uploadthing hook
+      const response = await uploadFiles('avatar', {
+        files: [compressedFile],
+      });
+
+      if (response && response[0]?.url) {
+        setUploadedImage(response[0].url);
+        setMessage({ type: 'success', text: 'Avatar uploaded! Save the form to apply changes.' });
+        onImageChange?.(response[0].url);
+        setTimeout(() => setMessage(null), 5000);
+      } else {
         throw new Error('No URL returned from upload');
       }
-
-      setUploadedImage(uploadedUrl);
-      setMessage({ type: 'success', text: 'Avatar uploaded! Save the form to apply changes.' });
-      
-      // Notify parent component of the new image URL
-      onImageChange?.(uploadedUrl);
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => setMessage(null), 5000);
     } catch (error: any) {
-      console.error('Avatar upload error:', error);
+      console.error('Upload error:', error);
       setMessage({ type: 'error', text: error.message || 'Failed to upload avatar' });
-      
-      // Clear error message after 5 seconds
       setTimeout(() => setMessage(null), 5000);
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleUploadError = (error: Error) => {
-    console.error('Upload error:', error);
-    setMessage({ type: 'error', text: 'Upload failed. Please try again.' });
-    setIsUploading(false);
-    
-    // Clear error message after 5 seconds
-    setTimeout(() => setMessage(null), 5000);
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -71,40 +89,39 @@ export default function AvatarUploader({
         </div>
 
         {/* Description Text */}
-        <p className="text-xs text-gray-500 mb-4">Ideal size: 400 x 400 pixels (square image works best)</p>
+        <p className="text-xs text-gray-500 mb-4">Any image size works—we'll automatically optimize it for you</p>
 
-        {/* Upload Button */}
+        {/* Hidden File Input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
+        {/* Custom Upload Button */}
         <div className="flex justify-center mb-4">
-          <div className="!bg-black [&>button]:!bg-black [&>button]:hover:!bg-gray-800 [&>button]:!text-white [&>button]:!px-6 [&>button]:!py-3 [&>button]:!rounded-lg [&>button]:!text-sm [&>button]:!font-medium [&>button]:!transition-colors">
-            <UploadButton
-              endpoint="avatar"
-              config={{ mode: 'auto' }}
-              onClientUploadComplete={handleUploadSuccess}
-              onUploadError={handleUploadError}
-              onUploadBegin={() => {
-                setIsUploading(true);
-                setMessage(null);
-              }}
-              appearance={{
-                button: "!bg-black hover:!bg-gray-800 !text-white !px-6 !py-3 !rounded-lg !text-sm !font-medium !transition-colors",
-                allowedContent: "!text-xs !text-gray-500 !mt-2"
-              }}
-              content={{
-                button: isUploading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    Uploading...
-                  </div>
-                ) : 'Select Profile Photo'
-              }}
-            />
-          </div>
+          <button
+            onClick={triggerFileInput}
+            disabled={isUploading}
+            className="bg-black hover:bg-gray-800 disabled:opacity-70 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          >
+            {isUploading ? (
+              <>
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                Uploading...
+              </>
+            ) : (
+              'Select Profile Photo'
+            )}
+          </button>
         </div>
 
         {/* Loading State */}
         {isUploading && (
           <div className="mb-4 text-sm text-gray-600 font-medium bg-gray-50 p-3 rounded-lg border border-gray-200">
-            📷 Uploading avatar...
+            📷 Optimizing and uploading avatar...
           </div>
         )}
 
@@ -120,7 +137,7 @@ export default function AvatarUploader({
         )}
 
         <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border">
-          📝 JPG or PNG files only, max 1MB. Square images work best
+          JPG or PNG files work best. Any file size is fine—large photos will be automatically compressed.
         </p>
       </div>
     </div>
