@@ -112,16 +112,22 @@ export const createActivity = mutation({
     recurrenceRule: v.optional(v.string()), // "FREQ=WEEKLY;COUNT=4", etc.
   },
   handler: async (ctx, args) => {
-    // Verify user is member of cliq
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_cliq", (q: any) =>
-        q.eq("userId", args.createdByUserId).eq("cliqId", args.cliqId)
-      )
-      .first();
+    // Verify user is member of cliq - simplified query
+    try {
+      const memberships = await ctx.db
+        .query("memberships")
+        .collect();
+      
+      const membership = memberships.find(
+        (m: any) => m.userId === args.createdByUserId && m.cliqId === args.cliqId
+      );
 
-    if (!membership) {
-      throw new Error("User is not a member of this cliq");
+      if (!membership) {
+        throw new Error(`User ${args.createdByUserId} is not a member of cliq ${args.cliqId}`);
+      }
+    } catch (membershipError: any) {
+      console.error('[ACTIVITIES] Membership check failed:', membershipError?.message);
+      throw membershipError;
     }
 
     // Check if creator is a child and apply PHQ settings
