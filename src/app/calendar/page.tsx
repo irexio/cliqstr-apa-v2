@@ -205,7 +205,7 @@ export default function CalendarPage() {
       });
 
       // Small delay to allow Convex to sync
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Refresh activities list using URL cliqId
       if (urlCliqId) {

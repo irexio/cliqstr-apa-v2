@@ -19,6 +19,7 @@ const createActivitySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
   try {
     console.log('[ACTIVITIES_CREATE] Starting request...');
     const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
@@ -28,10 +29,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('[ACTIVITIES_CREATE] Session OK, userId:', session.userId);
+    console.log('[ACTIVITIES_CREATE] Session OK, userId:', session.userId, `(+${Date.now() - startTime}ms)`);
     
     const body = await req.json();
-    console.log('[ACTIVITIES_CREATE] Request body:', JSON.stringify(body, null, 2));
+    console.log('[ACTIVITIES_CREATE] Request body received', `(+${Date.now() - startTime}ms)`);
     
     const parsed = createActivitySchema.safeParse(body);
 
@@ -45,8 +46,7 @@ export async function POST(req: NextRequest) {
 
     const { cliqId, title, description, startAt, endAt, timezone, location, recurrenceRule } = parsed.data;
 
-    console.log(`[ACTIVITIES_CREATE] User ${session.userId} creating activity in cliq ${cliqId}`);
-    console.log(`[ACTIVITIES_CREATE] Activity: title="${title}", startAt=${startAt}, endAt=${endAt}, location="${location}"`);
+    console.log(`[ACTIVITIES_CREATE] Validation passed, calling Convex`, `(+${Date.now() - startTime}ms)`);
 
     // Validate cliqId is a proper Convex ID (should be non-empty string)
     if (!cliqId || typeof cliqId !== 'string' || cliqId.length === 0) {
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create activity via Convex
-    console.log('[ACTIVITIES_CREATE] Calling Convex mutation...');
+    console.log('[ACTIVITIES_CREATE] Calling Convex mutation...', `(+${Date.now() - startTime}ms)`);
     const result = await convexHttp.mutation(api.activities.createActivity, {
       cliqId: cliqId as any,
       title,
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       recurrenceRule,
     });
 
-    console.log(`[ACTIVITIES_CREATE] Activity created successfully:`, JSON.stringify(result, null, 2));
+    console.log(`[ACTIVITIES_CREATE] Activity created successfully`, `(Total: ${Date.now() - startTime}ms)`, JSON.stringify(result, null, 2));
 
     return NextResponse.json(result);
   } catch (error: any) {
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
       message: error?.message,
       stack: error?.stack,
       details: error?.data || error,
+      totalTime: `${Date.now() - startTime}ms`,
     });
     return NextResponse.json(
       { error: error?.message || 'Failed to create activity' },
