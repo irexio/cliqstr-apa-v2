@@ -146,38 +146,46 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
         </div>
       ) : (
         <>
-          {/* Temporary: Show both layouts for debugging */}
-          {/* Mobile: Carousel */}
-          <div className="border rounded-lg bg-white shadow-sm h-48 flex items-center justify-center mb-6">
-            {carouselItems.length ? (
-              <AnnouncementsCarousel 
-                items={carouselItems} 
-                cliqOwnerId={cliqOwnerId}
-                currentUserId={user?.id}
-              />
-            ) : (
-              <p className="text-gray-500">No carousel items</p>
-            )}
+          {/* Mobile: Carousel (visible on mobile only) */}
+          <div className="md:hidden">
+            <div className="border rounded-lg bg-white shadow-sm h-48 flex items-center justify-center">
+              {carouselItems.length ? (
+                <AnnouncementsCarousel 
+                  items={carouselItems} 
+                  cliqOwnerId={cliqOwnerId}
+                  currentUserId={user?.id}
+                />
+              ) : (
+                <p className="text-gray-500">No carousel items</p>
+              )}
+            </div>
+            <div className="text-center mt-3">
+              <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
+                View full calendar →
+              </Link>
+            </div>
           </div>
 
-          {/* Desktop: Stacked List */}
-          <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6 mb-6">
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600 mb-4">{items.length} events in the next 30 days</p>
-              {items.slice(0, 5).map((item) => (
-                <div key={item.id} className="border-l-4 border-purple-400 pl-4 py-2">
-                  <p className="font-medium text-gray-900">{item.title}</p>
-                  <p className="text-xs text-gray-500 mt-1">{item.content}</p>
-                </div>
-              ))}
-              {items.length > 5 && (
-                <Link 
-                  href={`/calendar?cliqId=${cliqId}`} 
-                  className="block text-center text-sm font-medium text-black hover:text-gray-700 underline mt-4 pt-2 border-t"
-                >
-                  View all {items.length} events →
-                </Link>
-              )}
+          {/* Desktop: Stacked List (visible on desktop only) */}
+          <div className="hidden md:block">
+            <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6">
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600 mb-4">{items.length} events in the next 30 days</p>
+                {items.slice(0, 5).map((item) => (
+                  <div key={item.id} className="border-l-4 border-purple-400 pl-4 py-2">
+                    <p className="font-medium text-gray-900">{item.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">{item.content}</p>
+                  </div>
+                ))}
+                {items.length > 5 && (
+                  <Link 
+                    href={`/calendar?cliqId=${cliqId}`} 
+                    className="block text-center text-sm font-medium text-black hover:text-gray-700 underline mt-4 pt-2 border-t"
+                  >
+                    View all {items.length} events →
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </>
