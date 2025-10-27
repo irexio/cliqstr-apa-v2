@@ -189,7 +189,14 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
     );
   }
 
+  console.log('[DEBUG] CliqAnnouncementsSection mounted - visibleItems:', visibleItems.length, visibleItems);
+  console.log('[DEBUG] carouselItems:', carouselItems.length, carouselItems);
+  console.log('[DEBUG] cliqId:', cliqId);
+  console.log('[DEBUG] user:', user?.id);
+  console.log('[DEBUG] cliqOwnerId:', cliqOwnerId);
+
   if (visibleItems.length === 0) {
+    console.log('[DEBUG] No visible items - returning null');
     return null;
   }
 
