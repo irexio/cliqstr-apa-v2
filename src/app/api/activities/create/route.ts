@@ -20,19 +20,23 @@ const createActivitySchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[ACTIVITIES_CREATE] Starting request...');
     const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
 
     if (!session.userId) {
+      console.error('[ACTIVITIES_CREATE] No session userId');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('[ACTIVITIES_CREATE] Session OK, userId:', session.userId);
+    
     const body = await req.json();
-    console.log('[ACTIVITIES_CREATE] Request body:', body);
+    console.log('[ACTIVITIES_CREATE] Request body:', JSON.stringify(body, null, 2));
     
     const parsed = createActivitySchema.safeParse(body);
 
     if (!parsed.success) {
-      console.error('[ACTIVITIES_CREATE] Validation errors:', parsed.error.errors);
+      console.error('[ACTIVITIES_CREATE] Validation failed:', JSON.stringify(parsed.error.errors, null, 2));
       return NextResponse.json(
         { error: parsed.error.errors[0]?.message || 'Invalid request' },
         { status: 400 }
@@ -51,8 +55,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Create activity via Convex
+    console.log('[ACTIVITIES_CREATE] Calling Convex mutation...');
     const result = await convexHttp.mutation(api.activities.createActivity, {
-      cliqId: cliqId as any, // cliqId comes as string from API, Convex will validate it's proper ID format
+      cliqId: cliqId as any,
       title,
       description,
       startAt,
@@ -63,7 +68,7 @@ export async function POST(req: NextRequest) {
       recurrenceRule,
     });
 
-    console.log(`[ACTIVITIES_CREATE] Activity created:`, result);
+    console.log(`[ACTIVITIES_CREATE] Activity created successfully:`, JSON.stringify(result, null, 2));
 
     return NextResponse.json(result);
   } catch (error: any) {
