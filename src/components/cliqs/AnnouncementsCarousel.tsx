@@ -35,8 +35,13 @@ export default function AnnouncementsCarousel({ items }: { items: AnnouncementIt
     }
   }
 
+  console.log("AnnouncementsCarousel items:", items)
+
   return (
-    <div className="overflow-hidden border rounded-lg shadow-sm bg-white" ref={emblaRef}>
+    <div
+      ref={emblaRef}
+      className="overflow-hidden border rounded-lg shadow-sm bg-white h-48"
+    >
       <div className="flex">
         {items.map((item) => (
           <div className="flex-[0_0_100%] p-4 sm:p-6 text-center" key={item.id}>
