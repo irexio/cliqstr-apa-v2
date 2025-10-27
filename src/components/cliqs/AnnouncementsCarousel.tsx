@@ -82,7 +82,7 @@ export default function AnnouncementsCarousel({ items: initialItems, cliqOwnerId
   return (
     <div
       ref={emblaRef}
-      className="overflow-hidden border rounded-lg shadow-sm bg-white h-48"
+      className="overflow-hidden w-full"
     >
       <div className="flex">
         {items.map((item) => (
