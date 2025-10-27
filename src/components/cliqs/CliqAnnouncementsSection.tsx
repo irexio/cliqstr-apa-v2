@@ -125,9 +125,9 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
     title: item.title,
     content: item.content,
     startAt: item.timestamp,
-    // Add other properties if needed for carousel, e.g., rsvps, createdByUserId
-    // For now, we'll just map the basic fields.
   }));
+
+  console.log('[DEBUG] CliqAnnouncementsSection render - items:', items.length, 'carouselItems:', carouselItems.length);
 
   return (
     <div className="mb-6">
@@ -146,22 +146,22 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
         </div>
       ) : (
         <>
+          {/* Temporary: Show both layouts for debugging */}
           {/* Mobile: Carousel */}
-          <div className="md:hidden">
-            <AnnouncementsCarousel 
-              items={carouselItems} 
-              cliqOwnerId={cliqOwnerId}
-              currentUserId={user?.id}
-            />
-            <div className="text-center mt-3">
-              <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
-                View full calendar →
-              </Link>
-            </div>
+          <div className="border rounded-lg bg-white shadow-sm h-48 flex items-center justify-center mb-6">
+            {carouselItems.length ? (
+              <AnnouncementsCarousel 
+                items={carouselItems} 
+                cliqOwnerId={cliqOwnerId}
+                currentUserId={user?.id}
+              />
+            ) : (
+              <p className="text-gray-500">No carousel items</p>
+            )}
           </div>
 
           {/* Desktop: Stacked List */}
-          <div className="hidden md:block border rounded-lg bg-white shadow-sm p-4 sm:p-6">
+          <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6 mb-6">
             <div className="space-y-3">
               <p className="text-sm text-gray-600 mb-4">{items.length} events in the next 30 days</p>
               {items.slice(0, 5).map((item) => (
