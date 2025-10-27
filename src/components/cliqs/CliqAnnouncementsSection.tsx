@@ -61,10 +61,14 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
   const [loading, setLoading] = useState(true);
   const [dismissedNotices, setDismissedNotices] = useState<Set<string>>(new Set());
 
+  console.log('[COMPONENT] CliqAnnouncementsSection MOUNTED - cliqId:', cliqId, 'user:', user?.id);
+
   useEffect(() => {
+    console.log('[EFFECT] Starting fetch - cliqId:', cliqId);
     const fetchData = async () => {
       try {
         setLoading(true);
+        console.log('[FETCH] Beginning fetch operation');
 
         // Fetch notices
         let notices: Notice[] = [];
