@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AnnouncementsCarousel from './AnnouncementsCarousel';
+import { useAuth } from '@/lib/auth/useAuth';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { Id } from '../../../convex/_generated/dataModel';
 
 interface Notice {
   id: string;
@@ -20,6 +24,7 @@ interface Activity {
   locationVisibility?: string;
   requiresParentApproval?: boolean;
   rsvps?: Record<string, string>;
+  createdByUserId?: string;
 }
 
 interface AnnouncementItem {
@@ -38,16 +43,20 @@ interface CarouselItem {
   startAt?: number;
   location?: string;
   rsvps?: Record<string, string>;
+  createdByUserId?: string;
+  canDelete?: boolean;
 }
 
 interface CliqAnnouncementsSectionProps {
   cliqId: string;
+  cliqOwnerId?: string;
 }
 
 // Configurable: Show events up to N days in the future
 const DAYS_AHEAD = 30;
 
-export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSectionProps) {
+export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAnnouncementsSectionProps) {
+  const { user } = useAuth();
   const [items, setItems] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dismissedNotices, setDismissedNotices] = useState<Set<string>>(new Set());
@@ -170,6 +179,8 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
       startAt: item.metadata?.startAt,
       location: item.metadata?.location,
       rsvps: item.metadata?.rsvps,
+      createdByUserId: item.metadata?.createdByUserId,
+      canDelete: user?.id ? (user.id === item.metadata?.createdByUserId || user.id === cliqOwnerId) : false,
     }));
 
   if (loading) {
@@ -189,7 +200,11 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
       {/* Mobile: Show Carousel */}
       {carouselItems.length > 0 && (
         <div className="md:hidden mb-4">
-          <AnnouncementsCarousel items={carouselItems} />
+          <AnnouncementsCarousel 
+            items={carouselItems} 
+            cliqOwnerId={cliqOwnerId}
+            currentUserId={user?.id}
+          />
           <div className="text-center mt-3">
             <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline">
               View full calendar →

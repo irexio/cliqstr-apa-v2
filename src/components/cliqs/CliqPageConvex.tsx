@@ -103,7 +103,7 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Announcements & Events Section (merged: notices + upcoming activities) */}
-        <CliqAnnouncementsSection cliqId={cliqId} />
+        <CliqAnnouncementsSection cliqId={cliqId} cliqOwnerId={cliq.ownerId} />
         
         {/* Cliq Profile Content */}
         <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />
