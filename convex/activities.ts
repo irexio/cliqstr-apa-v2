@@ -325,10 +325,10 @@ export const deleteActivity = mutation({
       throw new Error("Only creator, parent, or cliq owner can delete");
     }
 
-    const now = Date.now();
-    await ctx.db.patch(args.activityId, { deletedAt: now, updatedAt: now });
+    // Hard delete the activity
+    await ctx.db.delete(args.activityId);
 
-    console.log(`[ACTIVITIES_DELETE] Activity ${args.activityId} deleted by user ${args.userId}`);
+    console.log(`[ACTIVITIES_DELETE] Activity ${args.activityId} permanently deleted by user ${args.userId}`);
     return { success: true };
   },
 });

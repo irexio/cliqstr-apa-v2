@@ -144,12 +144,21 @@ export default function CalendarPage() {
         credentials: 'include',
       });
 
+      console.log('[CALENDAR] Fetch response status:', response.status);
+
       if (response.status === 401 || response.status === 403) {
+        console.error('[CALENDAR] Auth error:', response.status);
         router.push('/sign-in');
         return;
       }
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CALENDAR] Fetch failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
         throw new Error(`Failed to fetch activities: ${response.status}`);
       }
 

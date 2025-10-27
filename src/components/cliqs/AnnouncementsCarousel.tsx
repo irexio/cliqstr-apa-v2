@@ -53,15 +53,20 @@ export default function AnnouncementsCarousel({ items: initialItems, cliqOwnerId
       })
 
       if (!res.ok) {
-        console.error('Delete failed:', res.statusText)
+        const errorData = await res.json().catch(() => ({}))
+        console.error('Delete failed:', res.status, res.statusText, errorData)
+        alert(`Delete failed: ${errorData.error || res.statusText}`)
         return
       }
 
+      const result = await res.json()
+      console.log(`[CAROUSEL_DELETE] Activity ${activityId} deleted successfully:`, result)
+
       // Optimistically remove the deleted card
       setItems((prev) => prev.filter((i) => i.id !== activityId))
-      console.log(`[CAROUSEL_DELETE] Activity ${activityId} deleted successfully`)
     } catch (err) {
       console.error('Delete error:', err)
+      alert(`Delete error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setDeleteLoading(null)
     }
