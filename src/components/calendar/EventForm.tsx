@@ -56,19 +56,24 @@ export default function EventForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('[EventForm handleSubmit] Called with:', { cliqId, title, date });
+    
     // Validate required fields
     if (!cliqId) {
       console.error('[EventForm] Missing cliqId');
+      alert('Error: No cliqId provided to form');
       return;
     }
     
     if (!title.trim()) {
       console.error('[EventForm] Missing title');
+      alert('Error: Please enter a title');
       return;
     }
     
     if (!date) {
       console.error('[EventForm] Missing date');
+      alert('Error: Please select a date');
       return;
     }
 
@@ -98,8 +103,10 @@ export default function EventForm({
       console.log('[EventForm] Submitting:', formData);
       
       await onSubmit(formData);
+      console.log('[EventForm] onSubmit completed successfully');
     } catch (error) {
       console.error('[EventForm] Submission error:', error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
