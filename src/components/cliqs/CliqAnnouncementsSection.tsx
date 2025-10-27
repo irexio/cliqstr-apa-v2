@@ -130,8 +130,11 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
   console.log('[DEBUG] CliqAnnouncementsSection render - items:', items.length, 'carouselItems:', carouselItems.length);
 
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-4">📣 Updates & Events</h3>
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-6 px-1">
+        <span className="text-xl sm:text-2xl flex-shrink-0">📣</span>
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Updates & Events</h3>
+      </div>
       
       {loading ? (
         <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6 flex items-center justify-center h-48">
@@ -148,20 +151,22 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
         <>
           {/* Mobile: Carousel (visible on mobile only) */}
           <div className="md:hidden">
-            <div className="border rounded-lg bg-white shadow-sm h-48 flex items-center justify-center">
-              {carouselItems.length ? (
-                <AnnouncementsCarousel 
-                  items={carouselItems} 
-                  cliqOwnerId={cliqOwnerId}
-                  currentUserId={user?.id}
-                />
-              ) : (
-                <p className="text-gray-500">No carousel items</p>
-              )}
+            <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
+              <div className="h-48 flex items-center justify-center">
+                {carouselItems.length ? (
+                  <AnnouncementsCarousel 
+                    items={carouselItems} 
+                    cliqOwnerId={cliqOwnerId}
+                    currentUserId={user?.id}
+                  />
+                ) : (
+                  <p className="text-gray-500">No events available</p>
+                )}
+              </div>
             </div>
-            <div className="text-center mt-3">
+            <div className="text-center mt-4">
               <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
-                View full calendar →
+                View all events →
               </Link>
             </div>
           </div>
