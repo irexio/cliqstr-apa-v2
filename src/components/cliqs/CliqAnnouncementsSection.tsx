@@ -58,6 +58,7 @@ const DAYS_AHEAD = 30;
 export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAnnouncementsSectionProps) {
   const [items, setItems] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   console.log('[COMPONENT] CliqAnnouncementsSection MOUNTED - cliqId:', cliqId);
 
@@ -118,42 +119,69 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
     fetchData();
   }, [cliqId]);
 
+  // Prepare items for carousel
+  const carouselItems: CarouselItem[] = items.map(item => ({
+    id: item.id,
+    title: item.title,
+    content: item.content,
+    startAt: item.timestamp,
+    // Add other properties if needed for carousel, e.g., rsvps, createdByUserId
+    // For now, we'll just map the basic fields.
+  }));
+
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-4">📣 Updates & Events</h3>
       
-      <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6">
-        {loading ? (
-          <div className="flex items-center justify-center h-24">
-            <p className="text-gray-600">Loading events…</p>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-gray-700 font-medium mb-3">No upcoming activities yet</p>
-            <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
-              View full calendar →
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600 mb-4">{items.length} events in the next 30 days</p>
-            {items.slice(0, 3).map((item) => (
-              <div key={item.id} className="border-l-4 border-purple-400 pl-4 py-2">
-                <p className="font-medium text-gray-900">{item.title}</p>
-                <p className="text-xs text-gray-500 mt-1">{item.content}</p>
-              </div>
-            ))}
-            {items.length > 3 && (
-              <Link 
-                href={`/calendar?cliqId=${cliqId}`} 
-                className="block text-center text-sm font-medium text-black hover:text-gray-700 underline mt-4 pt-2 border-t"
-              >
-                View all {items.length} events →
+      {loading ? (
+        <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6 flex items-center justify-center h-48">
+          <p className="text-gray-600">Loading events…</p>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6 flex flex-col items-center justify-center py-8 text-center">
+          <p className="text-gray-700 font-medium mb-3">No upcoming activities yet</p>
+          <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
+            View full calendar →
+          </Link>
+        </div>
+      ) : (
+        <>
+          {/* Mobile: Carousel */}
+          <div className="md:hidden">
+            <AnnouncementsCarousel 
+              items={carouselItems} 
+              cliqOwnerId={cliqOwnerId}
+              currentUserId={user?.id}
+            />
+            <div className="text-center mt-3">
+              <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
+                View full calendar →
               </Link>
-            )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Desktop: Stacked List */}
+          <div className="hidden md:block border rounded-lg bg-white shadow-sm p-4 sm:p-6">
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600 mb-4">{items.length} events in the next 30 days</p>
+              {items.slice(0, 5).map((item) => (
+                <div key={item.id} className="border-l-4 border-purple-400 pl-4 py-2">
+                  <p className="font-medium text-gray-900">{item.title}</p>
+                  <p className="text-xs text-gray-500 mt-1">{item.content}</p>
+                </div>
+              ))}
+              {items.length > 5 && (
+                <Link 
+                  href={`/calendar?cliqId=${cliqId}`} 
+                  className="block text-center text-sm font-medium text-black hover:text-gray-700 underline mt-4 pt-2 border-t"
+                >
+                  View all {items.length} events →
+                </Link>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
