@@ -94,21 +94,21 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
 
           if (activitiesRes.ok) {
             const activitiesData = await activitiesRes.json();
-            console.log('[ANNOUNCEMENTS] Raw activities from API:', activitiesData.activities?.length || 0, activitiesData.activities);
-            console.log('[ANNOUNCEMENTS] Date range - Now:', new Date(now).toISOString(), 'End:', new Date(rangeEnd).toISOString());
+            console.log('[DEBUG] Announcements API Response:', activitiesData);
+            console.log('[DEBUG] Raw activities from API:', activitiesData.activities?.length || 0);
             
             activities = (activitiesData.activities || [])
               .filter((a: Activity) => {
                 const isInRange = a.startAt >= now && a.startAt <= rangeEnd;
-                if (!isInRange) {
-                  console.log(`[ANNOUNCEMENTS] Activity "${a.title}" excluded - startAt: ${new Date(a.startAt).toISOString()}`);
-                }
+                console.log(`[DEBUG] Activity "${a.title}" - startAt: ${new Date(a.startAt).toISOString()}, inRange: ${isInRange}`);
                 return isInRange;
               })
               .sort((a: Activity, b: Activity) => a.startAt - b.startAt)
-              .slice(0, 10); // Show more for testing
+              .slice(0, 10);
             
-            console.log('[ANNOUNCEMENTS] Retrieved activities after filter:', activities.length, activities);
+            console.log('[DEBUG] Activities after filter:', activities.length, activities);
+          } else {
+            console.error('[DEBUG] API response not OK:', activitiesRes.status, activitiesRes.statusText);
           }
         } catch (err) {
           console.error('[ANNOUNCEMENTS] Failed to fetch activities:', err);
@@ -206,7 +206,7 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
 
       {/* Mobile: Show Carousel */}
       {carouselItems.length > 0 && (
-        <div className="md:hidden mb-4">
+        <div className="mb-4">
           <AnnouncementsCarousel 
             items={carouselItems} 
             cliqOwnerId={cliqOwnerId}
