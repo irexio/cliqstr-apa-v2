@@ -125,6 +125,9 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
     title: item.title,
     content: item.content,
     startAt: item.timestamp,
+    location: item.metadata?.location,
+    rsvps: item.metadata?.rsvps,
+    createdByUserId: item.metadata?.createdByUserId,
   }));
 
   console.log('[DEBUG] CliqAnnouncementsSection render - items:', items.length, 'carouselItems:', carouselItems.length);
