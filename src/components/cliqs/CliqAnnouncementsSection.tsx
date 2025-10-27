@@ -122,18 +122,34 @@ export default function CliqAnnouncementsSection({ cliqId, cliqOwnerId }: CliqAn
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-4">📣 Updates & Events</h3>
       
-      <div className="border rounded-lg bg-white h-48 flex items-center justify-center">
+      <div className="border rounded-lg bg-white shadow-sm p-4 sm:p-6">
         {loading ? (
-          <p className="text-gray-600">Loading events…</p>
+          <div className="flex items-center justify-center h-24">
+            <p className="text-gray-600">Loading events…</p>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <p className="text-gray-700 font-medium mb-3">No upcoming activities yet</p>
+            <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline hover:text-gray-700">
+              View full calendar →
+            </Link>
+          </div>
         ) : (
-          <div className="text-center">
-            <p className="text-gray-700 font-medium">{items.length} events found</p>
-            {items.length > 0 && (
-              <ul className="mt-3 text-sm text-gray-600">
-                {items.slice(0, 3).map((item) => (
-                  <li key={item.id}>{item.title}</li>
-                ))}
-              </ul>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600 mb-4">{items.length} events in the next 30 days</p>
+            {items.slice(0, 3).map((item) => (
+              <div key={item.id} className="border-l-4 border-purple-400 pl-4 py-2">
+                <p className="font-medium text-gray-900">{item.title}</p>
+                <p className="text-xs text-gray-500 mt-1">{item.content}</p>
+              </div>
+            ))}
+            {items.length > 3 && (
+              <Link 
+                href={`/calendar?cliqId=${cliqId}`} 
+                className="block text-center text-sm font-medium text-black hover:text-gray-700 underline mt-4 pt-2 border-t"
+              >
+                View all {items.length} events →
+              </Link>
             )}
           </div>
         )}
