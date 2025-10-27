@@ -69,6 +69,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "convex": "^1.26.2",
+    "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.12.1",
     "iron-session": "^8.0.4",

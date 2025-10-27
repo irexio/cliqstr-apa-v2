@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import AnnouncementsCarousel from './AnnouncementsCarousel';
 
 interface Notice {
   id: string;
@@ -28,6 +29,15 @@ interface AnnouncementItem {
   content: string;
   timestamp: number;
   metadata?: any;
+}
+
+interface CarouselItem {
+  id: string;
+  title: string;
+  content: string;
+  startAt?: number;
+  location?: string;
+  rsvps?: Record<string, string>;
 }
 
 interface CliqAnnouncementsSectionProps {
@@ -150,6 +160,18 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
     (item) => !(item.type === 'notice' && dismissedNotices.has(item.id))
   );
 
+  // Prepare carousel items (activities only)
+  const carouselItems: CarouselItem[] = visibleItems
+    .filter((item) => item.type === 'activity')
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      startAt: item.metadata?.startAt,
+      location: item.metadata?.location,
+      rsvps: item.metadata?.rsvps,
+    }));
+
   if (loading) {
     return (
       <div className="animate-pulse bg-gray-100 h-24 rounded-lg mb-6"></div>
@@ -161,81 +183,96 @@ export default function CliqAnnouncementsSection({ cliqId }: CliqAnnouncementsSe
   }
 
   return (
-    <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
-      <h3 className="text-lg font-semibold text-black mb-4">📣 Updates & Events</h3>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-4">📣 Updates & Events</h3>
 
-      <div className="space-y-3">
-        {visibleItems.map((item) => (
-          <div
-            key={item.id}
-            className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
-              item.type === 'notice'
-                ? 'bg-blue-50 border-blue-100 hover:border-blue-200'
-                : 'bg-white border-gray-100 hover:border-gray-300'
-            }`}
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-medium text-black truncate">{item.title}</p>
-                {item.type === 'activity' && item.metadata?.requiresParentApproval && (
-                  <span className="inline-block px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded whitespace-nowrap">
-                    Pending
-                  </span>
+      {/* Mobile: Show Carousel */}
+      {carouselItems.length > 0 && (
+        <div className="md:hidden mb-4">
+          <AnnouncementsCarousel items={carouselItems} />
+          <div className="text-center mt-3">
+            <Link href={`/calendar?cliqId=${cliqId}`} className="text-sm font-medium text-black underline">
+              View full calendar →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop/Tablet: Show Stacked List */}
+      <div className="hidden md:block bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 sm:p-6">
+        <div className="space-y-3">
+          {visibleItems.map((item) => (
+            <div
+              key={item.id}
+              className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                item.type === 'notice'
+                  ? 'bg-blue-50 border-blue-100 hover:border-blue-200'
+                  : 'bg-white border-gray-100 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-black truncate">{item.title}</p>
+                  {item.type === 'activity' && item.metadata?.requiresParentApproval && (
+                    <span className="inline-block px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded whitespace-nowrap">
+                      Pending
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-sm text-gray-600 mt-1">{item.content}</p>
+
+                {item.type === 'activity' && item.metadata?.rsvps && Object.keys(item.metadata.rsvps).length > 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {Object.keys(item.metadata.rsvps).length}{' '}
+                    {Object.keys(item.metadata.rsvps).length === 1 ? 'person' : 'people'} going
+                  </p>
                 )}
               </div>
 
-              <p className="text-sm text-gray-600 mt-1">{item.content}</p>
+              {item.type === 'notice' && (
+                <button
+                  onClick={() => dismissNotice(item.id)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-white/50 flex-shrink-0"
+                  title="Dismiss"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              )}
 
-              {item.type === 'activity' && item.metadata?.rsvps && Object.keys(item.metadata.rsvps).length > 0 && (
-                <p className="text-xs text-gray-500 mt-2">
-                  {Object.keys(item.metadata.rsvps).length}{' '}
-                  {Object.keys(item.metadata.rsvps).length === 1 ? 'person' : 'people'} going
-                </p>
+              {item.type === 'activity' && (
+                <Link
+                  href={`/calendar?cliqId=${cliqId}#activity-${item.id}`}
+                  className="text-xs font-medium text-black hover:text-gray-700 underline whitespace-nowrap flex-shrink-0"
+                >
+                  View
+                </Link>
               )}
             </div>
+          ))}
+        </div>
 
-            {item.type === 'notice' && (
-              <button
-                onClick={() => dismissNotice(item.id)}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-white/50 flex-shrink-0"
-                title="Dismiss"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            )}
-
-            {item.type === 'activity' && (
-              <Link
-                href={`/calendar?cliqId=${cliqId}#activity-${item.id}`}
-                className="text-xs font-medium text-black hover:text-gray-700 underline whitespace-nowrap flex-shrink-0"
-              >
-                View
-              </Link>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="text-center mt-4 pt-4 border-t border-gray-200">
-        <Link
-          href={`/calendar?cliqId=${cliqId}`}
-          className="text-sm font-medium text-black hover:text-gray-700 underline"
-        >
-          View full calendar →
-        </Link>
+        <div className="text-center mt-4 pt-4 border-t border-gray-200">
+          <Link
+            href={`/calendar?cliqId=${cliqId}`}
+            className="text-sm font-medium text-black hover:text-gray-700 underline"
+          >
+            View full calendar →
+          </Link>
+        </div>
       </div>
     </div>
   );
