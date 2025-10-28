@@ -7,7 +7,7 @@ import CliqProfileContent from '@/components/cliqs/CliqProfileContent';
 import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
-import CliqAnnouncementsSection from '@/components/cliqs/CliqAnnouncementsSection';
+import AnnouncementRotator from '@/components/cliqs/AnnouncementRotator';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
@@ -106,7 +106,7 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
         <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />
         
         {/* Announcements & Events Section (between banner and feed) */}
-        <CliqAnnouncementsSection cliqId={cliqId} cliqOwnerId={cliq.ownerId} />
+        <AnnouncementRotator cliqId={cliqId} />
         
         {/* Post Form */}
         <PostForm cliqId={cliqId} />
