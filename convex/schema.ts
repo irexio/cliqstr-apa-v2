@@ -420,6 +420,8 @@ export default defineSchema({
     .index("by_created_at", ["createdAt"]),
 
   // Cliq Activities - for Calendar tool (offline events, meetups, etc.)
+  // NOTE: "activities" in code = "events" in user documentation and site copy
+  // DO NOT create separate "events" table - use this one for all calendar items
   activities: defineTable({
     cliqId: v.id("cliqs"),
     title: v.string(),
