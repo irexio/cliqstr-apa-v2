@@ -234,6 +234,73 @@ export default function CalendarPage() {
     setSelectedActivity(activity);
   };
 
+  const handleRsvp = async (activityId: string, status: string) => {
+    try {
+      const response = await fetch('/api/activities/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ activityId, status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to RSVP');
+      }
+
+      toast({
+        title: 'Success',
+        description: `RSVP updated to "${status}"`,
+      });
+
+      // Refresh activities
+      if (urlCliqId) {
+        await fetchActivities(urlCliqId);
+      }
+    } catch (error) {
+      console.error('[CALENDAR] RSVP error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to RSVP',
+      });
+    }
+  };
+
+  const handleDelete = async (activityId: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+
+    try {
+      const response = await fetch('/api/activities/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ activityId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete event');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Event deleted successfully',
+      });
+
+      // Refresh activities
+      if (urlCliqId) {
+        await fetchActivities(urlCliqId);
+      }
+      setSelectedActivity(null);
+    } catch (error) {
+      console.error('[CALENDAR] Delete error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete event',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -356,8 +423,36 @@ export default function CalendarPage() {
               endAt={selectedActivity.endAt}
               location={selectedActivity.location}
               locationVisibility={selectedActivity.locationVisibility}
+              rsvps={selectedActivity.rsvps}
+              canDelete={true} // TODO: Check actual permissions (creator, parent, or cliq owner)
               onViewDetails={() => {}}
+              onDelete={() => handleDelete(selectedActivity._id)}
             />
+
+            {/* RSVP Buttons */}
+            <div className="mt-6 space-y-3 border-t pt-4">
+              <p className="text-sm font-medium text-gray-700">Your RSVP:</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => handleRsvp(selectedActivity._id, 'going')}
+                  className="bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 px-3 rounded transition text-sm"
+                >
+                  I'm In
+                </button>
+                <button
+                  onClick={() => handleRsvp(selectedActivity._id, 'maybe')}
+                  className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium py-2 px-3 rounded transition text-sm"
+                >
+                  Maybe
+                </button>
+                <button
+                  onClick={() => handleRsvp(selectedActivity._id, 'raincheck')}
+                  className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-3 rounded transition text-sm"
+                >
+                  Raincheck
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
