@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventCard from '@/components/calendar/EventCard';
 import EventForm, { ActivityFormData } from '@/components/calendar/EventForm';
@@ -28,7 +28,7 @@ interface Cliq {
 
 export default function CalendarPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [mounted, setMounted] = useState(false);
 
   // CRITICAL: cliqId MUST come from URL, read it immediately
   const [urlCliqId, setUrlCliqId] = useState<string | null>(null);
@@ -41,56 +41,33 @@ export default function CalendarPage() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [session, setSession] = useState<any>(null);
 
-  // Check session on mount
+  // On mount, read cliqId from window.location and check session
   useEffect(() => {
-    checkSessionAndFetchActivities();
-  }, []);
-
-  // Read cliqId from URL params immediately - with fallback
-  useEffect(() => {
-    // First try searchParams (should work in most cases)
-    let cliqId = searchParams.get('cliqId');
-    console.log('[CALENDAR] searchParams.get cliqId:', cliqId);
+    setMounted(true);
     
-    // Fallback: read directly from window.location if on client
-    if (!cliqId && typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      cliqId = params.get('cliqId');
-      console.log('[CALENDAR] Fallback from window.location cliqId:', cliqId);
-    }
-    
-    // Second fallback: check window.location.pathname
-    if (!cliqId && typeof window !== 'undefined') {
-      console.log('[CALENDAR] searchParams empty, trying hash and query string directly');
+    // Read cliqId from URL
+    if (typeof window !== 'undefined') {
       const fullUrl = window.location.href;
       console.log('[CALENDAR] Full URL:', fullUrl);
+      
       const match = fullUrl.match(/[?&]cliqId=([^&]+)/);
-      if (match) {
-        cliqId = match[1];
-        console.log('[CALENDAR] Extracted from regex:', cliqId);
+      const cliqId = match ? match[1] : null;
+      
+      console.log('[CALENDAR] Extracted cliqId:', cliqId);
+      setUrlCliqId(cliqId);
+      
+      if (!cliqId) {
+        console.warn('[CALENDAR] No cliqId in URL');
+        setIsLoading(false);
+        return;
       }
+      
+      // Check session and fetch data
+      checkSessionAndFetchActivities(cliqId);
     }
-    
-    console.log('[CALENDAR] Final cliqId to use:', cliqId);
-    console.log('[CALENDAR] Full URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
-    
-    setUrlCliqId(cliqId);
-  }, [searchParams]);
+  }, []);
 
-  // Fetch activities and cliq name whenever URL cliqId changes
-  useEffect(() => {
-    if (urlCliqId) {
-      console.log('[CALENDAR] URL cliqId changed to:', urlCliqId);
-      fetchCliqName(urlCliqId);
-      fetchActivities(urlCliqId);
-    } else {
-      console.warn('[CALENDAR] No cliqId in URL params');
-      setActivities([]);
-      setIsLoading(false);
-    }
-  }, [urlCliqId]);
-
-  const checkSessionAndFetchActivities = async () => {
+  const checkSessionAndFetchActivities = async (cliqId: string) => {
     try {
       setIsLoading(true);
 
@@ -116,6 +93,10 @@ export default function CalendarPage() {
       }
 
       setSession(sessionData.user);
+      
+      // Now fetch the data
+      fetchCliqName(cliqId);
+      fetchActivities(cliqId);
     } catch (error) {
       console.error('[CALENDAR] Error checking session:', error);
       toast({
