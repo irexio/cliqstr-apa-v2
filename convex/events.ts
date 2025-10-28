@@ -95,11 +95,10 @@ function expandRecurrence(
 // ============================================================================
 
 /**
- * Create a new activity (event)
+ * Create a new event
  * Automatically applies PHQ settings for children
- * Auto-posts to feed
  */
-export const createActivity = mutation({
+export const createEvent = mutation({
   args: {
     cliqId: v.id("cliqs"),
     title: v.string(),
@@ -126,11 +125,11 @@ export const createActivity = mutation({
         throw new Error(`User is not a member of this cliq`);
       }
     } catch (membershipError: any) {
-      console.error('[ACTIVITIES] Membership check failed:', membershipError?.message);
+      console.error('[EVENTS] Membership check failed:', membershipError?.message);
       throw membershipError;
     }
 
-    console.log('[ACTIVITIES] Creating activity with args:', {
+    console.log('[EVENTS] Creating event with args:', {
       cliqId: args.cliqId,
       title: args.title,
       createdByUserId: args.createdByUserId,
@@ -152,7 +151,7 @@ export const createActivity = mutation({
       }
     }
 
-    console.log('[ACTIVITIES] PHQ settings applied:', {
+    console.log('[EVENTS] PHQ settings applied:', {
       isChild,
       requiresApproval,
       locationVisibility,
@@ -167,7 +166,7 @@ export const createActivity = mutation({
     const now = Date.now();
     const seriesId = args.recurrenceRule ? crypto.randomUUID() : undefined;
 
-    console.log('[ACTIVITIES] About to insert activity into DB');
+    console.log('[EVENTS] About to insert event into DB');
 
     // If recurrence rule provided, expand into individual instances
     if (args.recurrenceRule) {
@@ -186,7 +185,7 @@ export const createActivity = mutation({
         const rsvpRecord: Record<string, string> = {};
         rsvpRecord[args.createdByUserId.toString()] = "going";
 
-        const activityId = await ctx.db.insert("activities", {
+        const eventId = await ctx.db.insert("events", {
           cliqId: args.cliqId,
           title: args.title,
           description: args.description,
@@ -205,20 +204,17 @@ export const createActivity = mutation({
           updatedAt: now,
         });
 
-        createdIds.push(activityId);
-
-        // NOTE: Activities are NO LONGER auto-posted to feed
-        // They appear only in Calendar/Announcements section to prevent cliqId corruption
+        createdIds.push(eventId);
       }
 
-      return { success: true, activityIds: createdIds, isRecurrence: true };
+      return { success: true, eventIds: createdIds, isRecurrence: true };
     }
 
-    // Single activity
+    // Single event
     const rsvpRecord: Record<string, string> = {};
     rsvpRecord[args.createdByUserId.toString()] = "going";
 
-    const activityId = await ctx.db.insert("activities", {
+    const eventId = await ctx.db.insert("events", {
       cliqId: args.cliqId,
       title: args.title,
       description: args.description,
@@ -235,22 +231,19 @@ export const createActivity = mutation({
       updatedAt: now,
     });
 
-    // NOTE: Activities are NO LONGER auto-posted to feed
-    // They appear only in Calendar/Announcements section to prevent cliqId corruption
+    console.log(`[EVENTS_CREATE] Event ${eventId} created by user ${args.createdByUserId}`);
 
-    console.log(`[ACTIVITIES_CREATE] Activity ${activityId} created by user ${args.createdByUserId}`);
-
-    return { success: true, activityId };
+    return { success: true, eventId };
   },
 });
 
 /**
- * Update an activity (creator or parent/admin only)
+ * Update an event (creator or parent/admin only)
  * If child edited, reset approval status
  */
-export const updateActivity = mutation({
+export const updateEvent = mutation({
   args: {
-    activityId: v.id("activities"),
+    eventId: v.id("events"),
     userId: v.id("users"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
@@ -260,14 +253,14 @@ export const updateActivity = mutation({
     location: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const activity = await ctx.db.get(args.activityId);
-    if (!activity) throw new Error("Activity not found");
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
 
     // Check permissions: creator or parent
-    const isCreator = activity.createdByUserId === args.userId;
+    const isCreator = event.createdByUserId === args.userId;
     const isParent =
-      (await isParentOf(ctx, args.userId, activity.createdByUserId)) ||
-      activity.createdByUserId === args.userId;
+      (await isParentOf(ctx, args.userId, event.createdByUserId)) ||
+      event.createdByUserId === args.userId;
 
     if (!isCreator && !isParent) {
       throw new Error("Only creator or parent can edit");
@@ -292,86 +285,86 @@ export const updateActivity = mutation({
       updates.approvedAt = undefined;
     }
 
-    await ctx.db.patch(args.activityId, updates);
-    return await ctx.db.get(args.activityId);
+    await ctx.db.patch(args.eventId, updates);
+    return await ctx.db.get(args.eventId);
   },
 });
 
 /**
- * Delete an activity (soft delete)
+ * Delete an event (hard delete)
  */
-export const deleteActivity = mutation({
+export const deleteEvent = mutation({
   args: {
-    activityId: v.id("activities"),
+    eventId: v.id("events"),
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const activity = await ctx.db.get(args.activityId);
-    if (!activity) throw new Error("Activity not found");
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
 
     // Check permissions: creator, parent, or cliq owner
-    const isCreator = activity.createdByUserId === args.userId;
+    const isCreator = event.createdByUserId === args.userId;
     const isParent = await isParentOf(
       ctx,
       args.userId,
-      activity.createdByUserId
+      event.createdByUserId
     );
 
     // Check if user is cliq owner
-    const cliq = await ctx.db.get(activity.cliqId);
+    const cliq = await ctx.db.get(event.cliqId);
     const isCliqOwner = cliq && cliq.ownerId === args.userId;
 
     if (!isCreator && !isParent && !isCliqOwner) {
       throw new Error("Only creator, parent, or cliq owner can delete");
     }
 
-    // Hard delete the activity
-    await ctx.db.delete(args.activityId);
+    // Hard delete the event
+    await ctx.db.delete(args.eventId);
 
-    console.log(`[ACTIVITIES_DELETE] Activity ${args.activityId} permanently deleted by user ${args.userId}`);
+    console.log(`[EVENTS_DELETE] Event ${args.eventId} permanently deleted by user ${args.userId}`);
     return { success: true };
   },
 });
 
 /**
- * Approve an activity (parent only)
+ * Approve an event (parent only)
  * Unlocks location visibility per PHQ settings
  */
-export const approveActivity = mutation({
+export const approveEvent = mutation({
   args: {
-    activityId: v.id("activities"),
+    eventId: v.id("events"),
     parentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const activity = await ctx.db.get(args.activityId);
-    if (!activity) throw new Error("Activity not found");
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
 
-    if (!activity.requiresParentApproval) {
-      throw new Error("Activity does not require approval");
+    if (!event.requiresParentApproval) {
+      throw new Error("Event does not require approval");
     }
 
     // Check parent permission
     const isParent = await isParentOf(
       ctx,
       args.parentUserId,
-      activity.createdByUserId
+      event.createdByUserId
     );
     if (!isParent) {
       throw new Error("Only parent can approve");
     }
 
     const now = Date.now();
-    await ctx.db.patch(args.activityId, {
+    await ctx.db.patch(args.eventId, {
       requiresParentApproval: false,
       approvedByParentId: args.parentUserId,
       approvedAt: now,
       updatedAt: now,
       // Re-include location if it was masked
-      location: activity.location || undefined,
+      location: event.location || undefined,
     });
 
     console.log(
-      `[ACTIVITIES_APPROVE] Activity ${args.activityId} approved by parent ${args.parentUserId}`
+      `[EVENTS_APPROVE] Event ${args.eventId} approved by parent ${args.parentUserId}`
     );
     return { success: true };
   },
@@ -382,19 +375,19 @@ export const approveActivity = mutation({
  */
 export const setRsvp = mutation({
   args: {
-    activityId: v.id("activities"),
+    eventId: v.id("events"),
     userId: v.id("users"),
     status: v.union(v.literal("going"), v.literal("maybe"), v.literal("raincheck")),
   },
   handler: async (ctx, args) => {
-    const activity = await ctx.db.get(args.activityId);
-    if (!activity) throw new Error("Activity not found");
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
 
-    const updatedRsvps: Record<string, string> = { ...activity.rsvps };
+    const updatedRsvps: Record<string, string> = { ...event.rsvps };
     updatedRsvps[args.userId.toString()] = args.status;
 
     const now = Date.now();
-    await ctx.db.patch(args.activityId, {
+    await ctx.db.patch(args.eventId, {
       rsvps: updatedRsvps,
       updatedAt: now,
     });
@@ -408,7 +401,7 @@ export const setRsvp = mutation({
 // ============================================================================
 
 /**
- * List activities by cliq with time range and filtering
+ * List events by cliq with time range and filtering
  */
 export const listByCliq = query({
   args: {
@@ -421,15 +414,15 @@ export const listByCliq = query({
     const from = args.from || Date.now();
     const to = args.to || Date.now() + 365 * 24 * 60 * 60 * 1000; // 1 year ahead
 
-    const activities = await ctx.db
-      .query("activities")
+    const events = await ctx.db
+      .query("events")
       .withIndex("by_cliq_start", (q: any) => q.eq("cliqId", args.cliqId))
       .collect();
 
     const now = Date.now();
 
-    // First filter activities
-    const filtered = activities.filter((a) => {
+    // First filter events
+    const filtered = events.filter((a) => {
       // Exclude soft-deleted
       if (a.deletedAt) return false;
       // Filter by time range
@@ -440,18 +433,18 @@ export const listByCliq = query({
     // Then map with location visibility (simplified - don't apply async checks in map)
     const mapped = filtered.map((a) => {
       // Apply location visibility rules
-      let activity = { ...a };
+      let event = { ...a };
 
       if (a.locationVisibility === "parents" && args.userId) {
         // For now, just check if it's the creator themselves
         if (a.createdByUserId !== args.userId) {
-          activity.location = "📍 Location visible to parents only";
+          event.location = "📍 Location visible to parents only";
         }
       } else if (a.locationVisibility === "hidden") {
-        activity.location = undefined;
+        event.location = undefined;
       }
 
-      return activity;
+      return event;
     });
 
     return mapped.sort((a, b) => a.startAt - b.startAt);
@@ -459,16 +452,16 @@ export const listByCliq = query({
 });
 
 /**
- * Get single activity with visibility rules applied
+ * Get single event with visibility rules applied
  */
-export const getActivity = query({
+export const getEvent = query({
   args: {
-    activityId: v.id("activities"),
+    eventId: v.id("events"),
     userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    const activity = await ctx.db.get(args.activityId);
-    if (!activity || activity.deletedAt) return null;
+    const event = await ctx.db.get(args.eventId);
+    if (!event || event.deletedAt) return null;
 
     // Apply location visibility
     if (args.userId) {
@@ -476,23 +469,23 @@ export const getActivity = query({
         (await ctx.db
           .query("parentLinks")
           .withIndex("by_parent_child", (q: any) =>
-            q.eq("parentId", args.userId).eq("childId", activity.createdByUserId)
+            q.eq("parentId", args.userId).eq("childId", event.createdByUserId)
           )
           .first()) !== null;
 
-      if (activity.locationVisibility === "parents" && !isParentOfCreator) {
-        activity.location = "📍 Location visible to parents";
-      } else if (activity.locationVisibility === "hidden") {
-        activity.location = undefined;
+      if (event.locationVisibility === "parents" && !isParentOfCreator) {
+        event.location = "📍 Location visible to parents";
+      } else if (event.locationVisibility === "hidden") {
+        event.location = undefined;
       }
     }
 
-    return activity;
+    return event;
   },
 });
 
 /**
- * List upcoming activities for a user across all their cliqs
+ * List upcoming events for a user across all their cliqs
  */
 export const listUpcomingForUser = query({
   args: {
@@ -515,18 +508,18 @@ export const listUpcomingForUser = query({
 
     if (cliqIds.length === 0) return [];
 
-    // Get all activities from those cliqs
-    const allActivities: any[] = [];
+    // Get all events from those cliqs
+    const allEvents: any[] = [];
     for (const cliqId of cliqIds) {
-      const activities = await ctx.db
-        .query("activities")
+      const events = await ctx.db
+        .query("events")
         .withIndex("by_cliq_start", (q: any) => q.eq("cliqId", cliqId))
         .collect();
 
-      allActivities.push(...activities);
+      allEvents.push(...events);
     }
 
-    return allActivities
+    return allEvents
       .filter((a) => {
         if (a.deletedAt) return false;
         if (a.startAt < nowTime || a.startAt > endTime) return false;
@@ -557,7 +550,7 @@ export const listUpcomingForUser = query({
 });
 
 /**
- * List pending activities for parent approval
+ * List pending events for parent approval
  */
 export const listPendingForParent = query({
   args: {
@@ -589,18 +582,18 @@ export const listPendingForParent = query({
       return [];
     }
 
-    // Get all pending activities in these cliqs created by children
-    const allActivities: any[] = [];
+    // Get all pending events in these cliqs created by children
+    const allEvents: any[] = [];
     for (const cliqId of cliqIds) {
-      const activities = await ctx.db
-        .query("activities")
+      const events = await ctx.db
+        .query("events")
         .withIndex("by_cliq_start", (q: any) => q.eq("cliqId", cliqId))
         .collect();
 
-      allActivities.push(...activities);
+      allEvents.push(...events);
     }
 
-    return allActivities
+    return allEvents
       .filter((a) => {
         return (
           childIds.includes(a.createdByUserId) &&
@@ -613,9 +606,9 @@ export const listPendingForParent = query({
 });
 
 /**
- * Generate birthday activities (synthetic, not stored)
+ * Generate birthday events (synthetic, not stored)
  */
-export const getBirthdayActivities = query({
+export const getBirthdayEvents = query({
   args: {
     cliqId: v.id("cliqs"),
   },
@@ -626,7 +619,7 @@ export const getBirthdayActivities = query({
       .withIndex("by_cliq_id", (q: any) => q.eq("cliqId", args.cliqId))
       .collect();
 
-    const birthdayActivities = [];
+    const birthdayEvents = [];
     const now = Date.now();
     const today = new Date(now);
 
@@ -662,7 +655,7 @@ export const getBirthdayActivities = query({
         const endAt = new Date(nextBirthday);
         endAt.setHours(23, 59, 59, 999);
 
-        birthdayActivities.push({
+        birthdayEvents.push({
           _id: `birthday-${membership.userId}` as any,
           cliqId: args.cliqId,
           createdByUserId: membership.userId,
@@ -682,6 +675,6 @@ export const getBirthdayActivities = query({
       }
     }
 
-    return birthdayActivities;
+    return birthdayEvents;
   },
 });

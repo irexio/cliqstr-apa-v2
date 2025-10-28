@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     // Create activity via Convex
     console.log('[ACTIVITIES_CREATE] Calling Convex mutation...', `(+${Date.now() - startTime}ms)`);
-    const result = await convexHttp.mutation(api.activities.createActivity, {
+    const result = await convexHttp.mutation(api.events.createEvent, {
       cliqId: cliqId as any,
       title,
       description,

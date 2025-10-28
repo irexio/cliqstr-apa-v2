@@ -34,13 +34,13 @@ export async function GET(req: NextRequest) {
 
     if (userId) {
       // Personal calendar across all cliqs
-      activities = await convexHttp.query(api.activities.listUpcomingForUser, {
+      activities = await convexHttp.query(api.events.listUpcomingForUser, {
         userId: userId as any,
         days: 90,
       });
     } else if (cliqId) {
       // Cliq calendar
-      activities = await convexHttp.query(api.activities.listByCliq, {
+      activities = await convexHttp.query(api.events.listByCliq, {
         cliqId: cliqId as any,
         userId: session.userId as any,
       });

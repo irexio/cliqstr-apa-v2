@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       const now = Date.now();
       const upcoming = now + 30 * 24 * 60 * 60 * 1000; // Next 30 days
 
-      const events = await convexHttp.query(api.activities.listByCliq, {
+      const events = await convexHttp.query(api.events.listByCliq, {
         cliqId: cliqId as any,
         from: now,
         to: upcoming,

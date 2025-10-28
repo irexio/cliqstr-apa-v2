@@ -33,12 +33,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid cliq ID format' }, { status: 400 });
     }
 
-    const activities = await convexHttp.query(api.activities.listByCliq, {
-      cliqId: cliqId as any, // cliqId comes as string, Convex validates it
-      from,
-      to,
-      userId: session.userId as any,
-    });
+    const [activities, birthdayEvents] = await Promise.all([
+      convexHttp.query(api.events.listByCliq, {
+        cliqId: cliqId as any,
+        from,
+        to,
+        userId: session?.userId as any,
+      }),
+      convexHttp.query(api.events.getBirthdayEvents, {
+        cliqId: cliqId as any,
+      }),
+    ]);
 
     console.log('[ACTIVITIES_LIST] Retrieved activities:', { count: activities?.length, activities });
 

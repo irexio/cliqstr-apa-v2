@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
 
     console.log(`[ACTIVITIES_APPROVE] Parent ${session.userId} approving activity ${activityId}`);
 
-    const result = await convexHttp.mutation(api.activities.approveActivity, {
-      activityId: activityId as any,
+    const result = await convexHttp.mutation(api.events.approveEvent, {
+      eventId: activityId as any,
       parentUserId: session.userId as any,
     });
 

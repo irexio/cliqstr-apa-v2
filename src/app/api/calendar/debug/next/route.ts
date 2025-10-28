@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get upcoming activities for the cliq
-    const activities = await convexHttp.query(api.activities.listByCliq, {
+    const activities = await convexHttp.query(api.events.listByCliq, {
       cliqId: cliqId as any,
       from: Date.now(),
       to: Date.now() + days * 24 * 60 * 60 * 1000,

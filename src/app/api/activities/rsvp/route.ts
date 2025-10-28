@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
 
     console.log(`[ACTIVITIES_RSVP] User ${session.userId} RSVPing ${status} to activity ${activityId}`);
 
-    const result = await convexHttp.mutation(api.activities.setRsvp, {
-      activityId: activityId as any,
+    const result = await convexHttp.mutation(api.events.setRsvp, {
+      eventId: activityId as any,
       userId: session.userId as any,
       status: status as 'going' | 'maybe' | 'raincheck',
     });

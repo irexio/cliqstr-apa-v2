@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
 
     console.log(`[ACTIVITIES_DELETE] User ${session.userId} deleting activity ${activityId}`);
 
-    const result = await convexHttp.mutation(api.activities.deleteActivity, {
-      activityId: activityId as any,
+    const result = await convexHttp.mutation(api.events.deleteEvent, {
+      eventId: activityId as any,
       userId: session.userId as any,
     });
 
