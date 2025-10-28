@@ -59,6 +59,18 @@ export default function CalendarPage() {
       console.log('[CALENDAR] Fallback from window.location cliqId:', cliqId);
     }
     
+    // Second fallback: check window.location.pathname
+    if (!cliqId && typeof window !== 'undefined') {
+      console.log('[CALENDAR] searchParams empty, trying hash and query string directly');
+      const fullUrl = window.location.href;
+      console.log('[CALENDAR] Full URL:', fullUrl);
+      const match = fullUrl.match(/[?&]cliqId=([^&]+)/);
+      if (match) {
+        cliqId = match[1];
+        console.log('[CALENDAR] Extracted from regex:', cliqId);
+      }
+    }
+    
     console.log('[CALENDAR] Final cliqId to use:', cliqId);
     console.log('[CALENDAR] Full URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
     
