@@ -47,7 +47,11 @@ export async function GET(req: NextRequest) {
 
     console.log('[ACTIVITIES_LIST] Retrieved activities:', { count: activities?.length, activities });
 
-    return NextResponse.json({ activities });
+    // Also return count for debugging
+    const combined = [...(activities || []), ...(birthdayEvents || [])];
+    console.log('[ACTIVITIES_LIST] Combined activities + birthdays:', { count: combined.length });
+
+    return NextResponse.json({ activities: combined });
   } catch (error) {
     console.error('[ACTIVITIES_LIST] Error:', error);
     return NextResponse.json(
