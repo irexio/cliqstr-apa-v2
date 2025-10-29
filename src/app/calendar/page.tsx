@@ -40,20 +40,24 @@ export default function CalendarPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [session, setSession] = useState<any>(null);
+  const [initialMonth, setInitialMonth] = useState<Date | null>(null);
 
   // On mount, read cliqId from window.location and check session
   useEffect(() => {
     setMounted(true);
     
-    // Read cliqId from URL
+    // Read cliqId and eventId from URL
     if (typeof window !== 'undefined') {
       const fullUrl = window.location.href;
       console.log('[CALENDAR] Full URL:', fullUrl);
       
-      const match = fullUrl.match(/[?&]cliqId=([^&]+)/);
-      const cliqId = match ? match[1] : null;
+      const cliqMatch = fullUrl.match(/[?&]cliqId=([^&]+)/);
+      const cliqId = cliqMatch ? cliqMatch[1] : null;
       
-      console.log('[CALENDAR] Extracted cliqId:', cliqId);
+      const eventMatch = fullUrl.match(/[?&]eventId=([^&]+)/);
+      const eventId = eventMatch ? eventMatch[1] : null;
+      
+      console.log('[CALENDAR] Extracted cliqId:', cliqId, 'eventId:', eventId);
       setUrlCliqId(cliqId);
       
       if (!cliqId) {
@@ -63,11 +67,11 @@ export default function CalendarPage() {
       }
       
       // Check session and fetch data
-      checkSessionAndFetchActivities(cliqId);
+      checkSessionAndFetchActivities(cliqId, eventId);
     }
   }, []);
 
-  const checkSessionAndFetchActivities = async (cliqId: string) => {
+  const checkSessionAndFetchActivities = async (cliqId: string, eventId: string | null) => {
     try {
       setIsLoading(true);
 
@@ -96,7 +100,7 @@ export default function CalendarPage() {
       
       // Now fetch the data
       fetchCliqName(cliqId);
-      fetchActivities(cliqId);
+      fetchActivities(cliqId, eventId);
     } catch (error) {
       console.error('[CALENDAR] Error checking session:', error);
       toast({
@@ -126,7 +130,7 @@ export default function CalendarPage() {
     }
   };
 
-  const fetchActivities = async (cliqId: string) => {
+  const fetchActivities = async (cliqId: string, eventId: string | null) => {
     try {
       setIsLoading(true);
 
@@ -158,6 +162,22 @@ export default function CalendarPage() {
       const data = await response.json();
       console.log('[CALENDAR] Fetched activities:', data.activities?.length || 0, data.activities);
       setActivities(data.activities || []);
+      
+      // If eventId was provided, find it and auto-select it
+      if (eventId && data.activities) {
+        const targetEvent = data.activities.find((a: Activity) => a._id === eventId);
+        if (targetEvent) {
+          console.log('[CALENDAR] Auto-selecting event:', eventId);
+          setSelectedActivity(targetEvent);
+          
+          // Set initial month to the month of the event
+          const eventDate = new Date(targetEvent.startAt);
+          setInitialMonth(eventDate);
+          console.log('[CALENDAR] Setting calendar to month:', eventDate.toLocaleDateString());
+        } else {
+          console.warn('[CALENDAR] Event not found:', eventId);
+        }
+      }
     } catch (error) {
       console.error('[CALENDAR] Error fetching activities:', error);
       toast({
@@ -211,7 +231,7 @@ export default function CalendarPage() {
 
       // Refresh activities list using URL cliqId
       if (urlCliqId) {
-        await fetchActivities(urlCliqId);
+        await fetchActivities(urlCliqId, null);
       }
       setShowForm(false);
     } catch (error) {
@@ -248,7 +268,7 @@ export default function CalendarPage() {
 
       // Refresh activities
       if (urlCliqId) {
-        await fetchActivities(urlCliqId);
+        await fetchActivities(urlCliqId, null);
       }
     } catch (error) {
       console.error('[CALENDAR] RSVP error:', error);
@@ -282,7 +302,7 @@ export default function CalendarPage() {
 
       // Refresh activities
       if (urlCliqId) {
-        await fetchActivities(urlCliqId);
+        await fetchActivities(urlCliqId, null);
       }
       setSelectedActivity(null);
     } catch (error) {
@@ -350,6 +370,7 @@ export default function CalendarPage() {
             view={view}
             onActivityClick={handleActivityClick as any}
             onCreateClick={() => setShowForm(true)}
+            initialMonth={initialMonth}
           />
         </div>
       )}

@@ -21,6 +21,7 @@ interface CalendarViewProps {
   onDateSelect?: (date: Date) => void;
   onActivityClick?: (activity: Activity) => void;
   onCreateClick?: () => void;
+  initialMonth?: Date | null;
 }
 
 export default function CalendarView({
@@ -29,8 +30,9 @@ export default function CalendarView({
   onDateSelect,
   onActivityClick,
   onCreateClick,
+  initialMonth,
 }: CalendarViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(initialMonth || new Date());
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
