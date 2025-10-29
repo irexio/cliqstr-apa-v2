@@ -371,6 +371,7 @@ export default function CalendarPage() {
             onActivityClick={handleActivityClick as any}
             onCreateClick={() => setShowForm(true)}
             initialMonth={initialMonth}
+            key={initialMonth ? initialMonth.toISOString() : 'default'}
           />
         </div>
       )}
