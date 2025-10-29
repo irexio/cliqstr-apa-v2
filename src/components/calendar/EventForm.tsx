@@ -80,12 +80,21 @@ export default function EventForm({
     const [startHour, startMin] = startTime.split(':');
     const [endHour, endMin] = endTime.split(':');
 
-    // RELIABLE timezone conversion: 
-    // Create times as if they were in the target timezone, then convert to UTC
-    // Step 1: Create a test date in UTC
-    const testDateUtc = new Date(`${date}T12:00:00Z`);
+    // CORRECT timezone conversion algorithm:
+    // Goal: Convert "Oct 31, 4:30 PM America/Los_Angeles" → UTC milliseconds
     
-    // Step 2: Format it in the target timezone to find the offset
+    // Algorithm:
+    // 1. Create a UTC date string from the user's input
+    // 2. Format it in the target timezone to see what date/time it shows
+    // 3. Calculate the difference (offset)
+    // 4. Apply offset to convert the user's input to UTC
+    
+    const [year, month, day] = date.split('-').map(Number);
+    
+    // Create a reference UTC date at midnight on the user's selected date
+    const refDateUtc = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    
+    // Format this UTC date in the target timezone to see what local date it shows
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,
       year: 'numeric',
@@ -97,32 +106,32 @@ export default function EventForm({
       hour12: false,
     });
     
-    const parts = formatter.formatToParts(testDateUtc);
-    const tzDate = new Date(
-      parseInt(parts.find(p => p.type === 'year')?.value || '2025'),
-      parseInt(parts.find(p => p.type === 'month')?.value || '01') - 1,
-      parseInt(parts.find(p => p.type === 'day')?.value || '01'),
-      parseInt(parts.find(p => p.type === 'hour')?.value || '12'),
-      parseInt(parts.find(p => p.type === 'minute')?.value || '00'),
-      parseInt(parts.find(p => p.type === 'second')?.value || '00')
-    );
+    const parts = formatter.formatToParts(refDateUtc);
+    const tzYear = parseInt(parts.find(p => p.type === 'year')?.value || String(year));
+    const tzMonth = parseInt(parts.find(p => p.type === 'month')?.value || String(month)) - 1;
+    const tzDay = parseInt(parts.find(p => p.type === 'day')?.value || String(day));
+    const tzHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
+    const tzMin = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
     
-    // Step 3: Calculate the offset between UTC time and how it appears in target timezone
-    const offsetMs = testDateUtc.getTime() - tzDate.getTime();
+    // tzDate represents what the UTC refDateUtc looks like when formatted in the target timezone
+    const tzDate = new Date(tzYear, tzMonth, tzDay, tzHour, tzMin, 0);
     
-    // Step 4: Now create the actual times the user entered
-    // Parse the date from the input (YYYY-MM-DD format)
-    const [year, month, day] = date.split('-').map(Number);
+    // The offset is: what UTC time appears as this local time in the target timezone?
+    // If refDateUtc = Oct 31 00:00:00 UTC formats as Oct 30 16:00:00 in LA, then:
+    //   offset = (Oct 30 16:00:00 - Oct 31 00:00:00) = -8 hours
+    // So to convert Oct 31 16:30 LA time to UTC, we do: LA_time - offset = UTC_time
+    const offsetMs = refDateUtc.getTime() - tzDate.getTime();
     
-    // Create a date in the user's LOCAL timezone (not UTC) with user's times
-    const localStartDate = new Date(year, month - 1, day, parseInt(startHour), parseInt(startMin), 0);
-    const localEndDate = new Date(year, month - 1, day, parseInt(endHour), parseInt(endMin), 0);
+    // Now create the actual start/end times the user entered
+    // These are "pretend" local times in the browser's timezone
+    const userStartTz = new Date(year, month - 1, day, parseInt(startHour), parseInt(startMin), 0);
+    const userEndTz = new Date(year, month - 1, day, parseInt(endHour), parseInt(endMin), 0);
     
-    // Step 5: Adjust by the offset to get UTC
-    // If timezone is behind UTC (negative offset like LA), we ADD to convert to UTC
-    // If timezone is ahead of UTC (positive offset like Tokyo), we SUBTRACT
-    const startAt = new Date(localStartDate.getTime() + offsetMs);
-    const endAt = new Date(localEndDate.getTime() + offsetMs);
+    // Convert to UTC by subtracting the offset
+    // userStartTz is the time we want in the target timezone
+    // To get the UTC equivalent: UTC = userStartTz - offset
+    const startAt = new Date(userStartTz.getTime() - offsetMs);
+    const endAt = new Date(userEndTz.getTime() - offsetMs);
 
     setIsSubmitting(true);
     try {

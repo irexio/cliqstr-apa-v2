@@ -64,3 +64,20 @@ This document tracks deprecated code, removed files, and architectural decisions
 - Announcement Rotator: Thin, black-bg box that rotates through events/notices/birthdays
 - Calendar Page: Full calendar UI with RSVP buttons and delete functionality
 - Event Creation: Form-based creation with support for recurring events
+
+### Timezone Conversion Fix (PENDING DEPLOYMENT)
+- **Date**: October 29, 2025
+- **Issue**: EventForm.tsx was incorrectly converting local date/times to UTC
+  - **Problem**: When user entered "Oct 31 4:30 PM Los Angeles", the form was storing it as Oct 30 UTC instead of Nov 1 UTC (8-hour offset)
+  - **Root Cause**: JavaScript's `new Date(year, month, day, hour, min)` always creates dates in the browser's LOCAL timezone, not the selected timezone
+  - **Impact**: Events appeared on wrong calendar dates, multi-timezone support broken
+- **Solution**: Implemented correct offset-based conversion algorithm:
+  1. Create a reference UTC date at midnight on the user's selected date
+  2. Format this UTC date in the target timezone to determine local offset
+  3. Subtract offset from user's input time to get correct UTC timestamp
+  - Example: If Oct 31 00:00 UTC formats as Oct 30 16:00 LA time (8-hour offset):
+    - User enters: Oct 31 16:30 LA
+    - Math: Oct 31 16:30 - (-8 hours) = Nov 1 00:30 UTC ✓ CORRECT
+- **Files Modified**: 1 file
+  - Updated: `src/components/calendar/EventForm.tsx`
+- **Status**: ⏳ **AWAITING TESTING & DEPLOYMENT**
