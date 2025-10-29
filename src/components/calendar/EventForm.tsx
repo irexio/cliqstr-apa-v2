@@ -80,13 +80,11 @@ export default function EventForm({
     const [startHour, startMin] = startTime.split(':');
     const [endHour, endMin] = endTime.split(':');
 
-    // Parse date string "YYYY-MM-DD" and create a date object
-    const [year, month, day] = date.split('-');
+    // Simple reliable timezone conversion using Intl API
+    // 1. Create a date string in ISO format
+    const dateStr = `${date}T${startTime}:00`;
     
-    // Create date in UTC first
-    const dateUTC = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
-    
-    // Get timezone offset in minutes using Intl API
+    // 2. Get what this date/time would be in the selected timezone
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,
       year: 'numeric',
@@ -98,31 +96,29 @@ export default function EventForm({
       hour12: false,
     });
     
-    // Get the reference date in the target timezone to calculate offset
-    const parts = new Map(formatter.formatToParts(dateUTC).map(p => [p.type, p.value]));
-    const tzDate = new Date(`${parts.get('year')}-${parts.get('month')}-${parts.get('day')}T${parts.get('hour')}:${parts.get('minute')}:${parts.get('second')}`);
-    const tzOffset = (dateUTC.getTime() - tzDate.getTime()) / (1000 * 60); // offset in minutes
+    // 3. Create a reference date in UTC
+    const refDate = new Date(dateStr + 'Z');
     
-    // Create start and end times in the selected timezone
-    const startAt = new Date(Date.UTC(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(startHour) - Math.floor(tzOffset / 60),
-      parseInt(startMin) - (tzOffset % 60),
-      0,
-      0
-    ));
-
-    const endAt = new Date(Date.UTC(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(endHour) - Math.floor(tzOffset / 60),
-      parseInt(endMin) - (tzOffset % 60),
-      0,
-      0
-    ));
+    // 4. Format it in the target timezone to see what offset is needed
+    const parts = formatter.formatToParts(refDate);
+    const tzYear = parseInt(parts.find(p => p.type === 'year')?.value || '2025');
+    const tzMonth = parseInt(parts.find(p => p.type === 'month')?.value || '01') - 1;
+    const tzDay = parseInt(parts.find(p => p.type === 'day')?.value || '01');
+    const tzHour = parseInt(parts.find(p => p.type === 'hour')?.value || '00');
+    const tzMin = parseInt(parts.find(p => p.type === 'minute')?.value || '00');
+    
+    // 5. Create date in that timezone and compare to UTC to get offset
+    const tzDate = new Date(tzYear, tzMonth, tzDay, tzHour, tzMin, 0);
+    const offsetMs = refDate.getTime() - tzDate.getTime();
+    
+    // 6. Apply the offset to get correct UTC time
+    const startAt = new Date(dateStr + 'Z');
+    startAt.setTime(startAt.getTime() - offsetMs);
+    startAt.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
+    
+    const endAt = new Date(dateStr + 'Z');
+    endAt.setTime(endAt.getTime() - offsetMs);
+    endAt.setHours(parseInt(endHour), parseInt(endMin), 0, 0);
 
     setIsSubmitting(true);
     try {
