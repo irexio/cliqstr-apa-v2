@@ -2,6 +2,12 @@
 
 import React from 'react';
 import { MapPin, Clock, Users, AlertCircle } from 'lucide-react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface EventCardProps {
   id: string;
@@ -40,8 +46,16 @@ export default function EventCard({
   isParent,
   canDelete,
 }: EventCardProps) {
-  const start = new Date(startAt);
-  const end = new Date(endAt);
+  // DEBUG: Log UTC storage vs local display
+  console.log(
+    '[DEBUG] Stored UTC:',
+    new Date(startAt).toISOString(),
+    '→ Local:',
+    dayjs(startAt).local().toString()
+  );
+
+  const startLocal = dayjs(startAt).local();
+  const endLocal = dayjs(endAt).local();
 
   const rsvpCounts = {
     going: Object.values(rsvps).filter((s) => s === 'going').length,
@@ -87,12 +101,11 @@ export default function EventCard({
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{description}</p>
       )}
 
-      {/* Time */}
+      {/* Time - Now using dayjs for local time display */}
       <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
         <Clock className="w-4 h-4 text-gray-500" />
         <span>
-          {start.toLocaleDateString()} {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
-          {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {startLocal.format('MMM D, YYYY h:mm A')} - {endLocal.format('h:mm A')}
         </span>
       </div>
 

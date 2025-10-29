@@ -3,6 +3,12 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/auth/session-config';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const dynamic = 'force-dynamic';
 
@@ -64,11 +70,11 @@ export async function GET(req: NextRequest) {
       });
 
       for (const event of events) {
-        const eventDate = new Date(event.startAt);
+        const eventDate = dayjs(event.startAt).local();
         announcements.push({
           id: event._id.toString(),
           type: 'event',
-          title: `${event.title} • ${eventDate.toLocaleDateString()}`,
+          title: `${event.title} • ${eventDate.format('MMM D, YYYY')}`,
           description: 'Tap to RSVP in Calendar',
           timestamp: event.startAt,
           clickTarget: `/calendar?cliqId=${cliqId}&eventId=${event._id}`,

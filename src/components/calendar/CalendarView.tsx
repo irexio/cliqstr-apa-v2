@@ -3,6 +3,12 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface Activity {
   _id: string;
@@ -65,12 +71,36 @@ export default function CalendarView({
   };
 
   const getActivitiesForDate = (date: Date) => {
-    const dateStart = new Date(date).setHours(0, 0, 0, 0);
-    const dateEnd = new Date(date).setHours(23, 59, 59, 999);
+    // Convert the calendar day to start and end times in the viewer's local timezone
+    const dayStart = dayjs(date).startOf('day');
+    const dayEnd = dayjs(date).endOf('day');
+    
+    const dayStartMs = dayStart.valueOf();
+    const dayEndMs = dayEnd.valueOf();
 
-    return activities.filter(
-      (a) => a.startAt >= dateStart && a.startAt <= dateEnd
-    );
+    console.log('[CalendarView] Filtering activities for:', {
+      calendarDate: date.toDateString(),
+      dayStart: dayStart.toISOString(),
+      dayEnd: dayEnd.toISOString(),
+      dayStartMs,
+      dayEndMs,
+      totalActivities: activities.length,
+    });
+
+    const filtered = activities.filter((a) => {
+      const isInRange = a.startAt >= dayStartMs && a.startAt <= dayEndMs;
+      if (isInRange) {
+        console.log('[CalendarView] Activity matches date:', {
+          title: a.title,
+          startAt: new Date(a.startAt).toISOString(),
+          localDisplay: dayjs(a.startAt).local().format('MMM D, YYYY h:mm A'),
+        });
+      }
+      return isInRange;
+    });
+
+    console.log('[CalendarView] Found', filtered.length, 'activities for', date.toDateString());
+    return filtered;
   };
 
   const monthDays = getDaysInMonth(currentDate);
