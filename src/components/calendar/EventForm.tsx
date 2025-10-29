@@ -80,11 +80,12 @@ export default function EventForm({
     const [startHour, startMin] = startTime.split(':');
     const [endHour, endMin] = endTime.split(':');
 
-    // Simple reliable timezone conversion using Intl API
-    // 1. Create a date string in ISO format
-    const dateStr = `${date}T${startTime}:00`;
+    // RELIABLE timezone conversion: 
+    // Create times as if they were in the target timezone, then convert to UTC
+    // Step 1: Create a test date in UTC
+    const testDateUtc = new Date(`${date}T12:00:00Z`);
     
-    // 2. Get what this date/time would be in the selected timezone
+    // Step 2: Format it in the target timezone to find the offset
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,
       year: 'numeric',
@@ -96,29 +97,32 @@ export default function EventForm({
       hour12: false,
     });
     
-    // 3. Create a reference date in UTC
-    const refDate = new Date(dateStr + 'Z');
+    const parts = formatter.formatToParts(testDateUtc);
+    const tzDate = new Date(
+      parseInt(parts.find(p => p.type === 'year')?.value || '2025'),
+      parseInt(parts.find(p => p.type === 'month')?.value || '01') - 1,
+      parseInt(parts.find(p => p.type === 'day')?.value || '01'),
+      parseInt(parts.find(p => p.type === 'hour')?.value || '12'),
+      parseInt(parts.find(p => p.type === 'minute')?.value || '00'),
+      parseInt(parts.find(p => p.type === 'second')?.value || '00')
+    );
     
-    // 4. Format it in the target timezone to see what offset is needed
-    const parts = formatter.formatToParts(refDate);
-    const tzYear = parseInt(parts.find(p => p.type === 'year')?.value || '2025');
-    const tzMonth = parseInt(parts.find(p => p.type === 'month')?.value || '01') - 1;
-    const tzDay = parseInt(parts.find(p => p.type === 'day')?.value || '01');
-    const tzHour = parseInt(parts.find(p => p.type === 'hour')?.value || '00');
-    const tzMin = parseInt(parts.find(p => p.type === 'minute')?.value || '00');
+    // Step 3: Calculate the offset between UTC time and how it appears in target timezone
+    const offsetMs = testDateUtc.getTime() - tzDate.getTime();
     
-    // 5. Create date in that timezone and compare to UTC to get offset
-    const tzDate = new Date(tzYear, tzMonth, tzDay, tzHour, tzMin, 0);
-    const offsetMs = refDate.getTime() - tzDate.getTime();
+    // Step 4: Now create the actual times the user entered
+    // Parse the date from the input (YYYY-MM-DD format)
+    const [year, month, day] = date.split('-').map(Number);
     
-    // 6. Apply the offset to get correct UTC time
-    const startAt = new Date(dateStr + 'Z');
-    startAt.setTime(startAt.getTime() - offsetMs);
-    startAt.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
+    // Create a date in the user's LOCAL timezone (not UTC) with user's times
+    const localStartDate = new Date(year, month - 1, day, parseInt(startHour), parseInt(startMin), 0);
+    const localEndDate = new Date(year, month - 1, day, parseInt(endHour), parseInt(endMin), 0);
     
-    const endAt = new Date(dateStr + 'Z');
-    endAt.setTime(endAt.getTime() - offsetMs);
-    endAt.setHours(parseInt(endHour), parseInt(endMin), 0, 0);
+    // Step 5: Adjust by the offset to get UTC
+    // If timezone is behind UTC (negative offset like LA), we ADD to convert to UTC
+    // If timezone is ahead of UTC (positive offset like Tokyo), we SUBTRACT
+    const startAt = new Date(localStartDate.getTime() + offsetMs);
+    const endAt = new Date(localEndDate.getTime() + offsetMs);
 
     setIsSubmitting(true);
     try {
