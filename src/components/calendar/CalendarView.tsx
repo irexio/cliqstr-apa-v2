@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface Activity {
   _id: string;
@@ -33,6 +34,12 @@ export default function CalendarView({
   initialMonth,
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(initialMonth || new Date());
+
+  useEffect(() => {
+    if (initialMonth) {
+      setCurrentDate(initialMonth);
+    }
+  }, [initialMonth]);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
