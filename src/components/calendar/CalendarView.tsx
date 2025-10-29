@@ -37,9 +37,10 @@ export default function CalendarView({
 
   useEffect(() => {
     if (initialMonth) {
-      setCurrentDate(initialMonth);
+      console.log('[CalendarView] Updating month to:', initialMonth);
+      setCurrentDate(new Date(initialMonth));
     }
-  }, [initialMonth]);
+  }, [initialMonth?.getTime()]);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
