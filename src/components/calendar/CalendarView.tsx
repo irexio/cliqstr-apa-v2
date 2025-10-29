@@ -3,18 +3,14 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect } from 'react';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import { DateTime } from 'luxon';
 
 interface Activity {
   _id: string;
   title: string;
   startAt: number;
   endAt: number;
+  timezone?: string;
   location?: string;
   locationVisibility?: string;
   requiresParentApproval?: boolean;
@@ -71,32 +67,36 @@ export default function CalendarView({
   };
 
   const getActivitiesForDate = (date: Date) => {
-    // Convert the calendar day to start and end times in the viewer's local timezone
-    const dayStart = dayjs(date).startOf('day');
-    const dayEnd = dayjs(date).endOf('day');
+    // Convert the calendar day (in local view) to UTC range for comparison
+    const dayStartLocal = DateTime.fromJSDate(date, { zone: 'local' }).startOf('day');
+    const dayEndLocal = DateTime.fromJSDate(date, { zone: 'local' }).endOf('day');
     
-    const dayStartMs = dayStart.valueOf();
-    const dayEndMs = dayEnd.valueOf();
+    const visibleStartUTC = dayStartLocal.toUTC().toMillis();
+    const visibleEndUTC = dayEndLocal.toUTC().toMillis();
 
-    console.log('[CalendarView] Filtering activities for:', {
+    console.log('[CalendarView] Filtering activities for date:', {
       calendarDate: date.toDateString(),
-      dayStart: dayStart.toISOString(),
-      dayEnd: dayEnd.toISOString(),
-      dayStartMs,
-      dayEndMs,
+      visibleStartUTC: new Date(visibleStartUTC).toISOString(),
+      visibleEndUTC: new Date(visibleEndUTC).toISOString(),
       totalActivities: activities.length,
     });
 
-    const filtered = activities.filter((a) => {
-      const isInRange = a.startAt >= dayStartMs && a.startAt <= dayEndMs;
-      if (isInRange) {
-        console.log('[CalendarView] Activity matches date:', {
-          title: a.title,
-          startAt: new Date(a.startAt).toISOString(),
-          localDisplay: dayjs(a.startAt).local().format('MMM D, YYYY h:mm A'),
+    // Keep only events that overlap this UTC range
+    const filtered = activities.filter((event) => {
+      const overlaps = event.startAt <= visibleEndUTC && event.endAt >= visibleStartUTC;
+      
+      if (overlaps) {
+        const eventDisplay = DateTime.fromMillis(event.startAt)
+          .setZone(event.timezone || 'America/Los_Angeles')
+          .toFormat('MMM d, yyyy h:mm a');
+        
+        console.log('[CALENDAR DEBUG]', event.title, {
+          startAtUTC: new Date(event.startAt).toISOString(),
+          localRender: eventDisplay,
         });
       }
-      return isInRange;
+      
+      return overlaps;
     });
 
     console.log('[CalendarView] Found', filtered.length, 'activities for', date.toDateString());
