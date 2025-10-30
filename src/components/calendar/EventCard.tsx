@@ -142,13 +142,6 @@ export default function EventCard({
 
       {/* Actions */}
       <div className="flex gap-2 pt-3 border-t border-gray-200">
-        <button
-          onClick={onViewDetails}
-          className="flex-1 bg-gray-50 hover:bg-gray-100 text-black font-medium py-2 px-3 rounded transition text-sm"
-        >
-          View Details
-        </button>
-
         {requiresApproval && isParent && (
           <>
             <button
