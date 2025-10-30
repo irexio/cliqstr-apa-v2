@@ -539,9 +539,9 @@ export default function CalendarPage() {
               location={selectedActivity.location}
               locationVisibility={selectedActivity.locationVisibility}
               rsvps={selectedActivity.rsvps}
-              canDelete={true} // TODO: Check actual permissions (creator, parent, or cliq owner)
-              onViewDetails={() => {}} // Deprecated - modal opens directly now
-              onDelete={() => handleDelete(selectedActivity._id)}
+              canDelete={false}
+              onViewDetails={() => {}}
+              onDelete={() => {}}
             />
 
             {/* RSVP Buttons */}
