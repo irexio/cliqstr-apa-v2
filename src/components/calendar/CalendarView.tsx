@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect } from 'react';
-import { DateTime } from 'luxon';
+import { toLocalDateKey, getEventsForDay } from '@/utils/calendarUtils';
 
 interface Activity {
   _id: string;
@@ -67,36 +67,28 @@ export default function CalendarView({
   };
 
   const getActivitiesForDate = (date: Date) => {
-    // Convert the calendar day (in local view) to UTC range for comparison
-    const dayStartLocal = DateTime.fromJSDate(date, { zone: 'local' }).startOf('day');
-    const dayEndLocal = DateTime.fromJSDate(date, { zone: 'local' }).endOf('day');
+    // Use timezone-aware date key comparison
+    const dateKey = toLocalDateKey(date);
     
-    const visibleStartUTC = dayStartLocal.toUTC().toMillis();
-    const visibleEndUTC = dayEndLocal.toUTC().toMillis();
-
     console.log('[CalendarView] Filtering activities for date:', {
       calendarDate: date.toDateString(),
-      visibleStartUTC: new Date(visibleStartUTC).toISOString(),
-      visibleEndUTC: new Date(visibleEndUTC).toISOString(),
+      dateKey,
       totalActivities: activities.length,
     });
 
-    // Keep only events that overlap this UTC range
-    const filtered = activities.filter((event) => {
-      const overlaps = event.startAt <= visibleEndUTC && event.endAt >= visibleStartUTC;
-      
-      if (overlaps) {
-        const eventDisplay = DateTime.fromMillis(event.startAt)
-          .setZone(event.timezone || 'America/Los_Angeles')
-          .toFormat('MMM d, yyyy h:mm a');
-        
-        console.log('[CALENDAR DEBUG]', event.title, {
-          startAtUTC: new Date(event.startAt).toISOString(),
-          localRender: eventDisplay,
-        });
-      }
-      
-      return overlaps;
+    const filtered = getEventsForDay(activities, date);
+
+    // Log each matching event for debugging
+    filtered.forEach((event) => {
+      const eventKey = toLocalDateKey(event.startAt);
+      console.log('[CALENDAR DEBUG] Event on this day:', {
+        title: event.title,
+        startAtRaw: event.startAt,
+        startAtISO: new Date(event.startAt).toISOString(),
+        eventDateKey: eventKey,
+        calendarDateKey: dateKey,
+        match: eventKey === dateKey,
+      });
     });
 
     console.log('[CalendarView] Found', filtered.length, 'activities for', date.toDateString());
