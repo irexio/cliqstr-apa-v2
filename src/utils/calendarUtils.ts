@@ -6,8 +6,9 @@
  * Convert a timestamp to a local date key string using America/Chicago timezone
  * This ensures consistent date comparison across timezones
  */
-export const toLocalDateKey = (timestamp: number | string): string => {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+export const toLocalDateKey = (timestamp: number | string | Date): string => {
+  const time = timestamp instanceof Date ? timestamp.getTime() : timestamp;
+  return new Date(time).toLocaleDateString('en-US', {
     timeZone: 'America/Chicago',
   });
 };
@@ -16,7 +17,7 @@ export const toLocalDateKey = (timestamp: number | string): string => {
  * Check if an event's timestamp falls on the same day as a calendar cell date
  * Uses timezone-aware comparison to handle cross-timezone scenarios
  */
-export const isSameDay = (eventTime: number | string, calendarDate: Date): boolean => {
+export const isSameDay = (eventTime: number | string | Date, calendarDate: Date): boolean => {
   return toLocalDateKey(eventTime) === toLocalDateKey(calendarDate);
 };
 
