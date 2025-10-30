@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import toast from '@/components/ui/use-toast';
 
 interface EventFormProps {
   cliqId?: string;
@@ -40,6 +41,43 @@ export default function EventForm({
   const [recurrence, setRecurrence] = useState('none');
   const [emoji, setEmoji] = useState(''); // NEW: emoji state
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-detect user's timezone on component mount
+  useEffect(() => {
+    try {
+      const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log('[EventForm] Auto-detected timezone:', detectedTz);
+      setTimezone(detectedTz);
+    } catch (error) {
+      console.error('[EventForm] Failed to detect timezone:', error);
+      // Fall back to default
+    }
+  }, []);
+
+  const handleTimezoneTooltip = () => {
+    toast({
+      title: '🌍 Why Timezone Matters',
+      description: 'All invited users will automatically see the event in their local time. You\'re just choosing the "anchor" timezone for this event.',
+    });
+  };
+
+  // Common timezones - curated list for easy selection
+  const commonTimezones = [
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Anchorage',
+    'Pacific/Honolulu',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Asia/Hong_Kong',
+    'Australia/Sydney',
+    'UTC',
+  ];
 
   const holidays = [
     { emoji: '🎄', label: 'Christmas' },
@@ -240,22 +278,27 @@ export default function EventForm({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Timezone
+                Timezone *
               </label>
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 disabled={isSubmitting}
               >
-                <option>America/New_York</option>
-                <option>America/Los_Angeles</option>
-                <option>America/Chicago</option>
-                <option>America/Denver</option>
-                <option>Europe/London</option>
-                <option>Europe/Paris</option>
-                <option>Asia/Tokyo</option>
+                {commonTimezones.map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))}
               </select>
+              <button
+                type="button"
+                onClick={handleTimezoneTooltip}
+                className="text-xs text-blue-600 hover:text-blue-800 mt-1 underline cursor-pointer"
+              >
+                🌍 Why this matters
+              </button>
             </div>
           </div>
 
