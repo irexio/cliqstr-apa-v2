@@ -173,18 +173,29 @@ export default function CalendarPage() {
           setSelectedActivity(targetEvent);
           
           // Set initial month to the month of the event
-          // CRITICAL: Convert from UTC to event's timezone to get correct month
+          // CRITICAL: Use Luxon to get the date in the event's timezone
           const eventTimezone = targetEvent.timezone || 'America/Los_Angeles';
           const eventDateInTz = DateTime.fromMillis(targetEvent.startAt)
-            .setZone(eventTimezone)
-            .toJSDate();
+            .setZone(eventTimezone);
           
-          setInitialMonth(eventDateInTz);
+          // Get the calendar date components in the event's timezone
+          const year = eventDateInTz.year;
+          const month = eventDateInTz.month - 1; // JavaScript months are 0-indexed
+          const day = eventDateInTz.day;
+          
+          // Create a Date object for this calendar day
+          const calendarDate = new Date(year, month, day);
+          
+          setInitialMonth(calendarDate);
           console.log('[CALENDAR] Setting calendar to month:', {
             eventId,
             startAtUTC: new Date(targetEvent.startAt).toISOString(),
             timezone: eventTimezone,
-            eventDateInTz: eventDateInTz.toLocaleDateString(),
+            eventDateInTz: eventDateInTz.toISO(),
+            calendarYear: year,
+            calendarMonth: month + 1,
+            calendarDay: day,
+            calendarDate: calendarDate.toLocaleDateString(),
           });
         } else {
           console.warn('[CALENDAR] Event not found:', eventId);
