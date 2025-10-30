@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { DateTime } from 'luxon';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventCard from '@/components/calendar/EventCard';
 import EventForm, { ActivityFormData } from '@/components/calendar/EventForm';
@@ -13,6 +14,7 @@ interface Activity {
   description?: string;
   startAt: number;
   endAt: number;
+  timezone?: string;
   location?: string;
   locationVisibility?: string;
   requiresParentApproval?: boolean;
@@ -171,9 +173,19 @@ export default function CalendarPage() {
           setSelectedActivity(targetEvent);
           
           // Set initial month to the month of the event
-          const eventDate = new Date(targetEvent.startAt);
-          setInitialMonth(eventDate);
-          console.log('[CALENDAR] Setting calendar to month:', eventDate.toLocaleDateString());
+          // CRITICAL: Convert from UTC to event's timezone to get correct month
+          const eventTimezone = targetEvent.timezone || 'America/Los_Angeles';
+          const eventDateInTz = DateTime.fromMillis(targetEvent.startAt)
+            .setZone(eventTimezone)
+            .toJSDate();
+          
+          setInitialMonth(eventDateInTz);
+          console.log('[CALENDAR] Setting calendar to month:', {
+            eventId,
+            startAtUTC: new Date(targetEvent.startAt).toISOString(),
+            timezone: eventTimezone,
+            eventDateInTz: eventDateInTz.toLocaleDateString(),
+          });
         } else {
           console.warn('[CALENDAR] Event not found:', eventId);
         }
