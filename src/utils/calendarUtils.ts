@@ -26,13 +26,17 @@ export const toLocalDateKey = (
  * Check if an event's timestamp falls on the same day as a calendar cell date
  * Uses timezone-aware comparison with the event's saved timezone
  * 
- * CRITICAL: We need to compare both dates in the SAME timezone context.
- * The calendar date is rendered based on the browser's local display,
- * so we compare the event timestamp converted to event timezone with
- * a UTC midnight of the calendar date converted to event timezone.
+ * CRITICAL FIX: The calendar date needs to be converted to UTC midnight first,
+ * then both timestamps are converted to the event's timezone for comparison.
  * 
- * @param eventTime - The event's UTC start time
- * @param calendarDate - The calendar cell date being checked (in browser's local context)
+ * Example:
+ * - Calendar shows Nov 7 (local date object)
+ * - Create UTC midnight: Nov 7, 00:00:00 UTC
+ * - Event: Nov 7, 10:00 AM UTC in America/Los_Angeles
+ * - Compare both in LA timezone
+ * 
+ * @param eventTime - The event's UTC start time (milliseconds)
+ * @param calendarDate - The calendar cell date being checked (local Date object)
  * @param eventTimezone - The event's saved timezone (optional)
  * @returns true if the event falls on this calendar day in its timezone
  */
@@ -41,13 +45,15 @@ export const isSameDay = (
   calendarDate: Date,
   eventTimezone: string = 'America/Chicago'
 ): boolean => {
-  // Get the calendar date as if it were midnight UTC
-  // This represents the "day" the calendar is showing
+  // CRITICAL: Create UTC midnight for the calendar date
+  // NOT browser-local midnight
   const calendarDateMidnightUTC = new Date(
-    calendarDate.getFullYear(),
-    calendarDate.getMonth(),
-    calendarDate.getDate(),
-    0, 0, 0, 0
+    Date.UTC(
+      calendarDate.getUTCFullYear(),
+      calendarDate.getUTCMonth(),
+      calendarDate.getUTCDate(),
+      0, 0, 0, 0
+    )
   ).getTime();
 
   // Convert event timestamp to the event's timezone
@@ -62,6 +68,7 @@ export const isSameDay = (
     eventTime: new Date(eventTime as number).toISOString(),
     eventKey,
     calendarDate: calendarDate.toDateString(),
+    calendarDateUTC: `${calendarDate.getUTCFullYear()}-${String(calendarDate.getUTCMonth() + 1).padStart(2, '0')}-${String(calendarDate.getUTCDate()).padStart(2, '0')}`,
     calendarDateMidnightUTC: new Date(calendarDateMidnightUTC).toISOString(),
     calendarKey,
     match,
