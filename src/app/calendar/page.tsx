@@ -138,12 +138,25 @@ export default function CalendarPage() {
 
       console.log('[CALENDAR] Fetching activities for cliqId:', cliqId);
 
-      const response = await fetch(`/api/activities/list?cliqId=${cliqId}`, {
+      // Fetch events for a full year range (6 months past, 6 months future)
+      // This ensures we have enough data for the calendar view
+      const now = Date.now();
+      const sixMonthsAgo = now - 6 * 30 * 24 * 60 * 60 * 1000;  // Approximate
+      const sixMonthsFuture = now + 6 * 30 * 24 * 60 * 60 * 1000;
+
+      const params = new URLSearchParams({
+        cliqId: cliqId,
+        from: sixMonthsAgo.toString(),
+        to: sixMonthsFuture.toString(),
+      });
+
+      const response = await fetch(`/api/activities/list?${params.toString()}`, {
         method: 'GET',
         credentials: 'include',
       });
 
       console.log('[CALENDAR] Fetch response status:', response.status);
+      console.log('[CALENDAR] Fetch URL:', `/api/activities/list?${params.toString()}`);
 
       if (response.status === 401 || response.status === 403) {
         console.error('[CALENDAR] Auth error:', response.status);
