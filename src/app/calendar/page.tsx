@@ -41,6 +41,7 @@ export default function CalendarPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [session, setSession] = useState<any>(null);
   const [initialMonth, setInitialMonth] = useState<Date | null>(null);
 
@@ -283,6 +284,55 @@ export default function CalendarPage() {
     setSelectedActivity(activity);
   };
 
+  const handleUpdateActivity = async (data: ActivityFormData) => {
+    if (!editingActivity?._id) {
+      console.error('[CALENDAR] No editing activity set');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/activities/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          activityId: editingActivity._id,
+          ...data,
+        }),
+      });
+
+      if (response.status === 401) {
+        router.push('/sign-in');
+        return;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.json().catch(() => ({}));
+        throw new Error(errorText.error || 'Failed to update event');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Event updated successfully!',
+      });
+      
+      setShowForm(false);
+      setEditingActivity(null);
+      setSelectedActivity(null);
+      
+      // Refresh activities
+      if (urlCliqId) {
+        await fetchActivities(urlCliqId, null);
+      }
+    } catch (error) {
+      console.error('[CALENDAR] Update activity error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update event',
+      });
+    }
+  };
+
   const handleRsvp = async (activityId: string, status: string) => {
     try {
       const response = await fetch('/api/activities/rsvp', {
@@ -452,13 +502,27 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* Create Form Modal */}
+      {/* Create/Edit Form Modal */}
       {showForm && urlCliqId && (
         <EventForm
           cliqId={urlCliqId}
           cliqName={selectedCliqName}
-          onSubmit={handleCreateActivity}
-          onClose={() => setShowForm(false)}
+          initialData={editingActivity ? {
+            _id: editingActivity._id,
+            cliqId: urlCliqId,
+            title: editingActivity.title,
+            description: editingActivity.description || '',
+            startAt: editingActivity.startAt,
+            endAt: editingActivity.endAt,
+            timezone: editingActivity.timezone || 'America/Los_Angeles',
+            location: editingActivity.location || '',
+          } : undefined}
+          isEditMode={!!editingActivity}
+          onSubmit={editingActivity ? handleUpdateActivity : handleCreateActivity}
+          onClose={() => {
+            setShowForm(false);
+            setEditingActivity(null);
+          }}
         />
       )}
 
@@ -476,7 +540,7 @@ export default function CalendarPage() {
               locationVisibility={selectedActivity.locationVisibility}
               rsvps={selectedActivity.rsvps}
               canDelete={true} // TODO: Check actual permissions (creator, parent, or cliq owner)
-              onViewDetails={() => {}}
+              onViewDetails={() => {}} // Deprecated - modal opens directly now
               onDelete={() => handleDelete(selectedActivity._id)}
             />
 
@@ -501,6 +565,27 @@ export default function CalendarPage() {
                   className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-3 rounded transition text-sm"
                 >
                   Raincheck
+                </button>
+              </div>
+            </div>
+
+            {/* Edit/Delete Actions */}
+            <div className="mt-6 space-y-3 border-t pt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    setEditingActivity(selectedActivity);
+                    setShowForm(true);
+                  }}
+                  className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-3 rounded transition text-sm"
+                >
+                  Edit Event
+                </button>
+                <button
+                  onClick={() => handleDelete(selectedActivity._id)}
+                  className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-3 rounded transition text-sm"
+                >
+                  Delete Event
                 </button>
               </div>
             </div>

@@ -10,6 +10,8 @@ interface EventFormProps {
   onSubmit: (data: ActivityFormData) => Promise<void>;
   onClose: () => void;
   loading?: boolean;
+  initialData?: ActivityFormData & { _id: string };
+  isEditMode?: boolean;
 }
 
 export interface ActivityFormData {
@@ -30,6 +32,8 @@ export default function EventForm({
   onSubmit,
   onClose,
   loading = false,
+  initialData,
+  isEditMode = false,
 }: EventFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -53,6 +57,20 @@ export default function EventForm({
       // Fall back to default
     }
   }, []);
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description);
+      setDate(new Date(initialData.startAt).toISOString().split('T')[0]);
+      setStartTime(new Date(initialData.startAt).toTimeString().substring(0, 5));
+      setEndTime(new Date(initialData.endAt).toTimeString().substring(0, 5));
+      setLocation(initialData.location);
+      setTimezone(initialData.timezone);
+      setRecurrence(initialData.recurrenceRule || 'none');
+      setEmoji(initialData.emoji || '');
+    }
+  }, [initialData]);
 
   const handleTimezoneTooltip = () => {
     toast({
@@ -210,7 +228,15 @@ export default function EventForm({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-0">
         {/* Header - Sticky */}
         <div className="sticky top-0 bg-white flex justify-between items-center p-6 border-b z-10">
-          <h2 className="text-xl font-bold text-gray-900">Create Activity</h2>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {isEditMode ? 'Edit Event' : 'Add New Activity'}
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">
+              {cliqName && `${cliqName} • `}
+              {isEditMode ? 'Update event details' : 'Schedule something for your cliq'}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-500 hover:text-black transition text-2xl font-light"
@@ -413,7 +439,10 @@ export default function EventForm({
               disabled={isSubmitting || !title || !date}
               className="flex-1 bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-900 disabled:opacity-50 transition"
             >
-              {isSubmitting ? 'Creating...' : 'Create Event'}
+              {isSubmitting 
+                ? (isEditMode ? 'Updating...' : 'Creating...')
+                : (isEditMode ? 'Update Event' : 'Create Event')
+              }
             </button>
           </div>
         </form>
