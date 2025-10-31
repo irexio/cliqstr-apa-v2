@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { Id } from '../../../convex/_generated/dataModel';
 
 interface Announcement {
   id: string;
@@ -10,6 +13,8 @@ interface Announcement {
   description: string;
   timestamp: number;
   clickTarget?: string;
+  isGlobal?: boolean;
+  pinned?: boolean;
 }
 
 interface AnnouncementRotatorProps {
@@ -18,66 +23,66 @@ interface AnnouncementRotatorProps {
 
 export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps) {
   const router = useRouter();
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [sortedItems, setSortedItems] = useState<Announcement[]>([]);
 
-  // Fetch announcements
+  // Fetch announcements directly from Convex query
+  const convexAnnouncements = useQuery(api.announcements.listActiveAnnouncements, {
+    cliqId: cliqId as Id<'cliqs'>,
+  });
+
+  // Process and sort announcements whenever data changes
   useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const res = await fetch(`/api/announcements/list?cliqId=${cliqId}`, {
-          credentials: 'include',
-        });
+    if (!convexAnnouncements) {
+      console.log('[ROTATOR] Loading announcements...');
+      return;
+    }
 
-        if (!res.ok) throw new Error('Failed to fetch announcements');
+    const items: Announcement[] = convexAnnouncements.map((ann: any) => ({
+      id: ann._id.toString(),
+      type: 'announcement',
+      title: ann.title,
+      description: ann.message,
+      timestamp: ann.createdAt,
+      isGlobal: ann.visibility === 'global',
+      pinned: ann.pinned,
+    }));
 
-        const data = await res.json();
-        let items = data.announcements || [];
-        
-        // Apply priority sort order per Aiden's spec:
-        // 1. Global announcements first
-        // 2. Pinned items second
-        // 3. Everything else by date (newest first)
-        items.sort((a: any, b: any) => {
-          // Global announcements first
-          if (a.isGlobal && !b.isGlobal) return -1;
-          if (!a.isGlobal && b.isGlobal) return 1;
-          
-          // Pinned items second
-          if (a.pinned && !b.pinned) return -1;
-          if (!a.pinned && b.pinned) return 1;
-          
-          // Everything else by date (newest first)
-          return (b.timestamp || 0) - (a.timestamp || 0);
-        });
-        
-        setAnnouncements(items);
-        console.log('[ROTATOR] Loaded', items.length, 'announcements (sorted by priority)');
-      } catch (err) {
-        console.error('[ROTATOR] Error fetching:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Apply priority sort per Aiden's spec:
+    // 1. Global announcements first
+    // 2. Pinned items second
+    // 3. Everything else by date (newest first)
+    items.sort((a: any, b: any) => {
+      // Global announcements first
+      if (a.isGlobal && !b.isGlobal) return -1;
+      if (!a.isGlobal && b.isGlobal) return 1;
 
-    fetchAnnouncements();
-  }, [cliqId]);
+      // Pinned items second
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+
+      // Everything else by date (newest first)
+      return (b.timestamp || 0) - (a.timestamp || 0);
+    });
+
+    setSortedItems(items);
+    console.log('[ROTATOR] Loaded', items.length, 'announcements from Convex (sorted by priority)');
+  }, [convexAnnouncements]);
 
   // Auto-rotate
   useEffect(() => {
-    if (announcements.length <= 1) return;
+    if (sortedItems.length <= 1) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % announcements.length);
+      setCurrentIndex((prev) => (prev + 1) % sortedItems.length);
     }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(timer);
-  }, [announcements.length]);
+  }, [sortedItems.length]);
 
-  if (loading || announcements.length === 0) return null;
+  if (!convexAnnouncements || sortedItems.length === 0) return null;
 
-  const current = announcements[currentIndex];
+  const current = sortedItems[currentIndex];
 
   const handleClick = () => {
     if (current.clickTarget) {
@@ -102,15 +107,15 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
           <p className="font-medium truncate">{current.title}</p>
         )}
       </div>
-      
+
       {current.description && (
         <p className="text-xs text-gray-300 mt-1 truncate">{current.description}</p>
       )}
 
       {/* Dot indicators */}
-      {announcements.length > 1 && (
+      {sortedItems.length > 1 && (
         <div className="flex gap-1 mt-2 justify-center">
-          {announcements.map((_, idx) => (
+          {sortedItems.map((_, idx) => (
             <div
               key={idx}
               className={`h-1.5 rounded-full transition ${

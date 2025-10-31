@@ -190,21 +190,27 @@ export const listActiveAnnouncements = query({
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    // Get all announcements that are not expired (or are pinned)
+    // Get all announcements
     const allAnnouncements = await ctx.db
       .query("announcements")
-      .filter((q) =>
-        q.or(
-          q.eq(q.field("pinned"), true),
-          q.gt(q.field("expiresAt"), now)
-        )
-      )
       .collect();
 
-    // Filter to include global announcements + cliq announcements for this cliq
+    // Filter to include:
+    // 1. Global announcements (visible everywhere)
+    // 2. Cliq announcements for this specific cliq (visible only to members)
+    // 3. Only non-expired items (or pinned items which have no expiration)
     const filtered = allAnnouncements.filter((a) => {
+      // Check if announcement is still active (not expired)
+      const isActive = a.pinned === true || (a.expiresAt !== undefined && a.expiresAt > now);
+      
+      if (!isActive) return false;
+
+      // Include global announcements
       if (a.visibility === "global") return true;
-      if (a.visibility === "cliq" && a.cliqId && args.cliqId && a.cliqId === args.cliqId) return true;
+
+      // Include cliq announcements only for the matching cliq
+      if (a.visibility === "cliq" && args.cliqId && a.cliqId === args.cliqId) return true;
+
       return false;
     });
 
