@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     // Call Convex mutation - it will handle permission validation
     await convexHttp.mutation(api.announcements.deleteAnnouncement, {
       id: announcementId as any,
+      createdByUserId: session.userId as any,
     });
 
     return NextResponse.json({ success: true });

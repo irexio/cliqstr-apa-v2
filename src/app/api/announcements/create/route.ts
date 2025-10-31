@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
       message: message.trim(),
       visibility,
       cliqId: cliqId ? (cliqId as any) : undefined,
+      createdByUserId: session.userId as any,
       pinned: !!pinned,
     });
 

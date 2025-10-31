@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       id: announcementId as any,
       title: title.trim(),
       message: message.trim(),
+      createdByUserId: session.userId as any,
       pinned: !!pinned,
     });
 

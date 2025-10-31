@@ -28,6 +28,7 @@ async function isCliqOwner(
 ): Promise<boolean> {
   const cliq = await ctx.db.get(cliqId);
   if (!cliq) return false;
+
   return cliq.ownerId === userId;
 }
 
@@ -45,15 +46,13 @@ export const createAnnouncement = mutation({
     title: v.string(),
     message: v.string(),
     cliqId: v.optional(v.id("cliqs")),
+    createdByUserId: v.id("users"),
     pinned: v.boolean(),
     visibility: v.union(v.literal("global"), v.literal("cliq")),
   },
 
   handler: async (ctx, args) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) throw new Error("Unauthorized");
-
-    const userId = user.subject as Id<"users">;
+    const userId = args.createdByUserId;
 
     // Permission checks
     if (args.visibility === "global") {
@@ -102,14 +101,12 @@ export const updateAnnouncement = mutation({
     id: v.id("announcements"),
     title: v.string(),
     message: v.string(),
+    createdByUserId: v.id("users"),
     pinned: v.boolean(),
   },
 
   handler: async (ctx, args) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) throw new Error("Unauthorized");
-
-    const userId = user.subject as Id<"users">;
+    const userId = args.createdByUserId;
     const announcement = await ctx.db.get(args.id);
 
     if (!announcement) throw new Error("Announcement not found");
@@ -156,13 +153,13 @@ export const updateAnnouncement = mutation({
  * Delete announcement (only creator or superadmin can delete)
  */
 export const deleteAnnouncement = mutation({
-  args: { id: v.id("announcements") },
+  args: {
+    id: v.id("announcements"),
+    createdByUserId: v.id("users"),
+  },
 
   handler: async (ctx, args) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) throw new Error("Unauthorized");
-
-    const userId = user.subject as Id<"users">;
+    const userId = args.createdByUserId;
     const announcement = await ctx.db.get(args.id);
 
     if (!announcement) throw new Error("Announcement not found");
