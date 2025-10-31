@@ -24,15 +24,10 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const [items, setItems] = useState<RotatorItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  console.log('[ROTATOR] Component mounted with cliqId:', cliqId);
-
   // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
-    console.log('[ROTATOR] useEffect running with cliqId:', cliqId);
-    
     const fetchContent = async () => {
       try {
-        console.log('[ROTATOR] Fetching announcements, events, and birthdays...');
         const res = await fetch(`/api/announcements/list?cliqId=${cliqId}`, {
           credentials: 'include',
         });
@@ -42,8 +37,8 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         const data = await res.json();
         let allItems = data.announcements || [];
 
-        console.log('[ROTATOR] Raw API data length:', allItems.length);
-        console.log('[ROTATOR] Raw API data:', JSON.stringify(allItems, null, 2));
+        console.log('[ROTATOR] Loaded items count:', allItems.length);
+        console.log('[ROTATOR] Items:', allItems);
 
         // Apply priority sort per Aiden's spec:
         // 1. Global announcements first
