@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/useAuth';
 import InviteModal from './InviteModal';
+import AnnouncementForm, { AnnouncementFormData } from '@/components/announcements/AnnouncementForm';
 
 // 🔐 APA-HARDENED — Cliq Profile Client Component
 // Renders cliq info passed from server (name, description, etc.)
@@ -27,19 +28,48 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
   const { user } = useAuth();
   const router = useRouter();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  
+  const [announcementModalOpen, setAnnouncementModalOpen] = useState(false);
+
   // Check if user can invite (owner or public cliq member)
   const isOwner = user?.id === cliq.ownerId;
   const canInvite = user?.id && (isOwner || cliq.privacy === 'public' || cliq.privacy === 'semi_private');
+  
+  // Check if user can create announcements (owner or superadmin)
+  const isSuperadmin = user?.role === 'superadmin'; // TODO: Update based on actual superadmin check
+  const canCreateAnnouncements = isOwner || isSuperadmin;
 
   // Debug logging
   console.log('[CliqProfileContent] Debug:', {
     userId: user?.id,
     cliqOwnerId: cliq.ownerId,
     isOwner,
+    isSuperadmin,
+    canCreateAnnouncements,
     cliqId,
     userName: user?.email,
   });
+
+  const handleCreateAnnouncement = async (data: AnnouncementFormData) => {
+    try {
+      const response = await fetch('/api/announcements/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create announcement');
+      }
+
+      // Success - modal will close automatically via AnnouncementForm
+      // Optionally: trigger a refetch of announcements here if needed
+    } catch (error) {
+      console.error('[CliqProfileContent] Error creating announcement:', error);
+      throw error;
+    }
+  };
 
   return (
     <>
@@ -68,6 +98,14 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
                     className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
                   >
                     Edit Cliq
+                  </button>
+                )}
+                {canCreateAnnouncements && (
+                  <button
+                    onClick={() => setAnnouncementModalOpen(true)}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap"
+                  >
+                    + Announcement
                   </button>
                 )}
                 {canInvite && (
@@ -109,6 +147,18 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
         onClose={() => setInviteModalOpen(false)}
         canInvite={canInvite}
       />
+
+      {/* Announcement Modal */}
+      {announcementModalOpen && (
+        <AnnouncementForm
+          cliqId={cliqId}
+          cliqName={cliq.name}
+          isSuperadmin={isSuperadmin}
+          onSubmit={handleCreateAnnouncement}
+          onClose={() => setAnnouncementModalOpen(false)}
+          isEditMode={false}
+        />
+      )}
     </>
   );
 }
