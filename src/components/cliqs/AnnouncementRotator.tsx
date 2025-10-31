@@ -24,6 +24,11 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const [items, setItems] = useState<RotatorItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Show alert when component mounts
+  useEffect(() => {
+    alert(`[ROTATOR] Component mounted with cliqId: ${cliqId}`);
+  }, []);
+
   // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
     const fetchContent = async () => {
@@ -37,8 +42,8 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         const data = await res.json();
         let allItems = data.announcements || [];
 
-        console.log('[ROTATOR] Loaded items count:', allItems.length);
-        console.log('[ROTATOR] Items:', allItems);
+        alert(`[ROTATOR] API returned ${allItems.length} items`);
+        alert(`[ROTATOR] Items data: ${JSON.stringify(allItems)}`);
 
         // Apply priority sort per Aiden's spec:
         // 1. Global announcements first
@@ -58,7 +63,7 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         });
 
         setItems(allItems);
-        console.log('[ROTATOR] ✅ Loaded', allItems.length, 'total items (announcements + events + birthdays)');
+        alert(`[ROTATOR] ✅ Loaded ${allItems.length} total items (announcements + events + birthdays)`);
       } catch (err) {
         console.error('[ROTATOR] Error fetching:', err);
       } finally {
@@ -81,7 +86,7 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   }, [items.length]);
 
   if (loading || items.length === 0) {
-    console.log('[ROTATOR] Early return - loading:', loading, 'items:', items.length);
+    alert(`[ROTATOR] Early return - loading: ${loading}, items: ${items.length}`);
     if (loading) {
       return <div style={{fontSize: '10px', color: '#999', textAlign: 'center', padding: '4px', background: '#fff0f0', margin: '4px 0', borderRadius: '4px'}}>[DEBUG] AnnouncementRotator loading...</div>;
     }
@@ -91,18 +96,18 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const current = items[currentIndex];
 
   const handleClick = () => {
-    console.log('[ROTATOR] Click handler triggered on item:', {
+    alert(`[ROTATOR] Click handler triggered on item: ${JSON.stringify({
       type: current.type,
       title: current.title,
       clickTarget: current.clickTarget,
       hasClickTarget: !!current.clickTarget,
-    });
+    })}`);
     
     if (current.clickTarget) {
-      console.log('[ROTATOR] Navigating to:', current.clickTarget);
+      alert(`[ROTATOR] Navigating to: ${current.clickTarget}`);
       router.push(current.clickTarget);
     } else {
-      console.log('[ROTATOR] No clickTarget available for this item');
+      alert('[ROTATOR] No clickTarget available for this item');
     }
   };
 
