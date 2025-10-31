@@ -7,6 +7,7 @@ import CalendarView from '@/components/calendar/CalendarView';
 import EventCard from '@/components/calendar/EventCard';
 import EventForm, { ActivityFormData } from '@/components/calendar/EventForm';
 import toast from '@/components/ui/use-toast';
+import { CalendarIcon } from 'lucide-react';
 
 interface Activity {
   _id: string;
@@ -415,7 +416,10 @@ export default function CalendarPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">📅 Calendar</h1>
+        <div className="flex items-center gap-2 mb-2">
+          <CalendarIcon className="w-8 h-8 text-black" />
+          <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
+        </div>
         <p className="text-gray-600">
           {selectedCliqName ? `${selectedCliqName} • View and manage activities` : 'View and manage activities across your cliqs'}
         </p>
@@ -571,20 +575,20 @@ export default function CalendarPage() {
 
             {/* Edit/Delete Actions */}
             <div className="mt-6 space-y-3 border-t pt-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => {
                     setEditingActivity(selectedActivity);
                     setSelectedActivity(null); // Close the modal
                     setShowForm(true);
                   }}
-                  className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-3 rounded transition text-sm"
+                  className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-3 rounded transition text-sm"
                 >
                   Edit Event
                 </button>
                 <button
                   onClick={() => handleDelete(selectedActivity._id)}
-                  className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-3 rounded transition text-sm"
+                  className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-3 rounded transition text-sm"
                 >
                   Delete Event
                 </button>

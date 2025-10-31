@@ -4,6 +4,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { useState } from 'react';
+import { BellIcon } from 'lucide-react';
 import AnnouncementCard from './AnnouncementCard';
 import toast from '@/components/ui/use-toast';
 
@@ -61,7 +62,10 @@ export default function AnnouncementsList({
     <div className="space-y-3">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold text-gray-900">Announcements</h2>
+        <div className="flex items-center gap-2">
+          <BellIcon className="w-5 h-5 text-black" />
+          <h2 className="text-lg font-semibold text-gray-900">Announcements</h2>
+        </div>
         <span className="text-sm text-gray-500">{announcements.length} active</span>
       </div>
 
