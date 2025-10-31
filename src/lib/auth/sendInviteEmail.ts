@@ -29,10 +29,15 @@ export async function sendInviteEmail({
   }
   
   const declineLink = `${BASE_URL}/api/invite/decline?code=${encodeURIComponent(inviteCode)}`;
+  const logoSrc = `${BASE_URL}/MASTERLOGO-BLACK.png`;
   const subject = `${inviterName} invited you to ${cliqName} — join?`;
 
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;background:#ffffff;padding:32px 20px;color:#333;">
+      <!-- Logo -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <img src="${logoSrc}" alt="Cliqstr" width="200" style="display:inline-block;" />
+      </div>
       <h1 style="font-size:20px;font-weight:700;margin:0 0 12px;">Join ${inviterName}'s Cliq: ${cliqName}</h1>
       ${inviteNote ? `<blockquote style="margin:0 0 12px;padding-left:12px;border-left:3px solid #ddd;color:#555;">${inviteNote}</blockquote>` : ''}
       <p style="margin:0 0 16px;color:#555;">Cliqstr is a simple, invite‑only space — no ads, no strangers. You'll choose a plan (free test plan available) and be ready in minutes.</p>
