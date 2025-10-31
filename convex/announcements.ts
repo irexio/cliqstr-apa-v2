@@ -70,16 +70,24 @@ export const createAnnouncement = mutation({
     const now = Date.now();
     const expiresAt = args.pinned ? undefined : now + 14 * 24 * 60 * 60 * 1000; // 14 days
 
-    const announcementId = await ctx.db.insert("announcements", {
+    const insertData: any = {
       title: args.title,
       message: args.message,
-      cliqId: args.visibility === "cliq" ? args.cliqId : undefined,
       createdByUserId: userId,
       createdAt: now,
+      updatedAt: now,
       pinned: args.pinned,
       expiresAt,
       visibility: args.visibility,
-    });
+    };
+
+    // For cliq announcements, include cliqId (required)
+    // For global announcements, omit cliqId (not needed)
+    if (args.visibility === "cliq" && args.cliqId) {
+      insertData.cliqId = args.cliqId;
+    }
+
+    const announcementId = await ctx.db.insert("announcements", insertData);
 
     return announcementId;
   },
