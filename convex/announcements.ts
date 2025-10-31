@@ -202,8 +202,21 @@ export const listActiveAnnouncements = query({
     // 3. Only non-expired items (or pinned items which have no expiration)
     const filtered = allAnnouncements.filter((a) => {
       // Check if announcement is still active (not expired)
-      const isActive = a.pinned === true || (a.expiresAt !== undefined && a.expiresAt > now);
+      // For rotator display, show ALL announcements (expired or not)
+      // The expiration is just metadata at this point
+      const isExpired = a.expiresAt !== undefined && a.expiresAt < now;
       
+      console.log('[listActiveAnnouncements] Checking announcement:', {
+        title: a.title,
+        pinned: a.pinned,
+        expiresAt: a.expiresAt,
+        now,
+        isExpired,
+        willInclude: !isExpired || a.pinned === true,
+      });
+
+      // Include if not expired OR if pinned
+      const isActive = a.pinned === true || !isExpired;
       if (!isActive) return false;
 
       // Include global announcements
@@ -215,7 +228,6 @@ export const listActiveAnnouncements = query({
       return false;
     });
 
-    // Sort by creation date descending (newest first)
     return filtered.sort((a, b) => b.createdAt - a.createdAt);
   },
 });
