@@ -9,11 +9,12 @@ export const dynamic = 'force-dynamic';
 
 interface Announcement {
   id: string;
-  type: 'birthday' | 'event' | 'notice';
+  type: 'birthday' | 'event' | 'announcement' | 'notice';
   title: string;
   description: string;
   timestamp: number;
   clickTarget?: string; // URL to navigate to on click
+  isGlobal?: boolean; // true if global announcement
 }
 
 export async function GET(req: NextRequest) {
@@ -33,7 +34,27 @@ export async function GET(req: NextRequest) {
 
     const announcements: Announcement[] = [];
 
-    // 1. Fetch Cliq Notices (admin messages)
+    // 1. Fetch Active Announcements (global + cliq-specific)
+    try {
+      const announcementData = await convexHttp.query(api.announcements.listActiveAnnouncements, {
+        cliqId: cliqId as any,
+      });
+
+      for (const ann of announcementData) {
+        announcements.push({
+          id: ann._id.toString(),
+          type: 'announcement',
+          title: ann.title,
+          description: ann.message,
+          timestamp: ann.createdAt,
+          isGlobal: ann.visibility === 'global',
+        });
+      }
+    } catch (err) {
+      console.error('[ANNOUNCEMENTS] Error fetching announcements:', err);
+    }
+
+    // 2. Fetch Cliq Notices (admin messages) - legacy support
     try {
       const notices = await convexHttp.query(api.cliqNotices.getNoticesByCliq, {
         cliqId: cliqId as any,
@@ -52,7 +73,7 @@ export async function GET(req: NextRequest) {
       console.error('[ANNOUNCEMENTS] Error fetching notices:', err);
     }
 
-    // 2. Fetch Upcoming Events
+    // 3. Fetch Upcoming Events
     try {
       const now = Date.now();
       const upcoming = now + 30 * 24 * 60 * 60 * 1000; // Next 30 days
@@ -81,7 +102,7 @@ export async function GET(req: NextRequest) {
       console.error('[ANNOUNCEMENTS] Error fetching events:', err);
     }
 
-    // 3. Fetch Member Birthdays (today only, from profiles)
+    // 4. Fetch Member Birthdays (today only, from profiles)
     // TODO: Implement birthday fetching from myProfiles birthdayMonthDay
     // For now, this is placeholder
     try {
@@ -93,8 +114,14 @@ export async function GET(req: NextRequest) {
       console.error('[ANNOUNCEMENTS] Error fetching birthdays:', err);
     }
 
-    // Sort by timestamp (most recent first)
-    announcements.sort((a, b) => b.timestamp - a.timestamp);
+    // Sort: Global announcements first, then by timestamp (newest first)
+    announcements.sort((a, b) => {
+      // Global announcements come first
+      if (a.isGlobal && !b.isGlobal) return -1;
+      if (!a.isGlobal && b.isGlobal) return 1;
+      // Then sort by timestamp (newest first)
+      return b.timestamp - a.timestamp;
+    });
 
     console.log('[ANNOUNCEMENTS] Returning', announcements.length, 'announcements');
     return NextResponse.json({ announcements });

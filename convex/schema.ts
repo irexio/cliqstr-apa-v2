@@ -114,6 +114,21 @@ export default defineSchema({
     .index("by_cliq_id", ["cliqId"])
     .index("by_expires_at", ["expiresAt"]),
 
+  announcements: defineTable({
+    title: v.string(),
+    message: v.string(),
+    cliqId: v.optional(v.id("cliqs")), // null for global announcements
+    createdByUserId: v.id("users"),
+    createdAt: v.number(),
+    pinned: v.boolean(),
+    expiresAt: v.optional(v.number()), // null if pinned
+    visibility: v.union(v.literal("global"), v.literal("cliq")),
+  })
+    .index("by_visibility", ["visibility"])
+    .index("by_cliq_visibility", ["cliqId", "visibility"])
+    .index("by_created_at", ["createdAt"])
+    .index("by_expires_at", ["expiresAt"]),
+
   posts: defineTable({
     content: v.string(),
     image: v.optional(v.string()),

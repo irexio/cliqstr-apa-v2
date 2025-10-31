@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as accounts from "../accounts.js";
+import type * as announcements from "../announcements.js";
 import type * as cliqNotices from "../cliqNotices.js";
 import type * as cliqs from "../cliqs.js";
 import type * as events from "../events.js";
@@ -42,6 +43,7 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
+  announcements: typeof announcements;
   cliqNotices: typeof cliqNotices;
   cliqs: typeof cliqs;
   events: typeof events;
