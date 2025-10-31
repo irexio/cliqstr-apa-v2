@@ -62,43 +62,44 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
         )}
         
         {/* Cliq Info Card - Same Width as Banner */}
-        <div className="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-6">
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900">{cliq.name}</h1>
-                {cliq.description && <p className="text-gray-600">{cliq.description}</p>}
-              </div>
-              <div className="flex gap-2">
-                {isOwner && (
-                  <button
-                    onClick={() => router.push(`/cliqs/${cliqId}/edit`)}
-                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
-                  >
-                    Edit Cliq
-                  </button>
-                )}
-                {canCreateAnnouncements && (
-                  <button
-                    onClick={() => setAnnouncementModalOpen(true)}
-                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
-                  >
-                    + Announcement
-                  </button>
-                )}
-                {canInvite && (
-                  <button
-                    onClick={() => setInviteModalOpen(true)}
-                    className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                  >
-                    Invite
-                  </button>
-                )}
-              </div>
+        <div className="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-3">
+            {/* Title and Description - Full Width on Mobile */}
+            <div className="w-full">
+              <h1 className="text-2xl font-bold text-gray-900">{cliq.name}</h1>
+              {cliq.description && <p className="text-gray-600 text-sm sm:text-base">{cliq.description}</p>}
+            </div>
+            
+            {/* Buttons - Stack on mobile, inline on desktop */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+              {isOwner && (
+                <button
+                  onClick={() => router.push(`/cliqs/${cliqId}/edit`)}
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
+                >
+                  Edit Cliq
+                </button>
+              )}
+              {canCreateAnnouncements && (
+                <button
+                  onClick={() => setAnnouncementModalOpen(true)}
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
+                >
+                  + Announcement
+                </button>
+              )}
+              {canInvite && (
+                <button
+                  onClick={() => setInviteModalOpen(true)}
+                  className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                >
+                  Invite
+                </button>
+              )}
             </div>
             
             {/* Cliq Status */}
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                 <span className="font-medium">
