@@ -79,9 +79,65 @@ function InviteAcceptContent() {
       // For any invite with a recipient email, check if user needs to authenticate
       const inviteType = inviteData.inviteType || 'adult';
       if (inviteData.recipientEmail) {
-        console.log('[INVITE_ACCEPT] Invite with email, checking if user needs authentication');
+        console.log('[INVITE_ACCEPT] Invite with email, checking authentication status');
         
-        // Check if this email belongs to an existing user
+        // 🔐 CRITICAL: Check if user is ALREADY authenticated FIRST
+        // This prevents redirect loops after sign-in
+        try {
+          const authRes = await fetch('/api/auth/status', { method: 'GET', cache: 'no-store', credentials: 'include' });
+          if (authRes.ok) {
+            const { user } = await authRes.json();
+            if (user?.id) {
+              console.log('[INVITE_ACCEPT] User is authenticated, checking email match');
+              // 🔐 SECURITY: Verify the authenticated user's email matches the invite recipient
+              const userEmail = user.email?.toLowerCase().trim();
+              const inviteEmail = inviteData.recipientEmail?.toLowerCase().trim();
+              
+              console.log('[INVITE_ACCEPT] Auth check - User email:', userEmail, 'Invite email:', inviteEmail);
+              
+              if (userEmail === inviteEmail) {
+                console.log('[INVITE_ACCEPT] ✅ Email match! User is authenticated with correct email');
+                // User is authenticated with the correct email - proceed with auto-join
+                const hasPlan = !!(user.account?.plan || user.plan);
+                if (inviteType === 'adult' && inviteData.cliqId && hasPlan) {
+                  console.log('[INVITE_ACCEPT] Authenticated adult with plan detected. Auto-joining to cliq:', inviteData.cliqId);
+                  try {
+                    const joinRes = await fetch(`/api/cliqs/${inviteData.cliqId}/join`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                    });
+                    if (joinRes.ok) {
+                      console.log('[INVITE_ACCEPT] Auto-join successful. Redirecting to My Cliqs Dashboard');
+                      router.push('/my-cliqs-dashboard');
+                      return;
+                    } else {
+                      console.warn('[INVITE_ACCEPT] Auto-join failed with status:', joinRes.status);
+                    }
+                  } catch (joinErr) {
+                    console.error('[INVITE_ACCEPT] Auto-join error:', joinErr);
+                  }
+                } else if (inviteType === 'adult' && inviteData.cliqId) {
+                  console.log('[INVITE_ACCEPT] Adult authenticated but no plan - redirecting to choose-plan');
+                  router.push('/choose-plan');
+                  return;
+                }
+                // For other flows, continue with normal processing
+              } else {
+                console.warn('[INVITE_ACCEPT] ⚠️ EMAIL MISMATCH - User is logged in as different account!');
+                console.warn(`[INVITE_ACCEPT] User: ${userEmail}, Invite for: ${inviteEmail}`);
+                // Force re-authentication - redirect to sign-out with proper redirect URL
+                const signInUrl = `/sign-in?email=${encodeURIComponent(inviteEmail)}&code=${encodeURIComponent(token)}`;
+                return router.push(`/sign-out?redirect=${encodeURIComponent(signInUrl)}`);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[INVITE_ACCEPT] Auth status check failed (non-fatal):', error);
+        }
+        
+        // If not already authenticated, check if email exists to show auth options
+        console.log('[INVITE_ACCEPT] User not authenticated yet, checking if email exists');
         try {
           const userCheckResponse = await fetch(`/api/auth/check-user?email=${encodeURIComponent(inviteData.recipientEmail)}`);
           const userCheckData = await userCheckResponse.json();
@@ -101,78 +157,10 @@ function InviteAcceptContent() {
         }
       }
 
-      // If the user is already authenticated, handle auto-join for eligible cases
-      try {
-        const authRes = await fetch('/api/auth/status', { method: 'GET', cache: 'no-store', credentials: 'include' });
-        if (authRes.ok) {
-          const { user } = await authRes.json();
-          if (user?.id) {
-            // 🔐 SECURITY: Verify the authenticated user's email matches the invite recipient
-            // This prevents session hijacking where someone accepts an invite meant for another email
-            const userEmail = user.email?.toLowerCase().trim();
-            const inviteEmail = inviteData.recipientEmail?.toLowerCase().trim();
-            
-            console.log('[INVITE_ACCEPT] Auth check - User email:', userEmail, 'Invite email:', inviteEmail);
-            
-            if (userEmail !== inviteEmail) {
-              console.warn('[INVITE_ACCEPT] ⚠️ EMAIL MISMATCH - User is logged in as different account!');
-              console.warn(`[INVITE_ACCEPT] User: ${userEmail}, Invite for: ${inviteEmail}`);
-              // Force re-authentication - redirect to sign-out with proper redirect URL
-              const signInUrl = `/sign-in?email=${encodeURIComponent(inviteEmail)}&code=${encodeURIComponent(token)}`;
-              return router.push(`/sign-out?redirect=${encodeURIComponent(signInUrl)}`);
-            }
-            
-            // If this is an ADULT invite and the user already has a plan, auto-join immediately
-            const hasPlan = !!(user.account?.plan || user.plan);
-            if (inviteType === 'adult' && inviteData.cliqId && hasPlan) {
-              console.log('[INVITE_ACCEPT] Authenticated adult with plan detected. Auto-joining to cliq:', inviteData.cliqId);
-              try {
-                const joinRes = await fetch(`/api/cliqs/${inviteData.cliqId}/join`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include',
-                });
-                if (joinRes.ok) {
-                  console.log('[INVITE_ACCEPT] Auto-join successful. Redirecting to My Cliqs Dashboard');
-                  router.push('/my-cliqs-dashboard');
-                  return;
-                } else {
-                  console.warn('[INVITE_ACCEPT] Auto-join failed with status:', joinRes.status, '— proceeding with normal flow');
-                }
-              } catch (joinErr) {
-                console.error('[INVITE_ACCEPT] Auto-join error:', joinErr);
-              }
-            } else if (inviteType === 'adult' && inviteData.cliqId) {
-              console.log('[INVITE_ACCEPT] Adult without plan - needs to select plan first', {
-                hasPlan,
-                inviteType,
-                cliqId: inviteData.cliqId
-              });
-            }
-          }
-        }
-      } catch (authErr) {
-        console.error('[INVITE_ACCEPT] Auth status check failed (non-fatal):', authErr);
-      }
-
       // Route based on invite type
-      // IMPORTANT: Only route to sign-up/choose-plan if NOT already authenticated
-      // If user is authenticated, the code above should have already handled it
-      const authRes = await fetch('/api/auth/status', { method: 'GET', cache: 'no-store', credentials: 'include' });
-      let isAuthenticated = false;
-      if (authRes.ok) {
-        const { user } = await authRes.json();
-        isAuthenticated = !!user?.id;
-      }
-
-      // If already authenticated but didn't auto-join, something went wrong - show error
-      if (isAuthenticated) {
-        console.warn('[INVITE_ACCEPT] User is authenticated but auto-join did not occur. This may indicate a plan/cliq membership issue.');
-        setError('Could not auto-join cliq. Please try manually joining or contact support.');
-        setLoading(false);
-        return;
-      }
-
+      // At this point, if user was authenticated with matching email, they should have already been auto-joined or shown an error
+      // Only route to sign-up/choose-plan for NEW (unauthenticated) users
+      
       if (inviteType === 'adult') {
         console.log('[INVITE_ACCEPT] Routing adult to choose-plan');
         console.log('[INVITE_ACCEPT] Adult invite data:', {
