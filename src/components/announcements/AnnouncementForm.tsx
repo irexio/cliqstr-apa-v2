@@ -252,7 +252,7 @@ export default function AnnouncementForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 text-white bg-black rounded-lg hover:bg-gray-800 disabled:opacity-50"
             >
               {isSubmitting
                 ? isEditMode

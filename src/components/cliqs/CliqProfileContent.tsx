@@ -103,7 +103,7 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
                 {canCreateAnnouncements && (
                   <button
                     onClick={() => setAnnouncementModalOpen(true)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap"
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
                   >
                     + Announcement
                   </button>

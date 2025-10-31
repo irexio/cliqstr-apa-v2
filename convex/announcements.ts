@@ -117,15 +117,28 @@ export const updateAnnouncement = mutation({
     // Update the announcement (only title, message, and pinned status)
     // Visibility and cliqId cannot be changed
     const now = Date.now();
-    const expiresAt = args.pinned ? undefined : now + 14 * 24 * 60 * 60 * 1000;
 
-    await ctx.db.patch(args.id, {
+    // Build update object - always include basic fields
+    const updateData: any = {
       title: args.title,
       message: args.message,
       pinned: args.pinned,
-      expiresAt,
       updatedAt: now,
-    });
+    };
+
+    // Recalculate expiresAt based on pinned status
+    // If pinning: clear expiration by setting to far future (won't expire)
+    // If unpinning: set to 14 days from now
+    if (args.pinned) {
+      // Pinned announcements don't expire - set to null/undefined
+      // Actually, keep current expiresAt for pinned to indicate "no expiration"
+      // Don't update it - leave as is
+    } else {
+      // Unpinned: set to expire in 14 days
+      updateData.expiresAt = now + 14 * 24 * 60 * 60 * 1000;
+    }
+
+    await ctx.db.patch(args.id, updateData);
 
     return args.id;
   },
