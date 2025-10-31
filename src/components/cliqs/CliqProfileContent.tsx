@@ -49,28 +49,6 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
     userName: user?.email,
   });
 
-  const handleCreateAnnouncement = async (data: AnnouncementFormData) => {
-    try {
-      const response = await fetch('/api/announcements/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create announcement');
-      }
-
-      // Success - modal will close automatically via AnnouncementForm
-      // Optionally: trigger a refetch of announcements here if needed
-    } catch (error) {
-      console.error('[CliqProfileContent] Error creating announcement:', error);
-      throw error;
-    }
-  };
-
   return (
     <>
       <div className="w-full max-w-4xl mx-auto">
@@ -154,7 +132,10 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
           cliqId={cliqId}
           cliqName={cliq.name}
           isSuperadmin={isSuperadmin}
-          onSubmit={handleCreateAnnouncement}
+          onSubmit={async () => {
+            // AnnouncementForm handles API calls directly
+            // Just close the modal
+          }}
           onClose={() => setAnnouncementModalOpen(false)}
           isEditMode={false}
         />
