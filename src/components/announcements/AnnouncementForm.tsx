@@ -67,7 +67,7 @@ export default function AnnouncementForm({
       return;
     }
 
-    if (visibility === 'cliq' && !cliqId) {
+    if (!isEditMode && visibility === 'cliq' && !cliqId) {
       toast({
         title: 'Error',
         description: 'Cliq announcement requires a cliq',
@@ -77,13 +77,44 @@ export default function AnnouncementForm({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
-        title: title.trim(),
-        message: message.trim(),
-        visibility,
-        cliqId: visibility === 'cliq' ? cliqId : undefined,
-        pinned,
-      });
+      if (isEditMode && initialData) {
+        // Edit mode: call update endpoint
+        const response = await fetch('/api/announcements/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            announcementId: initialData._id,
+            title: title.trim(),
+            message: message.trim(),
+            pinned,
+          }),
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update announcement');
+        }
+      } else {
+        // Create mode: call create endpoint
+        const response = await fetch('/api/announcements/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title.trim(),
+            message: message.trim(),
+            visibility,
+            cliqId: visibility === 'cliq' ? cliqId : undefined,
+            pinned,
+          }),
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create announcement');
+        }
+      }
 
       toast({
         title: 'Success',
@@ -155,7 +186,7 @@ export default function AnnouncementForm({
           </div>
 
           {/* Visibility (only show for superadmin) */}
-          {isSuperadmin && (
+          {isSuperadmin && !isEditMode && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Visibility

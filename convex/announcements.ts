@@ -86,6 +86,52 @@ export const createAnnouncement = mutation({
 });
 
 /**
+ * Update announcement (only creator or superadmin can edit)
+ * Does NOT allow changing visibility - that's a delete + recreate operation
+ */
+export const updateAnnouncement = mutation({
+  args: {
+    id: v.id("announcements"),
+    title: v.string(),
+    message: v.string(),
+    pinned: v.boolean(),
+  },
+
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) throw new Error("Unauthorized");
+
+    const userId = user.subject as Id<"users">;
+    const announcement = await ctx.db.get(args.id);
+
+    if (!announcement) throw new Error("Announcement not found");
+
+    // Only creator or superadmin can update
+    const isCreator = announcement.createdByUserId === userId;
+    const isAdmin = await isSuperadmin(ctx, userId);
+
+    if (!isCreator && !isAdmin) {
+      throw new Error("Only creator or superadmin can update this announcement");
+    }
+
+    // Update the announcement (only title, message, and pinned status)
+    // Visibility and cliqId cannot be changed
+    const now = Date.now();
+    const expiresAt = args.pinned ? undefined : now + 14 * 24 * 60 * 60 * 1000;
+
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      message: args.message,
+      pinned: args.pinned,
+      expiresAt,
+      updatedAt: now,
+    });
+
+    return args.id;
+  },
+});
+
+/**
  * Delete announcement (only creator or superadmin can delete)
  */
 export const deleteAnnouncement = mutation({
@@ -159,5 +205,45 @@ export const getAnnouncement = query({
     const announcement = await ctx.db.get(args.id);
     if (!announcement) throw new Error("Announcement not found");
     return announcement;
+  },
+});
+
+/**
+ * List ALL announcements for a cliq (active + expired)
+ * Used for admin management views
+ */
+export const listAllByCliq = query({
+  args: { cliqId: v.id("cliqs") },
+
+  handler: async (ctx, args) => {
+    // Get all announcements for this cliq, regardless of expiration
+    const cliqAnnouncements = await ctx.db
+      .query("announcements")
+      .withIndex("by_cliq_visibility", (q) =>
+        q.eq("cliqId", args.cliqId).eq("visibility", "cliq")
+      )
+      .collect();
+
+    // Sort by creation date descending (newest first)
+    return cliqAnnouncements.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
+/**
+ * List all GLOBAL announcements (active + expired)
+ * Superadmin-only query for admin management
+ */
+export const listGlobalAnnouncements = query({
+  args: {},
+
+  handler: async (ctx) => {
+    // Get all global announcements, regardless of expiration
+    const globalAnnouncements = await ctx.db
+      .query("announcements")
+      .withIndex("by_visibility", (q) => q.eq("visibility", "global"))
+      .collect();
+
+    // Sort by creation date descending (newest first)
+    return globalAnnouncements.sort((a, b) => b.createdAt - a.createdAt);
   },
 });

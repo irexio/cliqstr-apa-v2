@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Pin } from 'lucide-react';
+import { Trash2, Pin, Edit2 } from 'lucide-react';
 import toast from '@/components/ui/use-toast';
+import AnnouncementForm, { AnnouncementFormData } from './AnnouncementForm';
 
 interface Announcement {
   _id: string;
@@ -17,15 +18,18 @@ interface Announcement {
 interface AnnouncementCardProps {
   announcement: Announcement;
   canDelete: boolean;
+  canEdit?: boolean;
   onDelete?: (announcementId: string) => Promise<void>;
 }
 
 export default function AnnouncementCard({
   announcement,
   canDelete,
+  canEdit = false,
   onDelete,
 }: AnnouncementCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const handleDelete = async () => {
     if (!onDelete) return;
@@ -58,6 +62,29 @@ export default function AnnouncementCard({
     year: announcement.createdAt < Date.now() - 365 * 24 * 60 * 60 * 1000 ? 'numeric' : undefined,
   });
 
+  // If in edit mode, show the form
+  if (isEditMode && canEdit) {
+    return (
+      <AnnouncementForm
+        cliqId=""
+        isSuperadmin={announcement.visibility === 'global'}
+        onSubmit={async () => {
+          // Form will handle the update
+          setIsEditMode(false);
+        }}
+        onClose={() => setIsEditMode(false)}
+        initialData={{
+          _id: announcement._id,
+          title: announcement.title,
+          message: announcement.message,
+          visibility: announcement.visibility,
+          pinned: announcement.pinned,
+        }}
+        isEditMode={true}
+      />
+    );
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3">
       <div className="flex items-start justify-between gap-3">
@@ -88,17 +115,29 @@ export default function AnnouncementCard({
           </p>
         </div>
 
-        {/* Delete Button */}
-        {canDelete && (
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 text-gray-600 hover:text-red-600 flex-shrink-0"
-            title="Delete announcement"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
+        {/* Action Buttons */}
+        <div className="flex gap-1">
+          {canEdit && (
+            <button
+              onClick={() => setIsEditMode(true)}
+              disabled={isDeleting}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 text-gray-600 hover:text-blue-600 flex-shrink-0"
+              title="Edit announcement"
+            >
+              <Edit2 size={16} />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 text-gray-600 hover:text-red-600 flex-shrink-0"
+              title="Delete announcement"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

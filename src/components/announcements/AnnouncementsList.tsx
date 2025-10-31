@@ -72,6 +72,7 @@ export default function AnnouncementsList({
             key={announcement._id}
             announcement={announcement}
             canDelete={canDeleteAnnouncements}
+            canEdit={canDeleteAnnouncements}
             onDelete={handleDeleteAnnouncement}
           />
         ))}

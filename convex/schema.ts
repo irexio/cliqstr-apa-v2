@@ -120,6 +120,7 @@ export default defineSchema({
     cliqId: v.optional(v.id("cliqs")), // null for global announcements
     createdByUserId: v.id("users"),
     createdAt: v.number(),
+    updatedAt: v.optional(v.number()), // When last edited
     pinned: v.boolean(),
     expiresAt: v.optional(v.number()), // null if pinned
     visibility: v.union(v.literal("global"), v.literal("cliq")),
