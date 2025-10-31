@@ -117,8 +117,9 @@ function InviteAcceptContent() {
             if (userEmail !== inviteEmail) {
               console.warn('[INVITE_ACCEPT] ⚠️ EMAIL MISMATCH - User is logged in as different account!');
               console.warn(`[INVITE_ACCEPT] User: ${userEmail}, Invite for: ${inviteEmail}`);
-              // Force re-authentication - redirect to sign-out then sign-in with correct email
-              return router.push(`/sign-out?redirect=/sign-in?email=${encodeURIComponent(inviteEmail)}`);
+              // Force re-authentication - redirect to sign-out with proper redirect URL
+              const signInUrl = `/sign-in?email=${encodeURIComponent(inviteEmail)}&code=${encodeURIComponent(token)}`;
+              return router.push(`/sign-out?redirect=${encodeURIComponent(signInUrl)}`);
             }
             
             // If this is an ADULT invite and the user already has a plan, auto-join immediately
