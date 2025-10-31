@@ -2,13 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useQuery } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
 
-interface Announcement {
+interface RotatorItem {
   id: string;
-  type: 'birthday' | 'event' | 'announcement' | 'notice';
+  type: 'birthday' | 'event' | 'announcement';
   title: string;
   description: string;
   timestamp: number;
@@ -24,72 +21,68 @@ interface AnnouncementRotatorProps {
 export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sortedItems, setSortedItems] = useState<Announcement[]>([]);
+  const [items, setItems] = useState<RotatorItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch announcements directly from Convex query
-  const convexAnnouncements = useQuery(api.announcements.listActiveAnnouncements, {
-    cliqId: cliqId as Id<'cliqs'>,
-  });
-
-  // Process and sort announcements whenever data changes
+  // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
-    console.log('[ROTATOR] useEffect triggered, convexAnnouncements:', convexAnnouncements);
-    
-    if (!convexAnnouncements) {
-      console.log('[ROTATOR] Loading announcements... (convexAnnouncements is null/undefined)');
-      return;
-    }
+    const fetchContent = async () => {
+      try {
+        console.log('[ROTATOR] Fetching announcements, events, and birthdays...');
+        const res = await fetch(`/api/announcements/list?cliqId=${cliqId}`, {
+          credentials: 'include',
+        });
 
-    console.log('[ROTATOR] Raw Convex data:', JSON.stringify(convexAnnouncements, null, 2));
+        if (!res.ok) throw new Error('Failed to fetch content');
 
-    const items: Announcement[] = convexAnnouncements.map((ann: any) => ({
-      id: ann._id.toString(),
-      type: 'announcement',
-      title: ann.title,
-      description: ann.message,
-      timestamp: ann.createdAt,
-      isGlobal: ann.visibility === 'global',
-      pinned: ann.pinned,
-    }));
+        const data = await res.json();
+        let allItems = data.announcements || [];
 
-    console.log('[ROTATOR] Mapped items:', items);
+        console.log('[ROTATOR] Raw API data:', JSON.stringify(allItems, null, 2));
 
-    // Apply priority sort per Aiden's spec:
-    // 1. Global announcements first
-    // 2. Pinned items second
-    // 3. Everything else by date (newest first)
-    items.sort((a: any, b: any) => {
-      // Global announcements first
-      if (a.isGlobal && !b.isGlobal) return -1;
-      if (!a.isGlobal && b.isGlobal) return 1;
+        // Apply priority sort per Aiden's spec:
+        // 1. Global announcements first
+        // 2. Pinned items second
+        // 3. Everything else by date (newest first)
+        allItems.sort((a: any, b: any) => {
+          // Global announcements first
+          if (a.isGlobal && !b.isGlobal) return -1;
+          if (!a.isGlobal && b.isGlobal) return 1;
 
-      // Pinned items second
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
+          // Pinned items second
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
 
-      // Everything else by date (newest first)
-      return (b.timestamp || 0) - (a.timestamp || 0);
-    });
+          // Everything else by date (newest first)
+          return (b.timestamp || 0) - (a.timestamp || 0);
+        });
 
-    console.log('[ROTATOR] Sorted items:', items);
-    setSortedItems(items);
-    console.log('[ROTATOR] ✅ Loaded', items.length, 'announcements from Convex (sorted by priority)');
-  }, [convexAnnouncements]);
+        setItems(allItems);
+        console.log('[ROTATOR] ✅ Loaded', allItems.length, 'total items (announcements + events + birthdays)');
+      } catch (err) {
+        console.error('[ROTATOR] Error fetching:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, [cliqId]);
 
   // Auto-rotate
   useEffect(() => {
-    if (sortedItems.length <= 1) return;
+    if (items.length <= 1) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % sortedItems.length);
+      setCurrentIndex((prev) => (prev + 1) % items.length);
     }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(timer);
-  }, [sortedItems.length]);
+  }, [items.length]);
 
-  if (!convexAnnouncements || sortedItems.length === 0) return null;
+  if (loading || items.length === 0) return null;
 
-  const current = sortedItems[currentIndex];
+  const current = items[currentIndex];
 
   const handleClick = () => {
     if (current.clickTarget) {
@@ -105,7 +98,7 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
       }`}
       style={{ minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
     >
-      {/* Announcement content - seamless merged display */}
+      {/* Content - seamless merged display */}
       <div className="text-sm sm:text-base">
         {current.type === 'announcement' && (
           <span className="font-semibold">{current.title}: </span>
@@ -120,9 +113,9 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
       )}
 
       {/* Dot indicators */}
-      {sortedItems.length > 1 && (
+      {items.length > 1 && (
         <div className="flex gap-1 mt-2 justify-center">
-          {sortedItems.map((_, idx) => (
+          {items.map((_, idx) => (
             <div
               key={idx}
               className={`h-1.5 rounded-full transition ${

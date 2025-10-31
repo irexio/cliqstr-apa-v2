@@ -574,7 +574,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Edit/Delete Actions */}
-            <div className="mt-6 space-y-3 border-t pt-4">
+            <div className="mt-6 border-t pt-4">
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => {
@@ -582,13 +582,13 @@ export default function CalendarPage() {
                     setSelectedActivity(null); // Close the modal
                     setShowForm(true);
                   }}
-                  className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-3 rounded transition text-sm"
+                  className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded transition text-sm flex-1 sm:flex-initial"
                 >
                   Edit Event
                 </button>
                 <button
                   onClick={() => handleDelete(selectedActivity._id)}
-                  className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-3 rounded transition text-sm"
+                  className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded transition text-sm flex-1 sm:flex-initial"
                 >
                   Delete Event
                 </button>
