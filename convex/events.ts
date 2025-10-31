@@ -637,47 +637,58 @@ export const getBirthdayEvents = query({
           .map(Number);
 
         // Calculate this year's birthday
-        let thisBirthday = new Date(
+        const thisBirthdayThisYear = new Date(
           today.getFullYear(),
           month - 1,
-          day
+          day,
+          12, 0, 0, 0 // Set to noon to avoid time zone issues
         );
         
-        // If birthday has passed this year, use next year's date for calculation
-        if (thisBirthday < today) {
-          thisBirthday = new Date(
+        // Determine which year's birthday to use for the week calculation
+        let birthdayToUse = thisBirthdayThisYear;
+        
+        // If this year's birthday + 3 days (end of week) has already passed, use next year
+        const endOfThisYearsWeek = new Date(thisBirthdayThisYear);
+        endOfThisYearsWeek.setDate(endOfThisYearsWeek.getDate() + 3);
+        
+        if (endOfThisYearsWeek < today) {
+          birthdayToUse = new Date(
             today.getFullYear() + 1,
             month - 1,
-            day
+            day,
+            12, 0, 0, 0
           );
         }
 
         // Birthday week: 3 days before to 3 days after
-        const startOfWeek = new Date(thisBirthday);
+        const startOfWeek = new Date(birthdayToUse);
         startOfWeek.setDate(startOfWeek.getDate() - 3);
         startOfWeek.setHours(0, 0, 0, 0);
 
-        const endOfWeek = new Date(thisBirthday);
+        const endOfWeek = new Date(birthdayToUse);
         endOfWeek.setDate(endOfWeek.getDate() + 3);
         endOfWeek.setHours(23, 59, 59, 999);
 
-        birthdayEvents.push({
-          _id: `birthday-${membership.userId}` as any,
-          cliqId: args.cliqId,
-          createdByUserId: membership.userId,
-          title: `Happy Birthday ${profile.displayName || profile.username}!`,
-          description: "Let's celebrate this week!",
-          startAt: startOfWeek.getTime(),
-          endAt: endOfWeek.getTime(),
-          timezone: "UTC",
-          location: undefined,
-          locationVisibility: "hidden" as const,
-          visibilityLevel: "private",
-          requiresParentApproval: false,
-          rsvps: {},
-          createdAt: now,
-          updatedAt: now,
-        });
+        // Only include if the week overlaps with today
+        if (today >= startOfWeek && today <= endOfWeek) {
+          birthdayEvents.push({
+            _id: `birthday-${membership.userId}` as any,
+            cliqId: args.cliqId,
+            createdByUserId: membership.userId,
+            title: `Happy Birthday ${profile.displayName || profile.username}!`,
+            description: "Let's celebrate this week!",
+            startAt: startOfWeek.getTime(),
+            endAt: endOfWeek.getTime(),
+            timezone: "UTC",
+            location: undefined,
+            locationVisibility: "hidden" as const,
+            visibilityLevel: "private",
+            requiresParentApproval: false,
+            rsvps: {},
+            createdAt: now,
+            updatedAt: now,
+          });
+        }
       }
     }
 

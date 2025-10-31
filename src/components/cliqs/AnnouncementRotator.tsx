@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 interface Announcement {
   id: string;
-  type: 'birthday' | 'event' | 'notice';
+  type: 'birthday' | 'event' | 'announcement' | 'notice';
   title: string;
   description: string;
   timestamp: number;
