@@ -29,7 +29,8 @@ async function isCliqOwner(
   const cliq = await ctx.db.get(cliqId);
   if (!cliq) return false;
 
-  return cliq.ownerId === userId;
+  // Compare IDs as strings to ensure proper comparison
+  return cliq.ownerId.toString() === userId.toString();
 }
 
 // ============================================================================

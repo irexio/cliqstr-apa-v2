@@ -33,10 +33,14 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
 
   // Process and sort announcements whenever data changes
   useEffect(() => {
+    console.log('[ROTATOR] useEffect triggered, convexAnnouncements:', convexAnnouncements);
+    
     if (!convexAnnouncements) {
-      console.log('[ROTATOR] Loading announcements...');
+      console.log('[ROTATOR] Loading announcements... (convexAnnouncements is null/undefined)');
       return;
     }
+
+    console.log('[ROTATOR] Raw Convex data:', JSON.stringify(convexAnnouncements, null, 2));
 
     const items: Announcement[] = convexAnnouncements.map((ann: any) => ({
       id: ann._id.toString(),
@@ -47,6 +51,8 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
       isGlobal: ann.visibility === 'global',
       pinned: ann.pinned,
     }));
+
+    console.log('[ROTATOR] Mapped items:', items);
 
     // Apply priority sort per Aiden's spec:
     // 1. Global announcements first
@@ -65,8 +71,9 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
       return (b.timestamp || 0) - (a.timestamp || 0);
     });
 
+    console.log('[ROTATOR] Sorted items:', items);
     setSortedItems(items);
-    console.log('[ROTATOR] Loaded', items.length, 'announcements from Convex (sorted by priority)');
+    console.log('[ROTATOR] ✅ Loaded', items.length, 'announcements from Convex (sorted by priority)');
   }, [convexAnnouncements]);
 
   // Auto-rotate
