@@ -71,11 +71,11 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
             </div>
             
             {/* Buttons - Stack on mobile (full width), inline on desktop (auto width, compact) */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
               {isOwner && (
                 <button
                   onClick={() => router.push(`/cliqs/${cliqId}/edit`)}
-                  className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
+                  className="w-full sm:w-auto sm:flex-shrink-0 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
                 >
                   Edit Cliq
                 </button>
@@ -83,7 +83,7 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
               {canCreateAnnouncements && (
                 <button
                   onClick={() => setAnnouncementModalOpen(true)}
-                  className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
+                  className="w-full sm:w-auto sm:flex-shrink-0 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium whitespace-nowrap"
                 >
                   + Announcement
                 </button>
@@ -91,7 +91,7 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
               {canInvite && (
                 <button
                   onClick={() => setInviteModalOpen(true)}
-                  className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  className="w-full sm:w-auto sm:flex-shrink-0 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap"
                 >
                   Invite
                 </button>

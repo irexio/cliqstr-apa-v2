@@ -40,6 +40,8 @@ export async function GET(req: NextRequest) {
         cliqId: cliqId as any,
       });
 
+      console.log('[ANNOUNCEMENTS] Fetched announcements:', announcementData?.length || 0);
+
       for (const ann of announcementData) {
         announcements.push({
           id: ann._id.toString(),
@@ -66,6 +68,8 @@ export async function GET(req: NextRequest) {
         userId: session.userId as any,
       });
 
+      console.log('[ANNOUNCEMENTS] Fetched events:', events?.length || 0);
+
       for (const event of events) {
         const eventDisplay = DateTime.fromMillis(event.startAt)
           .setZone(event.timezone || 'America/Los_Angeles')
@@ -89,6 +93,8 @@ export async function GET(req: NextRequest) {
         cliqId: cliqId as any,
       });
 
+      console.log('[ANNOUNCEMENTS] Fetched birthdays:', birthdays?.length || 0);
+
       for (const bday of birthdays) {
         announcements.push({
           id: bday._id.toString(),
@@ -111,7 +117,12 @@ export async function GET(req: NextRequest) {
       return b.timestamp - a.timestamp;
     });
 
-    console.log('[ANNOUNCEMENTS] Returning', announcements.length, 'announcements');
+    console.log('[ANNOUNCEMENTS] Returning', announcements.length, 'total items (announcements + events + birthdays)');
+    console.log('[ANNOUNCEMENTS] Breakdown: announcements=%d, events=%d, birthdays=%d', 
+      announcements.filter(a => a.type === 'announcement').length,
+      announcements.filter(a => a.type === 'event').length,
+      announcements.filter(a => a.type === 'birthday').length
+    );
     return NextResponse.json({ announcements });
   } catch (error: any) {
     console.error('[ANNOUNCEMENTS] Error:', error);

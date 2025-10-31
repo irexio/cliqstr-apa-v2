@@ -132,8 +132,8 @@ Make sure any Prisma schema or related database query uses the renamed `MyProfil
    - Verify MyProfile has NO email/role/plan fields
    - Check getCurrentUser returns both account & myProfile
    - Confirm header avatar uses account initials ONLY
-   - Run: `grep -r "account.*username" convex/` (should return 0 results)
-   - Run: `grep -r "myProfile.*email" convex/` (should return 0 results)
+   - Run: grep -r "account.*username" convex/ (should return 0 results)
 
-**Last Updated:** 10/31/25 — Sentinel architecture complete, Account/MyProfile separation verified by Cursor audit ✅ 
-   
+   - ⚠️ If modifying any file under `/convex/users`, `/convex/accounts`, or `/lib/auth`, you must open and review this section first.
+
+   10/31/25

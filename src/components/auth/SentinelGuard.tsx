@@ -29,15 +29,19 @@ export function SentinelGuard({ children }: SentinelGuardProps) {
       return;
     }
 
-    // Check if user is superadmin (email match)
-    const superadminEmail = process.env.NEXT_PUBLIC_SUPERADMIN_EMAIL;
-    const isSuperadmin = superadminEmail && user.email === superadminEmail;
+    // Check if user is superadmin
+    // For now, check against a hardcoded list or env var
+    // In production, this should be checked against the database
+    const superadminEmails = ['rachel@cliqstr.com']; // Add known superadmin emails here
+    const isSuperadmin = superadminEmails.includes(user.email.toLowerCase());
+
+    console.log('[SentinelGuard] Auth check:', {
+      userEmail: user.email,
+      isSuperadmin,
+    });
 
     if (!isSuperadmin) {
-      console.log('[SentinelGuard] User is not superadmin:', {
-        userEmail: user.email,
-        superadminEmail,
-      });
+      console.log('[SentinelGuard] User is not superadmin, redirecting');
       router.push('/not-authorized');
       return;
     }
