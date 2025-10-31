@@ -31,8 +31,8 @@ export default function RsvpButtons({
         disabled={isLoading || loading}
         className={`px-4 py-2 rounded font-medium transition ${
           currentStatus === 'going'
-            ? 'bg-green-600 text-white'
-            : 'bg-green-100 text-green-700 hover:bg-green-200'
+            ? 'bg-black text-white'
+            : 'bg-black text-white hover:bg-gray-800'
         } disabled:opacity-50`}
       >
         ✓ Going
@@ -43,8 +43,8 @@ export default function RsvpButtons({
         disabled={isLoading || loading}
         className={`px-4 py-2 rounded font-medium transition ${
           currentStatus === 'maybe'
-            ? 'bg-yellow-600 text-white'
-            : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+            ? 'bg-black text-white'
+            : 'bg-black text-white hover:bg-gray-800'
         } disabled:opacity-50`}
       >
         ? Maybe
@@ -55,8 +55,8 @@ export default function RsvpButtons({
         disabled={isLoading || loading}
         className={`px-4 py-2 rounded font-medium transition ${
           currentStatus === 'raincheck'
-            ? 'bg-gray-600 text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            ? 'bg-black text-white'
+            : 'bg-black text-white hover:bg-gray-800'
         } disabled:opacity-50`}
       >
         ✕ Raincheck

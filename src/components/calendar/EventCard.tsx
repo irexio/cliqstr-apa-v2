@@ -146,13 +146,13 @@ export default function EventCard({
           <>
             <button
               onClick={onApprove}
-              className="bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 px-4 rounded transition text-sm"
+              className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded transition text-sm flex-1"
             >
               Approve
             </button>
             <button
               onClick={onDelete}
-              className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-4 rounded transition text-sm"
+              className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded transition text-sm flex-1"
             >
               Decline
             </button>
@@ -162,7 +162,7 @@ export default function EventCard({
         {canDelete && !requiresApproval && (
           <button
             onClick={onDelete}
-            className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-4 rounded transition text-sm"
+            className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded transition text-sm flex-1"
           >
             Delete
           </button>
