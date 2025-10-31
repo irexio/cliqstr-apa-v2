@@ -33,8 +33,27 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         if (!res.ok) throw new Error('Failed to fetch announcements');
 
         const data = await res.json();
-        setAnnouncements(data.announcements || []);
-        console.log('[ROTATOR] Loaded', data.announcements?.length || 0, 'announcements');
+        let items = data.announcements || [];
+        
+        // Apply priority sort order per Aiden's spec:
+        // 1. Global announcements first
+        // 2. Pinned items second
+        // 3. Everything else by date (newest first)
+        items.sort((a: any, b: any) => {
+          // Global announcements first
+          if (a.isGlobal && !b.isGlobal) return -1;
+          if (!a.isGlobal && b.isGlobal) return 1;
+          
+          // Pinned items second
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          
+          // Everything else by date (newest first)
+          return (b.timestamp || 0) - (a.timestamp || 0);
+        });
+        
+        setAnnouncements(items);
+        console.log('[ROTATOR] Loaded', items.length, 'announcements (sorted by priority)');
       } catch (err) {
         console.error('[ROTATOR] Error fetching:', err);
       } finally {
@@ -74,9 +93,19 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
       }`}
       style={{ minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
     >
-      {/* Announcement content */}
-      <p className="font-medium text-sm sm:text-base truncate">{current.title}</p>
-      {current.description && <p className="text-xs text-gray-300 mt-1">{current.description}</p>}
+      {/* Announcement content - seamless merged display */}
+      <div className="text-sm sm:text-base">
+        {current.type === 'announcement' && (
+          <span className="font-semibold">{current.title}: </span>
+        )}
+        {current.type !== 'announcement' && (
+          <p className="font-medium truncate">{current.title}</p>
+        )}
+      </div>
+      
+      {current.description && (
+        <p className="text-xs text-gray-300 mt-1 truncate">{current.description}</p>
+      )}
 
       {/* Dot indicators */}
       {announcements.length > 1 && (

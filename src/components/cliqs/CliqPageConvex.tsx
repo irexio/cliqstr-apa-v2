@@ -8,7 +8,6 @@ import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
 import AnnouncementRotator from '@/components/cliqs/AnnouncementRotator';
-import AnnouncementsList from '@/components/announcements/AnnouncementsList';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
@@ -113,13 +112,6 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
         
         {/* Announcements & Events Carousel (rotating announcements) */}
         <AnnouncementRotator cliqId={cliqId} />
-        
-        {/* Active Announcements List (static list above feed) */}
-        <AnnouncementsList 
-          cliqId={cliqId} 
-          canDeleteAnnouncements={canDeleteAnnouncements}
-          userId={user.id}
-        />
         
         {/* Post Form */}
         <PostForm cliqId={cliqId} />
