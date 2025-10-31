@@ -142,6 +142,12 @@ function InviteAcceptContent() {
               } catch (joinErr) {
                 console.error('[INVITE_ACCEPT] Auto-join error:', joinErr);
               }
+            } else if (inviteType === 'adult' && inviteData.cliqId) {
+              console.log('[INVITE_ACCEPT] Adult without plan - needs to select plan first', {
+                hasPlan,
+                inviteType,
+                cliqId: inviteData.cliqId
+              });
             }
           }
         }
@@ -150,6 +156,22 @@ function InviteAcceptContent() {
       }
 
       // Route based on invite type
+      // IMPORTANT: Only route to sign-up/choose-plan if NOT already authenticated
+      // If user is authenticated, the code above should have already handled it
+      const authRes = await fetch('/api/auth/status', { method: 'GET', cache: 'no-store', credentials: 'include' });
+      let isAuthenticated = false;
+      if (authRes.ok) {
+        const { user } = await authRes.json();
+        isAuthenticated = !!user?.id;
+      }
+
+      // If already authenticated but didn't auto-join, something went wrong - show error
+      if (isAuthenticated) {
+        console.warn('[INVITE_ACCEPT] User is authenticated but auto-join did not occur. This may indicate a plan/cliq membership issue.');
+        setError('Could not auto-join cliq. Please try manually joining or contact support.');
+        setLoading(false);
+        return;
+      }
 
       if (inviteType === 'adult') {
         console.log('[INVITE_ACCEPT] Routing adult to choose-plan');
