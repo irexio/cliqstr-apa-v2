@@ -248,13 +248,7 @@ export default function EventForm({
 
         {/* Form Content - Scrollable */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {cliqName && (
-            <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-900">
-              <p className="font-medium mb-2">💡 Tip:</p>
-              <p>Create recurring events to avoid scheduling conflicts.</p>
-            </div>
-          )}
-
+          
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
