@@ -104,6 +104,39 @@ Deletes an announcement.
 
 ---
 
+#### `updateAnnouncement`
+
+Updates an announcement (title, message, pinned status only).
+
+**Permissions:**
+- Creator of the announcement
+- OR superadmin
+
+**Args:**
+```typescript
+{
+  id: Id<"announcements">;  // Required
+  title: string;             // Required
+  message: string;           // Required
+  pinned: boolean;           // Required
+}
+```
+
+**Note:** Visibility and cliqId cannot be changed. To change visibility, delete and recreate.
+
+**Returns:** `Id<"announcements">` - The updated announcement ID
+
+**Auto-Expiration Recalculation:**
+- If `pinned: true`, sets `expiresAt = undefined`
+- If `pinned: false`, recalculates `expiresAt = now + 14 days`
+
+**Errors:**
+- "Unauthorized" - User not authenticated
+- "Announcement not found" - Invalid announcement ID
+- "Only creator or superadmin can update this announcement" - Insufficient permissions
+
+---
+
 ### Queries
 
 #### `listActiveAnnouncements`
@@ -144,6 +177,48 @@ Fetches a single announcement by ID.
 
 **Errors:**
 - "Announcement not found" - Invalid announcement ID
+
+---
+
+#### `listAllByCliq`
+
+Lists all announcements for a specific cliq, regardless of visibility.
+
+**Args:**
+```typescript
+{
+  cliqId: Id<"cliqs">;  // Required
+}
+```
+
+**Returns:** Array of announcements sorted by `createdAt` descending (newest first)
+
+**Behavior:**
+- Includes all announcements for the specified cliq
+- No filtering by visibility or expiration
+- Returns empty array if no announcements
+
+**Sorting:** Newest first (`createdAt` descending)
+
+---
+
+#### `listGlobalAnnouncements`
+
+Lists all global announcements.
+
+**Args:**
+```typescript
+{}
+```
+
+**Returns:** Array of announcements sorted by `createdAt` descending (newest first)
+
+**Behavior:**
+- Includes only global announcements
+- No filtering by cliq or visibility
+- Returns empty array if no global announcements
+
+**Sorting:** Newest first (`createdAt` descending)
 
 ---
 
@@ -220,6 +295,50 @@ Deletes an announcement via HTTP.
 
 // 500 Server Error
 { error: "Failed to delete announcement" }
+```
+
+---
+
+### `POST /api/announcements/update`
+
+Updates an announcement via HTTP.
+
+**Request Body:**
+```typescript
+{
+  announcementId: string;  // Required
+  title: string;           // Required
+  message: string;         // Required
+  pinned: boolean;         // Required
+}
+```
+
+**Response (Success - 200):**
+```typescript
+{
+  success: true,
+  announcementId: string;
+}
+```
+
+**Response (Error):**
+```typescript
+// 400 Bad Request
+{ error: "announcementId is required" }
+{ error: "Title and message are required" }
+{ error: "pinned must be a boolean" }
+
+// 401 Unauthorized
+{ error: "Unauthorized" }
+
+// 403 Forbidden
+{ error: "You do not have permission to edit this announcement" }
+
+// 404 Not Found
+{ error: "Announcement not found" }
+
+// 500 Server Error
+{ error: "Failed to update announcement" }
 ```
 
 ---
@@ -340,6 +459,27 @@ return (
   </>
 );
 ```
+
+---
+
+## Edit Workflow
+
+### AnnouncementCard Edit Button
+
+Clicking the Edit button (pencil icon) on an announcement card:
+
+1. Opens `AnnouncementForm` in edit mode
+2. Pre-fills all fields (title, message, pinned status)
+3. Hides visibility selector (cannot change)
+4. Shows "Save Changes" button instead of "Create"
+5. On submit: calls `/api/announcements/update`
+6. Success: closes form and reloads announcements
+7. Error: shows toast and stays in form
+
+**Edit Button Visibility:**
+- Only visible to announcement creator
+- Also visible to superadmin (can edit any announcement)
+- Not visible to other cliq members
 
 ---
 
