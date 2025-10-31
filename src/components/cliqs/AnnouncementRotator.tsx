@@ -85,8 +85,18 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const current = items[currentIndex];
 
   const handleClick = () => {
+    console.log('[ROTATOR] Click handler triggered on item:', {
+      type: current.type,
+      title: current.title,
+      clickTarget: current.clickTarget,
+      hasClickTarget: !!current.clickTarget,
+    });
+    
     if (current.clickTarget) {
+      console.log('[ROTATOR] Navigating to:', current.clickTarget);
       router.push(current.clickTarget);
+    } else {
+      console.log('[ROTATOR] No clickTarget available for this item');
     }
   };
 
