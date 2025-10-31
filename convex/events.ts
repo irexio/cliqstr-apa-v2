@@ -622,7 +622,14 @@ export const getBirthdayEvents = query({
 
     const birthdayEvents = [];
     const now = Date.now();
-    const today = new Date(now);
+    
+    // Use UTC midnight for today to avoid timezone issues
+    const todayUTC = new Date(now);
+    todayUTC.setUTCHours(0, 0, 0, 0);
+    const todayTimestamp = todayUTC.getTime();
+    const todayYear = todayUTC.getUTCFullYear();
+    const todayMonth = todayUTC.getUTCMonth();
+    const todayDate = todayUTC.getUTCDate();
 
     for (const membership of memberships) {
       // Get user's profile to check birthday
@@ -636,49 +643,36 @@ export const getBirthdayEvents = query({
           .split("-")
           .map(Number);
 
-        // Calculate this year's birthday
-        const thisBirthdayThisYear = new Date(
-          today.getFullYear(),
-          month - 1,
-          day,
-          12, 0, 0, 0 // Set to noon to avoid time zone issues
-        );
+        // Create birthday date for this year (UTC midnight)
+        const birthdayThisYearUTC = new Date(Date.UTC(todayYear, month - 1, day, 0, 0, 0, 0));
+        const birthdayThisYearTimestamp = birthdayThisYearUTC.getTime();
         
-        // Determine which year's birthday to use for the week calculation
-        let birthdayToUse = thisBirthdayThisYear;
+        // End of this year's birthday week (3 days after)
+        const endOfThisYearsWeekUTC = new Date(Date.UTC(todayYear, month - 1, day + 3, 0, 0, 0, 0));
+        const endOfThisYearsWeekTimestamp = endOfThisYearsWeekUTC.getTime();
         
-        // If this year's birthday + 3 days (end of week) has already passed, use next year
-        const endOfThisYearsWeek = new Date(thisBirthdayThisYear);
-        endOfThisYearsWeek.setDate(endOfThisYearsWeek.getDate() + 3);
+        // Determine which year's birthday to use
+        let birthdayToUseTimestamp = birthdayThisYearTimestamp;
         
-        if (endOfThisYearsWeek < today) {
-          birthdayToUse = new Date(
-            today.getFullYear() + 1,
-            month - 1,
-            day,
-            12, 0, 0, 0
-          );
+        // If this year's birthday week has already passed, use next year
+        if (endOfThisYearsWeekTimestamp < todayTimestamp) {
+          birthdayToUseTimestamp = new Date(Date.UTC(todayYear + 1, month - 1, day, 0, 0, 0, 0)).getTime();
         }
 
-        // Birthday week: 3 days before to 3 days after
-        const startOfWeek = new Date(birthdayToUse);
-        startOfWeek.setDate(startOfWeek.getDate() - 3);
-        startOfWeek.setHours(0, 0, 0, 0);
+        // Birthday week: 3 days before to 3 days after (all in UTC midnight)
+        const startOfWeekTimestamp = birthdayToUseTimestamp - (3 * 24 * 60 * 60 * 1000);
+        const endOfWeekTimestamp = birthdayToUseTimestamp + (3 * 24 * 60 * 60 * 1000) + (23 * 60 * 60 * 1000 + 59 * 60 * 1000 + 59 * 1000);
 
-        const endOfWeek = new Date(birthdayToUse);
-        endOfWeek.setDate(endOfWeek.getDate() + 3);
-        endOfWeek.setHours(23, 59, 59, 999);
-
-        // Only include if the week overlaps with today
-        if (today >= startOfWeek && today <= endOfWeek) {
+        // Only include if today falls within the birthday week
+        if (todayTimestamp >= startOfWeekTimestamp && todayTimestamp <= endOfWeekTimestamp) {
           birthdayEvents.push({
             _id: `birthday-${membership.userId}` as any,
             cliqId: args.cliqId,
             createdByUserId: membership.userId,
             title: `Happy Birthday ${profile.displayName || profile.username}!`,
             description: "Let's celebrate this week!",
-            startAt: startOfWeek.getTime(),
-            endAt: endOfWeek.getTime(),
+            startAt: startOfWeekTimestamp,
+            endAt: endOfWeekTimestamp,
             timezone: "UTC",
             location: undefined,
             locationVisibility: "hidden" as const,
