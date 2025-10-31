@@ -121,3 +121,19 @@ All future flows — including Pip, onboarding, account dashboard, and public pr
 Make sure any Prisma schema or related database query uses the renamed `MyProfile` model explicitly, and updates all relational mappings accordingly.
 
 //UPDATED CODE DUE TO MIGRATION FROM PRISMA TO CONVEX. FUNDEMENTAL GOALS REMAIN THE SAME. 09-17-25
+
+## Enforcement Checklist for Cursor & Future Developers
+
+🔐 **Golden Rule:** Do NOT re-unify Account + MyProfile models or touch auth/session 
+   logic while adding Sentinel or new features.
+
+✅ Before committing any auth/profile code:
+   - Verify Account has NO username/image/bio fields
+   - Verify MyProfile has NO email/role/plan fields
+   - Check getCurrentUser returns both account & myProfile
+   - Confirm header avatar uses account initials ONLY
+   - Run: `grep -r "account.*username" convex/` (should return 0 results)
+   - Run: `grep -r "myProfile.*email" convex/` (should return 0 results)
+
+**Last Updated:** 10/31/25 — Sentinel architecture complete, Account/MyProfile separation verified by Cursor audit ✅ 
+   
