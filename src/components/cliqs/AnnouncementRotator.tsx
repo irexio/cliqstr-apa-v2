@@ -101,13 +101,18 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className={`bg-black text-white rounded-lg p-3 mb-6 cursor-pointer transition hover:bg-gray-900 ${
-        current.clickTarget ? 'hover:shadow-lg' : ''
-      }`}
-      style={{ minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
-    >
+    <>
+      {/* DEBUG: Visible message to confirm component renders */}
+      <div style={{fontSize: '10px', color: '#999', textAlign: 'center', padding: '4px', background: '#f0f0f0', margin: '4px 0', borderRadius: '4px'}}>
+        [DEBUG] AnnouncementRotator loaded with {items.length} items
+      </div>
+      <div
+        onClick={handleClick}
+        className={`bg-black text-white rounded-lg p-3 mb-6 cursor-pointer transition hover:bg-gray-900 ${
+          current.clickTarget ? 'hover:shadow-lg' : ''
+        }`}
+        style={{ minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      >
       {/* Content - seamless merged display */}
       <div className="text-sm sm:text-base">
         {current.type === 'announcement' && (
@@ -136,5 +141,6 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         </div>
       )}
     </div>
+    </>
   );
 }
