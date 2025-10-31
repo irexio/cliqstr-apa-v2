@@ -80,7 +80,13 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
     return () => clearInterval(timer);
   }, [items.length]);
 
-  if (loading || items.length === 0) return null;
+  if (loading || items.length === 0) {
+    console.log('[ROTATOR] Early return - loading:', loading, 'items:', items.length);
+    if (loading) {
+      return <div style={{fontSize: '10px', color: '#999', textAlign: 'center', padding: '4px', background: '#fff0f0', margin: '4px 0', borderRadius: '4px'}}>[DEBUG] AnnouncementRotator loading...</div>;
+    }
+    return null;
+  }
 
   const current = items[currentIndex];
 
