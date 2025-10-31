@@ -70,8 +70,8 @@ export default function CliqProfileContent({ cliq, cliqId }: CliqProfileContentP
               {cliq.description && <p className="text-gray-600 text-sm sm:text-base">{cliq.description}</p>}
             </div>
             
-            {/* Buttons - Stack on mobile (full width), inline on desktop (auto width) */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+            {/* Buttons - Stack on mobile (full width), inline on desktop (auto width, compact) */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:w-auto">
               {isOwner && (
                 <button
                   onClick={() => router.push(`/cliqs/${cliqId}/edit`)}
