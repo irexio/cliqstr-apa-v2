@@ -607,6 +607,7 @@ export const listPendingForParent = query({
 
 /**
  * Generate birthday events (synthetic, not stored)
+ * Shows birthday for a full week: 3 days before to 3 days after
  */
 export const getBirthdayEvents = query({
   args: {
@@ -635,34 +636,39 @@ export const getBirthdayEvents = query({
           .split("-")
           .map(Number);
 
-        // Calculate next birthday
-        let nextBirthday = new Date(
+        // Calculate this year's birthday
+        let thisBirthday = new Date(
           today.getFullYear(),
           month - 1,
           day
         );
-        if (nextBirthday < today) {
-          nextBirthday = new Date(
+        
+        // If birthday has passed this year, use next year's date for calculation
+        if (thisBirthday < today) {
+          thisBirthday = new Date(
             today.getFullYear() + 1,
             month - 1,
             day
           );
         }
 
-        // Start at 9 AM, end at 11:59 PM
-        const startAt = new Date(nextBirthday);
-        startAt.setHours(9, 0, 0, 0);
-        const endAt = new Date(nextBirthday);
-        endAt.setHours(23, 59, 59, 999);
+        // Birthday week: 3 days before to 3 days after
+        const startOfWeek = new Date(thisBirthday);
+        startOfWeek.setDate(startOfWeek.getDate() - 3);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(thisBirthday);
+        endOfWeek.setDate(endOfWeek.getDate() + 3);
+        endOfWeek.setHours(23, 59, 59, 999);
 
         birthdayEvents.push({
           _id: `birthday-${membership.userId}` as any,
           cliqId: args.cliqId,
           createdByUserId: membership.userId,
-          title: `🎂 ${profile.displayName || profile.username}'s Birthday`,
-          description: "Happy Birthday!",
-          startAt: startAt.getTime(),
-          endAt: endAt.getTime(),
+          title: `Happy Birthday ${profile.displayName || profile.username}!`,
+          description: "Let's celebrate this week!",
+          startAt: startOfWeek.getTime(),
+          endAt: endOfWeek.getTime(),
           timezone: "UTC",
           location: undefined,
           locationVisibility: "hidden" as const,

@@ -83,14 +83,21 @@ export async function GET(req: NextRequest) {
       console.error('[ANNOUNCEMENTS] Error fetching events:', err);
     }
 
-    // 3. Fetch Member Birthdays (today only, from profiles)
-    // TODO: Implement birthday fetching from myProfiles birthdayMonthDay
-    // For now, this is placeholder
+    // 3. Fetch Member Birthdays (birthday week: 3 days before to 3 days after)
     try {
-      // Birthday logic would go here
-      // Fetch all members of the cliq
-      // Check if their birthday (month-day) matches today
-      // Add to announcements
+      const birthdays = await convexHttp.query(api.events.getBirthdayEvents, {
+        cliqId: cliqId as any,
+      });
+
+      for (const bday of birthdays) {
+        announcements.push({
+          id: bday._id.toString(),
+          type: 'birthday',
+          title: bday.title,
+          description: bday.description,
+          timestamp: bday.startAt,
+        });
+      }
     } catch (err) {
       console.error('[ANNOUNCEMENTS] Error fetching birthdays:', err);
     }
