@@ -107,10 +107,18 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* DEBUG: Show cliqId to confirm page loaded */}
+        <div style={{fontSize: '12px', color: 'red', background: 'yellow', padding: '8px', borderRadius: '4px', marginBottom: '16px'}}>
+          [DEBUG] CliqPageConvex loaded. cliqId: {cliqId}
+        </div>
+
         {/* Cliq Profile Content (banner + info) */}
         <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />
         
         {/* Announcements & Events Carousel (rotating announcements) */}
+        <div style={{fontSize: '12px', color: 'blue', background: 'lightblue', padding: '8px', borderRadius: '4px', marginBottom: '8px'}}>
+          [DEBUG] About to render AnnouncementRotator with cliqId: {cliqId}
+        </div>
         <AnnouncementRotator cliqId={cliqId} />
         
         {/* Post Form */}
