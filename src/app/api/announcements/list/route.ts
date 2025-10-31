@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 interface Announcement {
   id: string;
-  type: 'birthday' | 'event' | 'announcement' | 'notice';
+  type: 'event' | 'announcement' | 'birthday';
   title: string;
   description: string;
   timestamp: number;
@@ -54,26 +54,7 @@ export async function GET(req: NextRequest) {
       console.error('[ANNOUNCEMENTS] Error fetching announcements:', err);
     }
 
-    // 2. Fetch Cliq Notices (admin messages) - legacy support
-    try {
-      const notices = await convexHttp.query(api.cliqNotices.getNoticesByCliq, {
-        cliqId: cliqId as any,
-      });
-
-      for (const notice of notices) {
-        announcements.push({
-          id: notice._id.toString(),
-          type: 'notice',
-          title: notice.content,
-          description: '',
-          timestamp: notice.createdAt,
-        });
-      }
-    } catch (err) {
-      console.error('[ANNOUNCEMENTS] Error fetching notices:', err);
-    }
-
-    // 3. Fetch Upcoming Events
+    // 2. Fetch Upcoming Events
     try {
       const now = Date.now();
       const upcoming = now + 30 * 24 * 60 * 60 * 1000; // Next 30 days
@@ -102,7 +83,7 @@ export async function GET(req: NextRequest) {
       console.error('[ANNOUNCEMENTS] Error fetching events:', err);
     }
 
-    // 4. Fetch Member Birthdays (today only, from profiles)
+    // 3. Fetch Member Birthdays (today only, from profiles)
     // TODO: Implement birthday fetching from myProfiles birthdayMonthDay
     // For now, this is placeholder
     try {
