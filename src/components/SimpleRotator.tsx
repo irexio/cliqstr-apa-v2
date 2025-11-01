@@ -76,7 +76,7 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
       {/* Event date only */}
       {itemType === 'event' && current.startAt && (
         <div className="text-xs text-gray-400 mb-2">
-          📅 {formatEventTime(current.startAt, current.timezone)}
+          {formatEventTime(current.startAt, current.timezone)}
         </div>
       )}
 

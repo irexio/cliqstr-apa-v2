@@ -353,9 +353,9 @@ export default function CalendarPage() {
         description: `RSVP updated to "${status}"`,
       });
 
-      // Refresh activities
+      // Redirect back to the cliq page
       if (urlCliqId) {
-        await fetchActivities(urlCliqId, null);
+        router.push(`/cliqs/${urlCliqId}`);
       }
     } catch (error) {
       console.error('[CALENDAR] RSVP error:', error);
