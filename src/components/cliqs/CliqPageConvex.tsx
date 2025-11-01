@@ -7,6 +7,7 @@ import CliqProfileContent from '@/components/cliqs/CliqProfileContent';
 import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
+import SimpleRotator from '@/components/SimpleRotator';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
@@ -111,26 +112,16 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-        {/* DEBUG: Show cliqId to confirm page loaded */}
-        <div style={{fontSize: '12px', color: 'red', background: 'yellow', padding: '8px', borderRadius: '4px', marginBottom: '16px'}}>
-          [DEBUG] CliqPageConvex loaded. cliqId: {cliqId}
-        </div>
-
         {/* Cliq Profile Content (banner + info) */}
         <CliqProfileContent cliq={cliqProfile} cliqId={cliqId} />
         
-        {/* Announcements & Events Carousel (rotating announcements) */}
-        <div style={{fontSize: '12px', color: 'blue', background: 'lightblue', padding: '8px', borderRadius: '4px', marginBottom: '8px'}}>
-          [DEBUG] AnnouncementRotator rendered. cliqId: {cliqId}
-        </div>
-        
-        {/* TEST PANEL: Show what Convex returns */}
-        <div style={{fontSize: '12px', color: '#333', background: '#e8f4f8', padding: '12px', borderRadius: '4px', marginBottom: '16px', border: '1px solid #b0d4dd'}}>
-          <strong>[TEST] listActiveAnnouncements Query Result:</strong>
-          <pre style={{marginTop: '8px', fontSize: '11px', overflow: 'auto', maxHeight: '200px', background: 'white', padding: '8px', borderRadius: '3px'}}>
-            {testAnnouncements === undefined ? '⏳ Loading...' : testAnnouncements === null ? '❌ Error' : `✅ Found ${testAnnouncements.length} items:\n${JSON.stringify(testAnnouncements, null, 2)}`}
-          </pre>
-        </div>
+        {/* Announcements & Events Carousel */}
+        {testAnnouncements && testAnnouncements.length > 0 && (
+          <SimpleRotator 
+            items={testAnnouncements} 
+            loading={testAnnouncements === undefined} 
+          />
+        )}
         
         {/* Post Form */}
         <PostForm cliqId={cliqId} />
