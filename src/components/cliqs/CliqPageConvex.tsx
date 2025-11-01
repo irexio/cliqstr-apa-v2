@@ -7,7 +7,6 @@ import CliqProfileContent from '@/components/cliqs/CliqProfileContent';
 import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
-import AnnouncementRotator from '@/components/cliqs/AnnouncementRotator';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
@@ -37,6 +36,11 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
 
   // Get cliq members for member count
   const members = useQuery(api.cliqs.getCliqMembers,
+    user?.id ? { cliqId: cliqId as Id<"cliqs"> } : "skip"
+  );
+
+  // TEST: Query announcements directly from Convex
+  const testAnnouncements = useQuery(api.announcements.listActiveAnnouncements,
     user?.id ? { cliqId: cliqId as Id<"cliqs"> } : "skip"
   );
 
@@ -117,9 +121,16 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
         
         {/* Announcements & Events Carousel (rotating announcements) */}
         <div style={{fontSize: '12px', color: 'blue', background: 'lightblue', padding: '8px', borderRadius: '4px', marginBottom: '8px'}}>
-          [DEBUG] About to render AnnouncementRotator with cliqId: {cliqId}
+          [DEBUG] AnnouncementRotator rendered. cliqId: {cliqId}
         </div>
-        <AnnouncementRotator cliqId={cliqId} />
+        
+        {/* TEST PANEL: Show what Convex returns */}
+        <div style={{fontSize: '12px', color: '#333', background: '#e8f4f8', padding: '12px', borderRadius: '4px', marginBottom: '16px', border: '1px solid #b0d4dd'}}>
+          <strong>[TEST] listActiveAnnouncements Query Result:</strong>
+          <pre style={{marginTop: '8px', fontSize: '11px', overflow: 'auto', maxHeight: '200px', background: 'white', padding: '8px', borderRadius: '3px'}}>
+            {testAnnouncements === undefined ? '⏳ Loading...' : testAnnouncements === null ? '❌ Error' : `✅ Found ${testAnnouncements.length} items:\n${JSON.stringify(testAnnouncements, null, 2)}`}
+          </pre>
+        </div>
         
         {/* Post Form */}
         <PostForm cliqId={cliqId} />
