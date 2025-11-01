@@ -3,6 +3,20 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+// Type declaration for window.debugLog
+declare global {
+  interface Window {
+    debugLog?: (...args: any[]) => void;
+  }
+}
+
+// Force logs to be visible even in minified builds
+if (typeof window !== 'undefined' && !window.debugLog) {
+  window.debugLog = function(...args: any[]) {
+    console.log(...args);
+  };
+}
+
 interface RotatorItem {
   id: string;
   type: 'birthday' | 'event' | 'announcement';
@@ -24,24 +38,24 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const [items, setItems] = useState<RotatorItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  console.log('[ROTATOR] Component rendered with cliqId prop:', cliqId);
+  window.debugLog?.('[ROTATOR] Component rendered with cliqId prop:', cliqId);
 
   // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
-    console.log('[ROTATOR] useEffect triggered with cliqId:', cliqId);
+    window.debugLog?.('[ROTATOR] useEffect triggered with cliqId:', cliqId);
     
     const fetchContent = async () => {
       try {
-        console.log('[ROTATOR] Starting fetch for cliqId:', cliqId);
+        window.debugLog?.('[ROTATOR] Starting fetch for cliqId:', cliqId);
         const res = await fetch(`/api/announcements/list?cliqId=${cliqId}`, {
           credentials: 'include',
         });
 
-        console.log('[ROTATOR] Fetch response status:', res.status, res.statusText);
+        window.debugLog?.('[ROTATOR] Fetch response status:', res.status, res.statusText);
 
         if (!res.ok) {
           const errorData = await res.text();
-          console.error('[ROTATOR] Fetch failed:', {
+          window.debugLog?.('[ROTATOR] Fetch failed:', {
             status: res.status,
             statusText: res.statusText,
             errorData
@@ -50,10 +64,10 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         }
 
         const data = await res.json();
-        console.log('[ROTATOR] Response data:', data);
+        window.debugLog?.('[ROTATOR] Response data:', data);
         
         let allItems = data.announcements || [];
-        console.log('[ROTATOR] Items before sort:', allItems.length);
+        window.debugLog?.('[ROTATOR] Items before sort:', allItems.length);
 
         // Apply priority sort per Aiden's spec:
         // 1. Global announcements first
@@ -72,10 +86,10 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
           return (b.timestamp || 0) - (a.timestamp || 0);
         });
 
-        console.log('[ROTATOR] Items after sort:', allItems.length);
+        window.debugLog?.('[ROTATOR] Items after sort:', allItems.length);
         setItems(allItems);
       } catch (err) {
-        console.error('[ROTATOR] Error fetching:', err);
+        window.debugLog?.('[ROTATOR] Error fetching:', err);
       } finally {
         setLoading(false);
       }
