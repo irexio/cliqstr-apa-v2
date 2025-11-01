@@ -83,14 +83,14 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
 
       {/* Description/Message */}
       {(current.message || current.description) && (
-        <div className="text-xs text-gray-300 mb-3">
+        <div className="text-xs text-gray-300 mb-2 line-clamp-2">
           {current.message || current.description}
         </div>
       )}
 
       {/* Event-specific details */}
       {itemType === 'event' && current.startAt && (
-        <div className="text-xs text-gray-400 mb-3 space-y-1">
+        <div className="text-xs text-gray-400 mb-2 space-y-0.5">
           <div>📅 {formatEventTime(current.startAt, current.timezone)}</div>
           {current.location && (
             <div>📍 {current.location}</div>
@@ -102,11 +102,11 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
       )}
 
       {/* Action Links */}
-      <div className="flex gap-3 mb-3">
+      <div className="flex gap-3 mb-2">
         {itemType === 'event' && current._id && (
           <Link
             href={`/calendar?eventId=${current._id}&cliqId=${cliqId}`}
-            className="text-xs text-white underline hover:text-gray-200 transition"
+            className="text-xs text-white hover:text-gray-300 transition"
           >
             View & RSVP
           </Link>
@@ -115,7 +115,7 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
         {itemType === 'announcement' && (
           <Link
             href="#"
-            className="text-xs text-white underline hover:text-gray-200 transition"
+            className="text-xs text-white hover:text-gray-300 transition"
           >
             View Details
           </Link>
@@ -124,7 +124,7 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
 
       {/* Dot indicators for rotation */}
       {items.length > 1 && (
-        <div className="flex gap-1 justify-center mt-3">
+        <div className="flex gap-1 justify-center mt-2">
           {items.map((_, idx) => (
             <button
               key={idx}
