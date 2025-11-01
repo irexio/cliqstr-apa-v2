@@ -69,17 +69,9 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
   };
 
   return (
-    <div className="bg-black text-white rounded-lg p-4 mb-6">
-      {/* Header with type indicator */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-sm font-semibold">{current.title}</div>
-        {itemType === 'event' && (
-          <span className="text-xs bg-blue-600 px-2 py-1 rounded">Event</span>
-        )}
-        {itemType === 'birthday' && (
-          <span className="text-xs bg-pink-600 px-2 py-1 rounded">🎉 Birthday</span>
-        )}
-      </div>
+    <div className="bg-black text-white rounded-lg p-3 mb-6">
+      {/* Title */}
+      <div className="text-sm font-semibold mb-1">{current.title}</div>
 
       {/* Description/Message */}
       {(current.message || current.description) && (
@@ -95,27 +87,24 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
           {current.location && (
             <div>📍 {current.location}</div>
           )}
-          {current.rsvps && Object.keys(current.rsvps).length > 0 && (
-            <div>👥 {Object.keys(current.rsvps).length} going</div>
-          )}
         </div>
       )}
 
-      {/* Action Links */}
-      <div className="flex gap-3 mb-2">
+      {/* Action Link */}
+      <div className="text-xs mb-2">
         {itemType === 'event' && current._id && (
           <Link
             href={`/calendar?eventId=${current._id}&cliqId=${cliqId}`}
-            className="text-xs text-white hover:text-gray-300 transition"
+            className="text-white hover:text-gray-300 transition"
           >
-            View & RSVP
+            Tap to RSVP in Calendar
           </Link>
         )}
         
         {itemType === 'announcement' && (
           <Link
             href="#"
-            className="text-xs text-white hover:text-gray-300 transition"
+            className="text-white hover:text-gray-300 transition"
           >
             View Details
           </Link>
