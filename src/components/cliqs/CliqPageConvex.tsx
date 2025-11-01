@@ -8,9 +8,10 @@ import PostForm from '@/components/PostForm';
 import CliqFeedConvex from '@/components/cliqs/CliqFeedConvex';
 import CliqTools from '@/components/cliqs/CliqTools';
 import SimpleRotator from '@/components/SimpleRotator';
+import AnnouncementModal from '@/components/AnnouncementModal';
 import { useAuth } from '@/lib/auth/useAuth';
 import { notFound } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CliqPageConvexProps {
   cliqId: string;
@@ -18,6 +19,7 @@ interface CliqPageConvexProps {
 
 export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
   const { user, isLoading: authLoading } = useAuth();
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
   
   // Get cliq data with membership check
   const cliq = useQuery(api.cliqs.getCliq, 
@@ -121,6 +123,7 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
             items={testAnnouncements} 
             loading={testAnnouncements === undefined}
             cliqId={cliqId}
+            onAnnouncementClick={setSelectedAnnouncement}
           />
         )}
         
@@ -135,6 +138,12 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
           <CliqTools cliqId={cliqId} />
         </div>
       </div>
+
+      {/* Announcement Modal */}
+      <AnnouncementModal
+        announcement={selectedAnnouncement}
+        onClose={() => setSelectedAnnouncement(null)}
+      />
     </main>
   );
 }

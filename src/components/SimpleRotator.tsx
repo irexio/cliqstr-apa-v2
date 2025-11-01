@@ -21,9 +21,10 @@ interface SimpleRotatorProps {
   items: RotatorItem[];
   loading?: boolean;
   cliqId?: string;
+  onAnnouncementClick?: (announcement: RotatorItem) => void;
 }
 
-export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorProps) {
+export default function SimpleRotator({ items, loading, cliqId, onAnnouncementClick }: SimpleRotatorProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Auto-rotate every 5 seconds
@@ -99,12 +100,12 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
         )}
         
         {itemType === 'announcement' && (
-          <Link
-            href="#"
-            className="text-white hover:text-gray-300 transition"
+          <button
+            onClick={() => onAnnouncementClick?.(current)}
+            className="text-white hover:text-gray-300 transition text-left"
           >
             View Details
-          </Link>
+          </button>
         )}
       </div>
 
