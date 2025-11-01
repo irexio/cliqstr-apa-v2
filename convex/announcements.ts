@@ -223,7 +223,7 @@ export const listActiveAnnouncements = query({
       if (a.visibility === "global") return true;
 
       // Include cliq announcements only for the matching cliq
-      if (a.visibility === "cliq" && args.cliqId && a.cliqId === args.cliqId) return true;
+      if (a.visibility === "cliq" && args.cliqId && a.cliqId?.toString() === args.cliqId.toString()) return true;
 
       return false;
     });

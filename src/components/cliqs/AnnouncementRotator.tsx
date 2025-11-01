@@ -37,12 +37,14 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const [currentIndex, setCurrentIndex] = useState(0);
   const [items, setItems] = useState<RotatorItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState('Component mounted. cliqId: ' + cliqId);
 
   window.debugLog?.('[ROTATOR] Component rendered with cliqId prop:', cliqId);
 
   // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
     window.debugLog?.('[ROTATOR] useEffect triggered with cliqId:', cliqId);
+    setDebugInfo('Fetching from /api/announcements/list?cliqId=' + cliqId);
     
     const fetchContent = async () => {
       try {
@@ -52,6 +54,7 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         });
 
         window.debugLog?.('[ROTATOR] Fetch response status:', res.status, res.statusText);
+        setDebugInfo(`Fetch response: ${res.status} ${res.statusText}`);
 
         if (!res.ok) {
           const errorData = await res.text();
@@ -60,14 +63,17 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
             statusText: res.statusText,
             errorData
           });
+          setDebugInfo(`ERROR: ${res.status} - ${errorData}`);
           throw new Error(`Failed to fetch content: ${res.status}`);
         }
 
         const data = await res.json();
         window.debugLog?.('[ROTATOR] Response data:', data);
+        setDebugInfo(`Got data: ${JSON.stringify(data).substring(0, 100)}...`);
         
         let allItems = data.announcements || [];
         window.debugLog?.('[ROTATOR] Items before sort:', allItems.length);
+        setDebugInfo(`Items: ${allItems.length}`);
 
         // Apply priority sort per Aiden's spec:
         // 1. Global announcements first
@@ -87,9 +93,11 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         });
 
         window.debugLog?.('[ROTATOR] Items after sort:', allItems.length);
+        setDebugInfo(`Sorted: ${allItems.length} items`);
         setItems(allItems);
       } catch (err) {
         window.debugLog?.('[ROTATOR] Error fetching:', err);
+        setDebugInfo(`ERROR: ${String(err)}`);
       } finally {
         setLoading(false);
       }
@@ -110,7 +118,11 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   }, [items.length]);
 
   if (loading || items.length === 0) {
-    return null;
+    return (
+      <div className="bg-red-100 border border-red-300 text-red-800 p-3 mb-6 rounded-lg text-sm">
+        <strong>[ROTATOR DEBUG]</strong> {debugInfo}
+      </div>
+    );
   }
 
   const current = items[currentIndex];
