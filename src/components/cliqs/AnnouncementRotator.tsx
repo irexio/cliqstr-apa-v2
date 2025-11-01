@@ -24,11 +24,6 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const [items, setItems] = useState<RotatorItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Show alert when component mounts
-  useEffect(() => {
-    alert(`[ROTATOR] Component mounted with cliqId: ${cliqId}`);
-  }, []);
-
   // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
     const fetchContent = async () => {
@@ -41,9 +36,6 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
 
         const data = await res.json();
         let allItems = data.announcements || [];
-
-        alert(`[ROTATOR] API returned ${allItems.length} items`);
-        alert(`[ROTATOR] Items data: ${JSON.stringify(allItems)}`);
 
         // Apply priority sort per Aiden's spec:
         // 1. Global announcements first
@@ -63,7 +55,6 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         });
 
         setItems(allItems);
-        alert(`[ROTATOR] ✅ Loaded ${allItems.length} total items (announcements + events + birthdays)`);
       } catch (err) {
         console.error('[ROTATOR] Error fetching:', err);
       } finally {
@@ -86,44 +77,25 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   }, [items.length]);
 
   if (loading || items.length === 0) {
-    alert(`[ROTATOR] Early return - loading: ${loading}, items: ${items.length}`);
-    if (loading) {
-      return <div style={{fontSize: '10px', color: '#999', textAlign: 'center', padding: '4px', background: '#fff0f0', margin: '4px 0', borderRadius: '4px'}}>[DEBUG] AnnouncementRotator loading...</div>;
-    }
     return null;
   }
 
   const current = items[currentIndex];
 
   const handleClick = () => {
-    alert(`[ROTATOR] Click handler triggered on item: ${JSON.stringify({
-      type: current.type,
-      title: current.title,
-      clickTarget: current.clickTarget,
-      hasClickTarget: !!current.clickTarget,
-    })}`);
-    
     if (current.clickTarget) {
-      alert(`[ROTATOR] Navigating to: ${current.clickTarget}`);
       router.push(current.clickTarget);
-    } else {
-      alert('[ROTATOR] No clickTarget available for this item');
     }
   };
 
   return (
-    <>
-      {/* DEBUG: Visible message to confirm component renders */}
-      <div style={{fontSize: '10px', color: '#999', textAlign: 'center', padding: '4px', background: '#f0f0f0', margin: '4px 0', borderRadius: '4px'}}>
-        [DEBUG] AnnouncementRotator loaded with {items.length} items
-      </div>
-      <div
-        onClick={handleClick}
-        className={`bg-black text-white rounded-lg p-3 mb-6 cursor-pointer transition hover:bg-gray-900 ${
-          current.clickTarget ? 'hover:shadow-lg' : ''
-        }`}
-        style={{ minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
-      >
+    <div
+      onClick={handleClick}
+      className={`bg-black text-white rounded-lg p-3 mb-6 cursor-pointer transition hover:bg-gray-900 ${
+        current.clickTarget ? 'hover:shadow-lg' : ''
+      }`}
+      style={{ minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+    >
       {/* Content - seamless merged display */}
       <div className="text-sm sm:text-base">
         {current.type === 'announcement' && (
@@ -152,6 +124,5 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
         </div>
       )}
     </div>
-    </>
   );
 }
