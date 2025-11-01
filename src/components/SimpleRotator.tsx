@@ -100,17 +100,26 @@ export default function SimpleRotator({ items, loading }: SimpleRotatorProps) {
         </div>
       )}
 
-      {/* RSVP Link for Events */}
-      {itemType === 'event' && current._id && (
-        <div className="mb-3">
+      {/* Action Links */}
+      <div className="flex gap-3 mb-3">
+        {itemType === 'event' && current._id && (
           <Link
             href={`/calendar?eventId=${current._id}`}
-            className="inline-block text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition"
+            className="text-xs text-white underline hover:text-gray-200 transition"
           >
             View & RSVP
           </Link>
-        </div>
-      )}
+        )}
+        
+        {itemType === 'announcement' && (
+          <Link
+            href="#"
+            className="text-xs text-white underline hover:text-gray-200 transition"
+          >
+            View Details
+          </Link>
+        )}
+      </div>
 
       {/* Dot indicators for rotation */}
       {items.length > 1 && (
