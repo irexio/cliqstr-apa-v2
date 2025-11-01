@@ -70,23 +70,20 @@ export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorP
 
   return (
     <div className="bg-black text-white rounded-lg p-3 mb-6">
-      {/* Title */}
+      {/* Title with emoji */}
       <div className="text-sm font-semibold mb-1">{current.title}</div>
 
-      {/* Description/Message */}
-      {(current.message || current.description) && (
-        <div className="text-xs text-gray-300 mb-2 line-clamp-2">
-          {current.message || current.description}
+      {/* Event date only */}
+      {itemType === 'event' && current.startAt && (
+        <div className="text-xs text-gray-400 mb-2">
+          📅 {formatEventTime(current.startAt, current.timezone)}
         </div>
       )}
 
-      {/* Event-specific details */}
-      {itemType === 'event' && current.startAt && (
-        <div className="text-xs text-gray-400 mb-2 space-y-0.5">
-          <div>📅 {formatEventTime(current.startAt, current.timezone)}</div>
-          {current.location && (
-            <div>📍 {current.location}</div>
-          )}
+      {/* Announcement message */}
+      {itemType === 'announcement' && (current.message || current.description) && (
+        <div className="text-xs text-gray-300 mb-2 line-clamp-2">
+          {current.message || current.description}
         </div>
       )}
 
