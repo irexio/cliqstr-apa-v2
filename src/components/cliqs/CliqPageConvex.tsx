@@ -119,7 +119,8 @@ export default function CliqPageConvex({ cliqId }: CliqPageConvexProps) {
         {testAnnouncements && testAnnouncements.length > 0 && (
           <SimpleRotator 
             items={testAnnouncements} 
-            loading={testAnnouncements === undefined} 
+            loading={testAnnouncements === undefined}
+            cliqId={cliqId}
           />
         )}
         

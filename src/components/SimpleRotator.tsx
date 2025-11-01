@@ -20,9 +20,10 @@ interface RotatorItem {
 interface SimpleRotatorProps {
   items: RotatorItem[];
   loading?: boolean;
+  cliqId?: string;
 }
 
-export default function SimpleRotator({ items, loading }: SimpleRotatorProps) {
+export default function SimpleRotator({ items, loading, cliqId }: SimpleRotatorProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Auto-rotate every 5 seconds
@@ -104,7 +105,7 @@ export default function SimpleRotator({ items, loading }: SimpleRotatorProps) {
       <div className="flex gap-3 mb-3">
         {itemType === 'event' && current._id && (
           <Link
-            href={`/calendar?eventId=${current._id}`}
+            href={`/calendar?eventId=${current._id}&cliqId=${cliqId}`}
             className="text-xs text-white underline hover:text-gray-200 transition"
           >
             View & RSVP
