@@ -24,10 +24,15 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
   const [items, setItems] = useState<RotatorItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  console.log('[ROTATOR] Component rendered with cliqId prop:', cliqId);
+
   // Fetch all content (announcements, events, birthdays)
   useEffect(() => {
+    console.log('[ROTATOR] useEffect triggered with cliqId:', cliqId);
+    
     const fetchContent = async () => {
       try {
+        console.log('[ROTATOR] Starting fetch for cliqId:', cliqId);
         const res = await fetch(`/api/announcements/list?cliqId=${cliqId}`, {
           credentials: 'include',
         });
