@@ -190,45 +190,123 @@ export const listActiveAnnouncements = query({
 
   handler: async (ctx, args) => {
     const now = Date.now();
+    const results: any[] = [];
 
-    // Get all announcements
+    // ========================================================================
+    // 1. FETCH ANNOUNCEMENTS
+    // ========================================================================
     const allAnnouncements = await ctx.db
       .query("announcements")
       .collect();
 
-    // Filter to include:
-    // 1. Global announcements (visible everywhere)
-    // 2. Cliq announcements for this specific cliq (visible only to members)
-    // 3. Only non-expired items (or pinned items which have no expiration)
     const filtered = allAnnouncements.filter((a) => {
-      // Check if announcement is still active (not expired)
-      // For rotator display, show ALL announcements (expired or not)
-      // The expiration is just metadata at this point
       const isExpired = a.expiresAt !== undefined && a.expiresAt < now;
-      
-      console.log('[listActiveAnnouncements] Checking announcement:', {
-        title: a.title,
-        pinned: a.pinned,
-        expiresAt: a.expiresAt,
-        now,
-        isExpired,
-        willInclude: !isExpired || a.pinned === true,
-      });
-
-      // Include if not expired OR if pinned
       const isActive = a.pinned === true || !isExpired;
       if (!isActive) return false;
 
-      // Include global announcements
       if (a.visibility === "global") return true;
-
-      // Include cliq announcements only for the matching cliq
       if (a.visibility === "cliq" && args.cliqId && a.cliqId?.toString() === args.cliqId.toString()) return true;
 
       return false;
     });
 
-    return filtered.sort((a, b) => b.createdAt - a.createdAt);
+    // Add announcements to results with type marker
+    for (const a of filtered) {
+      results.push({
+        ...a,
+        _type: "announcement",
+      });
+    }
+
+    // ========================================================================
+    // 2. FETCH EVENTS (for this cliq if provided)
+    // ========================================================================
+    if (args.cliqId) {
+      const events = await ctx.db
+        .query("events")
+        .withIndex("by_cliq_start", (q: any) => q.eq("cliqId", args.cliqId))
+        .collect();
+
+      // Filter to future/current events
+      const upcomingEvents = events.filter((e) => {
+        if (e.deletedAt) return false;
+        if (e.startAt < now) return false; // Only show future events
+        return true;
+      });
+
+      // Add events to results with type marker
+      for (const e of upcomingEvents) {
+        results.push({
+          ...e,
+          _type: "event",
+        });
+      }
+
+      // ========================================================================
+      // 3. FETCH BIRTHDAY EVENTS (for this cliq)
+      // ========================================================================
+      const memberships = await ctx.db
+        .query("memberships")
+        .withIndex("by_cliq_id", (q: any) => q.eq("cliqId", args.cliqId))
+        .collect();
+
+      const todayUTC = new Date(now);
+      todayUTC.setUTCHours(0, 0, 0, 0);
+      const todayTimestamp = todayUTC.getTime();
+      const todayYear = todayUTC.getUTCFullYear();
+      const todayMonth = todayUTC.getUTCMonth();
+      const todayDate = todayUTC.getUTCDate();
+
+      for (const membership of memberships) {
+        const profile = await ctx.db
+          .query("myProfiles")
+          .withIndex("by_user_id", (q: any) => q.eq("userId", membership.userId))
+          .first();
+
+        if (profile?.birthdayMonthDay) {
+          const [month, day] = profile.birthdayMonthDay
+            .split("-")
+            .map(Number);
+
+          const birthdayThisYearUTC = new Date(Date.UTC(todayYear, month - 1, day, 0, 0, 0, 0));
+          const birthdayThisYearTimestamp = birthdayThisYearUTC.getTime();
+          const endOfThisYearsWeekUTC = new Date(Date.UTC(todayYear, month - 1, day + 3, 0, 0, 0, 0));
+          const endOfThisYearsWeekTimestamp = endOfThisYearsWeekUTC.getTime();
+
+          let birthdayToUseTimestamp = birthdayThisYearTimestamp;
+          if (endOfThisYearsWeekTimestamp < todayTimestamp) {
+            birthdayToUseTimestamp = new Date(Date.UTC(todayYear + 1, month - 1, day, 0, 0, 0, 0)).getTime();
+          }
+
+          const startOfWeekTimestamp = birthdayToUseTimestamp - (3 * 24 * 60 * 60 * 1000);
+          const endOfWeekTimestamp = birthdayToUseTimestamp + (3 * 24 * 60 * 60 * 1000) + (23 * 60 * 60 * 1000 + 59 * 60 * 1000 + 59 * 1000);
+
+          if (todayTimestamp >= startOfWeekTimestamp && todayTimestamp <= endOfWeekTimestamp) {
+            results.push({
+              _id: `birthday-${membership.userId}`,
+              _type: "birthday",
+              cliqId: args.cliqId,
+              createdByUserId: membership.userId,
+              title: `Happy Birthday ${profile.displayName || profile.username}!`,
+              description: "Let's celebrate this week!",
+              startAt: startOfWeekTimestamp,
+              endAt: endOfWeekTimestamp,
+              timezone: "UTC",
+              location: undefined,
+              locationVisibility: "hidden",
+              visibilityLevel: "private",
+              requiresParentApproval: false,
+              rsvps: {},
+              createdAt: now,
+              updatedAt: now,
+            });
+          }
+        }
+      }
+    }
+
+    // Sort all results by creation time (newest first)
+    return results.sort((a, b) => (b.createdAt || b._creationTime || 0) - (a.createdAt || a._creationTime || 0));
   },
 });
 
