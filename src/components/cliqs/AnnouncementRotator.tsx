@@ -32,10 +32,23 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
           credentials: 'include',
         });
 
-        if (!res.ok) throw new Error('Failed to fetch content');
+        console.log('[ROTATOR] Fetch response status:', res.status, res.statusText);
+
+        if (!res.ok) {
+          const errorData = await res.text();
+          console.error('[ROTATOR] Fetch failed:', {
+            status: res.status,
+            statusText: res.statusText,
+            errorData
+          });
+          throw new Error(`Failed to fetch content: ${res.status}`);
+        }
 
         const data = await res.json();
+        console.log('[ROTATOR] Response data:', data);
+        
         let allItems = data.announcements || [];
+        console.log('[ROTATOR] Items before sort:', allItems.length);
 
         // Apply priority sort per Aiden's spec:
         // 1. Global announcements first
@@ -54,6 +67,7 @@ export default function AnnouncementRotator({ cliqId }: AnnouncementRotatorProps
           return (b.timestamp || 0) - (a.timestamp || 0);
         });
 
+        console.log('[ROTATOR] Items after sort:', allItems.length);
         setItems(allItems);
       } catch (err) {
         console.error('[ROTATOR] Error fetching:', err);

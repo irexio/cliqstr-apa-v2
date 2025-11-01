@@ -19,9 +19,14 @@ interface Announcement {
 
 export async function GET(req: NextRequest) {
   try {
+    console.log('[ANNOUNCEMENTS] GET /api/announcements/list called');
+    
     const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
 
+    console.log('[ANNOUNCEMENTS] Session userId:', session.userId ? 'PRESENT' : 'MISSING');
+
     if (!session.userId) {
+      console.error('[ANNOUNCEMENTS] No session userId');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
