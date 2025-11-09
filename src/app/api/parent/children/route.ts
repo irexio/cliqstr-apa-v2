@@ -32,10 +32,11 @@ const createChildSchema = z.object({
   parentMobileNumber: z.string().optional().or(z.literal('')),
   secondParentMobileNumber: z.string().optional().or(z.literal('')),
   approvalToken: z.string().optional(),
+  inviteCode: z.string().optional(),
 }).refine(
-  (data) => data.approvalToken,
+  (data) => data.approvalToken || data.inviteCode,
   {
-    message: "approvalToken must be provided",
+    message: "Either approvalToken or inviteCode must be provided",
     path: ["approvalToken"],
   }
 );
