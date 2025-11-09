@@ -140,23 +140,26 @@ function InviteAcceptContent() {
         }
         
         // If not already authenticated, check if email exists to show auth options
-        console.log('[INVITE_ACCEPT] User not authenticated yet, checking if email exists');
-        try {
-          const userCheckResponse = await fetch(`/api/auth/check-user?email=${encodeURIComponent(inviteData.recipientEmail)}`);
-          const userCheckData = await userCheckResponse.json();
-          
-          if (userCheckData.exists) {
-            console.log('[INVITE_ACCEPT] Email belongs to existing user, showing auth options');
-            setLoading(false);
-            setError(null);
-            // Store the email and invite code for the auth options screen
-            sessionStorage.setItem('invitedEmail', inviteData.recipientEmail);
-            sessionStorage.setItem('inviteCode', token);
-            router.push(`/invite/auth-options?email=${encodeURIComponent(inviteData.recipientEmail)}&code=${encodeURIComponent(token)}`);
-            return;
+        // BUT: Skip this for child invites - they should always go to sign-up
+        if (inviteType !== 'child') {
+          console.log('[INVITE_ACCEPT] User not authenticated yet, checking if email exists');
+          try {
+            const userCheckResponse = await fetch(`/api/auth/check-user?email=${encodeURIComponent(inviteData.recipientEmail)}`);
+            const userCheckData = await userCheckResponse.json();
+            
+            if (userCheckData.exists) {
+              console.log('[INVITE_ACCEPT] Email belongs to existing user, showing auth options');
+              setLoading(false);
+              setError(null);
+              // Store the email and invite code for the auth options screen
+              sessionStorage.setItem('invitedEmail', inviteData.recipientEmail);
+              sessionStorage.setItem('inviteCode', token);
+              router.push(`/invite/auth-options?email=${encodeURIComponent(inviteData.recipientEmail)}&code=${encodeURIComponent(token)}`);
+              return;
+            }
+          } catch (error) {
+            console.error('[INVITE_ACCEPT] Error checking if user exists:', error);
           }
-        } catch (error) {
-          console.error('[INVITE_ACCEPT] Error checking if user exists:', error);
         }
       }
 
