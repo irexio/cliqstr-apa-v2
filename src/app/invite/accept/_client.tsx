@@ -24,43 +24,46 @@ function InviteAcceptContent() {
     try {
       console.log('[INVITE_ACCEPT] Checking token:', token);
       
-      // First, try to check if it's a parent approval token
-      const parentResponse = await fetch(`/api/parent-approval/accept?token=${encodeURIComponent(token)}`);
-      console.log('[INVITE_ACCEPT] Parent approval response status:', parentResponse.status);
+      // FIRST: Try to validate as a regular invite (child, adult, parent)
+      // This should be checked BEFORE parent approval tokens
+      const inviteResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(token)}`);
+      console.log('[INVITE_ACCEPT] Regular invite validation response status:', inviteResponse.status);
       
-      if (parentResponse.ok) {
-        const parentData = await parentResponse.json();
-        console.log('[INVITE_ACCEPT] Parent approval data:', parentData);
-        
-        if (parentData.approval) {
-          console.log('[INVITE_ACCEPT] Found parent approval, parent state:', parentData.approval.parentState);
-          
-          // This is a parent approval token - handle as before
-          if (parentData.approval.parentState === 'existing_parent') {
-            console.log('[INVITE_ACCEPT] Redirecting existing parent to Parents HQ');
-            router.push(`/parents/hq?token=${encodeURIComponent(token)}`);
-          } else {
-            console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
-            router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
-          }
-          return;
-        } else {
-          console.log('[INVITE_ACCEPT] No approval data in response');
+      let inviteData = null;
+      
+      if (inviteResponse.ok) {
+        const responseData = await inviteResponse.json();
+        if (responseData.valid) {
+          inviteData = responseData;
+          console.log('[INVITE_ACCEPT] ✅ Valid regular invite found, type:', inviteData.inviteType);
         }
-      } else {
-        console.log('[INVITE_ACCEPT] Parent approval response not ok:', parentResponse.status);
       }
 
-      // If not a parent approval token, try to validate as a regular invite
-      const inviteResponse = await fetch(`/api/invites/validate?code=${encodeURIComponent(token)}`);
-      if (!inviteResponse.ok) {
-        setError('Invalid invite code');
-        setLoading(false);
-        return;
-      }
-      
-      const inviteData = await inviteResponse.json();
-      if (!inviteData.valid) {
+      // If not a regular invite, check for parent approval token
+      if (!inviteData) {
+        console.log('[INVITE_ACCEPT] Not a regular invite, checking if this is a parent approval token');
+        const parentResponse = await fetch(`/api/parent-approval/accept?token=${encodeURIComponent(token)}`);
+        console.log('[INVITE_ACCEPT] Parent approval response status:', parentResponse.status);
+        
+        if (parentResponse.ok) {
+          const parentData = await parentResponse.json();
+          console.log('[INVITE_ACCEPT] Parent approval data:', parentData);
+          
+          if (parentData.approval) {
+            console.log('[INVITE_ACCEPT] Found parent approval, parent state:', parentData.approval.parentState);
+            
+            // This is a parent approval token - handle as before
+            if (parentData.approval.parentState === 'existing_parent') {
+              console.log('[INVITE_ACCEPT] Redirecting existing parent to Parents HQ');
+              router.push(`/parents/hq?token=${encodeURIComponent(token)}`);
+            } else {
+              console.log('[INVITE_ACCEPT] Redirecting new parent to signup');
+              router.push(`/sign-up?email=${encodeURIComponent(parentData.approval.parentEmail)}&approvalToken=${encodeURIComponent(token)}`);
+            }
+            return;
+          }
+        }
+        
         setError('Invalid invite code');
         setLoading(false);
         return;
@@ -193,8 +196,15 @@ function InviteAcceptContent() {
         console.log('[INVITE_ACCEPT] Routing parent to invite/parent');
         router.push(`/invite/parent?code=${token}`);
       } else if (inviteType === 'child') {
-        console.log('[INVITE_ACCEPT] Routing child invite to Parents HQ');
-        router.push(`/parents/hq?inviteCode=${encodeURIComponent(token)}`);
+        console.log('[INVITE_ACCEPT] Child invite - routing to sign-up');
+        // NEW PARENTS MUST SIGN UP FIRST before going to PHQ
+        if (inviteData.recipientEmail && inviteData.recipientEmail.trim() !== '') {
+          console.log('[INVITE_ACCEPT] ✅ Routing new parent to sign-up with email:', inviteData.recipientEmail);
+          router.push(`/sign-up?email=${encodeURIComponent(inviteData.recipientEmail)}&inviteCode=${encodeURIComponent(token)}`);
+        } else {
+          console.log('[INVITE_ACCEPT] ⚠️ No recipient email, routing to sign-up');
+          router.push(`/sign-up?inviteCode=${encodeURIComponent(token)}`);
+        }
       } else {
         // Fallback to sign-up for unknown invite types
         console.log('[INVITE_ACCEPT] Unknown invite type, defaulting to sign-up');
