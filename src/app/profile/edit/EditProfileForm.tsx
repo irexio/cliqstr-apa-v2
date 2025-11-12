@@ -167,50 +167,47 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
         </p>
       </div>
 
-      {/* Avatar Library */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Profile Avatar
-        </label>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setShowAvatarLibrary(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
-          >
-            <span>🎨</span>
-            Choose from Library
-          </button>
-        </div>
-        {avatarUrl && (
-          <div className="mt-2">
-            <p className="text-xs text-gray-500 mb-1">Current avatar:</p>
-            <img src={avatarUrl} alt="Profile Avatar" className="w-16 h-16 rounded-lg" />
-          </div>
-        )}
-      </div>
-
-      {/* Banner Library */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Profile Banner
-        </label>
-        <div className="flex gap-2">
+      {/* Banner & Avatar Section */}
+      <div className="mb-6 space-y-4">
+        {/* Banner */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Profile Banner
+          </label>
+          {bannerUrl && (
+            <div className="mb-3">
+              <img src={bannerUrl} alt="Profile Banner" className="w-full h-32 rounded-lg object-cover" />
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setShowBannerLibrary(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
           >
             <span>🎨</span>
             Choose from Library
           </button>
         </div>
-        {bannerUrl && (
-          <div className="mt-2">
-            <p className="text-xs text-gray-500 mb-1">Current banner:</p>
-            <img src={bannerUrl} alt="Profile Banner" className="w-full h-24 rounded-lg object-cover" />
-          </div>
-        )}
+
+        {/* Avatar */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Profile Avatar
+          </label>
+          {avatarUrl && (
+            <div className="mb-3 flex gap-3">
+              <img src={avatarUrl} alt="Profile Avatar" className="w-16 h-16 rounded-lg object-cover" />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowAvatarLibrary(true)}
+            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+          >
+            <span>🎨</span>
+            Choose from Library
+          </button>
+        </div>
       </div>
 
       {/* Birthdate - Read Only */}
@@ -294,6 +291,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
           }).catch((err) => setError(err.message));
         }}
         title="Choose Your Avatar"
+        type="avatar"
       />
 
       {/* Banner Library Modal */}
@@ -318,6 +316,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
           }).catch((err) => setError(err.message));
         }}
         title="Choose Your Banner"
+        type="banner"
       />
     </form>
   );
