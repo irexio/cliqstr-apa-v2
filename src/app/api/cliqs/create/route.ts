@@ -33,7 +33,10 @@ const schema = z.object({
   name: z.string().min(2),
   description: z.string().optional(),
   privacy: z.enum(['private', 'semi', 'public']),
-  coverImage: z.string().url().optional().or(z.literal('')),
+  coverImage: z.string().refine(
+    (url) => url === '' || url.startsWith('/IMAGE-FEATURE/') || url.startsWith('http'),
+    'Invalid image URL'
+  ).optional().or(z.literal('')),
   minAge: z.number().int().min(1).max(100).optional().nullable(),
   maxAge: z.number().int().min(1).max(100).optional().nullable(),
 });
