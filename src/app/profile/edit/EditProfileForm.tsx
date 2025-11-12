@@ -176,7 +176,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
           <button
             type="button"
             onClick={() => setShowAvatarLibrary(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
           >
             <span>🎨</span>
             Choose from Library
@@ -199,7 +199,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
           <button
             type="button"
             onClick={() => setShowBannerLibrary(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
           >
             <span>🎨</span>
             Choose from Library

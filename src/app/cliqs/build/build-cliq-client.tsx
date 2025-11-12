@@ -169,7 +169,7 @@ export default function BuildCliqClient() {
                 const uploadElement = document.querySelector('[class*="uploadthing"]') as HTMLElement;
                 uploadElement?.click();
               }}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+              className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
             >
               <span>📤</span>
               Upload Custom
@@ -177,7 +177,7 @@ export default function BuildCliqClient() {
             <button
               type="button"
               onClick={() => setShowAvatarLibrary(true)}
-              className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+              className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
             >
               <span>🎨</span>
               Choose from Library
@@ -253,12 +253,13 @@ export default function BuildCliqClient() {
         </Button>
       </form>
 
-      {/* Avatar Library Modal */}
+      {/* Banner Library Modal */}
       <AvatarLibraryModal
         isOpen={showAvatarLibrary}
         onClose={() => setShowAvatarLibrary(false)}
         onSelect={setBannerImage}
         title="Choose a Banner for Your Cliq"
+        type="banner"
       />
     </div>
   );

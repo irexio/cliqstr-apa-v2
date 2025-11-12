@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
 import { uploadFiles } from '@/lib/uploadthing-client';
+import { AvatarLibraryModal } from '@/components/AvatarLibraryModal';
 
 export default function EditCliqClient({ cliqId, currentUserId }: { cliqId: string; currentUserId: string; }) {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function EditCliqClient({ cliqId, currentUserId }: { cliqId: stri
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showBannerLibrary, setShowBannerLibrary] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prefill form when cliq data loads
@@ -173,22 +175,35 @@ export default function EditCliqClient({ cliqId, currentUserId }: { cliqId: stri
               className="hidden"
             />
 
-            {/* Upload Button */}
-            <button
-              type="button"
-              onClick={triggerFileInput}
-              disabled={uploadingImage}
-              className="w-full bg-black hover:bg-gray-800 disabled:opacity-70 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              {uploadingImage ? (
-                <>
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  Uploading...
-                </>
-              ) : (
-                'Change Banner Image'
-              )}
-            </button>
+            {/* Upload and Library Buttons */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                disabled={uploadingImage}
+                className="flex-1 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {uploadingImage ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <span>📤</span>
+                    Upload Custom
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBannerLibrary(true)}
+                className="flex-1 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <span>🎨</span>
+                Choose from Library
+              </button>
+            </div>
 
             <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border mt-3">
               JPG or PNG files work best. Any file size is fine—large images will be automatically compressed.
@@ -248,6 +263,15 @@ export default function EditCliqClient({ cliqId, currentUserId }: { cliqId: stri
             </button>
           </div>
         </form>
+
+        {/* Banner Library Modal */}
+        <AvatarLibraryModal
+          isOpen={showBannerLibrary}
+          onClose={() => setShowBannerLibrary(false)}
+          onSelect={setCoverImage}
+          title="Choose a Banner for Your Cliq"
+          type="banner"
+        />
       </div>
     </div>
   );

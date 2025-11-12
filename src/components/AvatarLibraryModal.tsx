@@ -7,19 +7,22 @@ import { ImageSelector } from '@/components/ImageSelector';
 interface AvatarLibraryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (avatarId: string) => void;
+  onSelect: (imageUrl: string) => void;
   title?: string;
+  type?: 'avatar' | 'banner'; // 'avatar' or 'banner' - defaults to 'avatar'
 }
 
 export const AvatarLibraryModal: React.FC<AvatarLibraryModalProps> = ({
   isOpen,
   onClose,
   onSelect,
-  title = 'Choose from Avatar Library',
+  title = 'Choose from Library',
+  type = 'avatar',
 }) => {
-  const handleSelect = (avatarId: string) => {
-    // Convert avatar id to image URL
-    const imageUrl = `/IMAGE-FEATURE/AVATARS/${avatarId}.png`;
+  const handleSelect = (imageId: string) => {
+    // Convert image id to image URL based on type
+    const folder = type === 'banner' ? 'BANNERS' : 'AVATARS';
+    const imageUrl = `/IMAGE-FEATURE/${folder}/${imageId}.png`;
     onSelect(imageUrl);
     onClose();
   };
@@ -31,7 +34,7 @@ export const AvatarLibraryModal: React.FC<AvatarLibraryModalProps> = ({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
-          <ImageSelector onSelect={handleSelect} />
+          <ImageSelector onSelect={handleSelect} type={type} />
         </div>
       </DialogContent>
     </Dialog>

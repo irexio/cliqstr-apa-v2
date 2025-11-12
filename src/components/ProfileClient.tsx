@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { UploadDropzone, UploadButton } from '@/lib/uploadthing-client';
 import ScrapbookGallery from './ScrapbookGallery';
 import { getAgeGroup } from '@/lib/ageUtils';
+import { AvatarLibraryModal } from '@/components/AvatarLibraryModal';
 
 interface ProfileProps {
   profile: {
@@ -38,6 +39,8 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [profileData, setProfileData] = useState(profile);
+  const [showAvatarLibrary, setShowAvatarLibrary] = useState(false);
+  const [showBannerLibrary, setShowBannerLibrary] = useState(false);
 
   // Use Account birthdate for age verification, NEVER Profile birthdate
   const { group } = getAgeGroup(profile.accountBirthdate || profile.birthdate);
@@ -106,7 +109,10 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden m-4 sm:m-6">
       {/* Banner Section */}
-      <div className="relative h-60 bg-gradient-to-r from-gray-100 to-gray-200">
+      <div 
+        className={`relative h-60 bg-gradient-to-r from-gray-100 to-gray-200 ${profileData.isOwner ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+        onClick={() => profileData.isOwner && setShowBannerLibrary(true)}
+      >
         {profileData.bannerUrl ? (
           <Image
             src={profileData.bannerUrl}
@@ -117,45 +123,6 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400" />
-        )}
-        
-        {/* Banner Upload Button */}
-        {profileData.isOwner && (
-          <div className="absolute top-4 right-4 z-10">
-            <UploadButton
-              endpoint="banner"
-              onClientUploadComplete={(res: any) => {
-                console.log('[PROFILE] Banner upload complete:', res);
-                if (res && res[0]?.url) {
-                  handleBannerUpload(res[0].url);
-                }
-                setIsUploadingBanner(false);
-              }}
-              onUploadError={(err: any) => {
-                console.error('[PROFILE] Banner upload error:', err);
-                alert(`Banner upload error: ${err.message}`);
-                setIsUploadingBanner(false);
-              }}
-              onUploadBegin={() => {
-                console.log('[PROFILE] Banner upload starting');
-                setIsUploadingBanner(true);
-              }}
-              appearance={{
-                button: 'bg-black text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2',
-                allowedContent: 'hidden',
-              }}
-              content={{
-                button: isUploadingBanner ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    Uploading...
-                  </>
-                ) : (
-                  <>Edit Image</>
-                ),
-              }}
-            />
-          </div>
         )}
       </div>
 
@@ -173,42 +140,6 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
               <span className="text-4xl text-gray-400">👤</span>
-            </div>
-          )}
-          
-          {/* Avatar Upload Button */}
-          {profileData.isOwner && (
-            <div className="absolute -bottom-2 -right-2 z-20">
-              <UploadButton
-                endpoint="avatar"
-                onClientUploadComplete={(res: any) => {
-                  console.log('[PROFILE] Avatar upload complete:', res);
-                  if (res && res[0]?.url) {
-                    handleAvatarUpload(res[0].url);
-                  }
-                  setIsUploadingAvatar(false);
-                }}
-                onUploadError={(err: any) => {
-                  console.error('[PROFILE] Avatar upload error:', err);
-                  alert(`Avatar upload error: ${err.message}`);
-                  setIsUploadingAvatar(false);
-                }}
-                onUploadBegin={() => {
-                  console.log('[PROFILE] Avatar upload starting');
-                  setIsUploadingAvatar(true);
-                }}
-                appearance={{
-                  button: 'bg-black text-white rounded-full p-2 shadow hover:bg-gray-800 transition text-xs font-semibold flex items-center justify-center w-8 h-8',
-                  allowedContent: 'hidden',
-                }}
-                content={{
-                  button: isUploadingAvatar ? (
-                    <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></div>
-                  ) : (
-                    <>Edit</>
-                  ),
-                }}
-              />
             </div>
           )}
         </div>
@@ -360,6 +291,30 @@ export default function ProfileClient({ profile, scrapbookItems, onRefresh }: Pr
           </div>
         </div>
       )}
+
+      {/* Avatar Library Modal */}
+      <AvatarLibraryModal
+        isOpen={showAvatarLibrary}
+        onClose={() => setShowAvatarLibrary(false)}
+        onSelect={(imageUrl) => {
+          handleProfileUpdate({ image: imageUrl });
+          setShowAvatarLibrary(false);
+        }}
+        title="Choose Your Avatar"
+        type="avatar"
+      />
+
+      {/* Banner Library Modal */}
+      <AvatarLibraryModal
+        isOpen={showBannerLibrary}
+        onClose={() => setShowBannerLibrary(false)}
+        onSelect={(imageUrl) => {
+          handleProfileUpdate({ bannerImage: imageUrl });
+          setShowBannerLibrary(false);
+        }}
+        title="Choose Your Banner"
+        type="banner"
+      />
       </div>
     </div>
   );

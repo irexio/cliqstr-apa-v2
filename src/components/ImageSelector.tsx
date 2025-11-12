@@ -21,6 +21,7 @@ interface ImageSelectorProps {
   mode?: 'compact' | 'full'; // compact = smaller grid, full = 6 columns
   categoryFilter?: string; // Optional: pre-filter by category
   className?: string;
+  type?: 'avatar' | 'banner'; // 'avatar' or 'banner' - defaults to 'avatar'
 }
 
 export const ImageSelector: React.FC<ImageSelectorProps> = ({
@@ -29,33 +30,35 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
   mode = 'full',
   categoryFilter,
   className = '',
+  type = 'avatar',
 }) => {
   const [avatars, setAvatars] = useState<Avatar[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState(categoryFilter || 'occupations');
+  const [activeCategory, setActiveCategory] = useState(categoryFilter || (type === 'banner' ? 'hobby' : 'occupations'));
   const [searchQuery, setSearchQuery] = useState('');
   const [displayedAvatars, setDisplayedAvatars] = useState<Avatar[]>([]);
 
-  // Fetch all avatars on mount
+  // Fetch all images on mount
   useEffect(() => {
-    fetchAllAvatars();
+    fetchAllImages();
     fetchCategories();
-  }, []);
+  }, [type]);
 
   // Filter/search whenever category or search changes
   useEffect(() => {
     filterAvatars();
   }, [activeCategory, searchQuery, avatars]);
 
-  const fetchAllAvatars = async () => {
+  const fetchAllImages = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/avatars/list');
+      const endpoint = type === 'banner' ? '/api/banners/list' : '/api/avatars/list';
+      const res = await fetch(endpoint);
       const data = await res.json();
       setAvatars(data);
     } catch (error) {
-      console.error('[ImageSelector] Error fetching avatars:', error);
+      console.error(`[ImageSelector] Error fetching ${type}s:`, error);
     } finally {
       setLoading(false);
     }
@@ -63,12 +66,13 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/avatars/list');
+      const endpoint = type === 'banner' ? '/api/banners/list' : '/api/avatars/list';
+      const res = await fetch(endpoint);
       const data = await res.json();
       const cats = new Set(data.map((a: Avatar) => a.category));
       setCategories(Array.from(cats).sort() as string[]);
     } catch (error) {
-      console.error('[ImageSelector] Error fetching categories:', error);
+      console.error(`[ImageSelector] Error fetching ${type} categories:`, error);
     }
   };
 
@@ -126,7 +130,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
       <div className="flex gap-3">
         <Input
           type="text"
-          placeholder="Search avatars... (name, tags)"
+          placeholder={`Search ${type}s... (name, tags)`}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1"
@@ -159,12 +163,12 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
               }`}
               title={avatar.displayName}
             >
-              <div className="relative w-full aspect-square mb-2">
+              <div className={`relative w-full ${type === 'banner' ? 'aspect-video' : 'aspect-square'} mb-2`}>
                 <Image
-                  src={`/IMAGE-FEATURE/AVATARS/${avatar.id}.png`}
+                  src={`/IMAGE-FEATURE/${type === 'banner' ? 'BANNERS' : 'AVATARS'}/${avatar.id}.png`}
                   alt={avatar.displayName}
                   fill
-                  className="object-contain rounded"
+                  className={`${type === 'banner' ? 'object-cover' : 'object-contain'} rounded`}
                   sizes="(max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
                 />
               </div>
@@ -177,14 +181,14 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
       ) : (
         <div className="flex items-center justify-center py-12">
           <p className="text-gray-500">
-            {searchQuery ? 'No avatars match your search' : 'No avatars available'}
+            {searchQuery ? `No ${type}s match your search` : `No ${type}s available`}
           </p>
         </div>
       )}
 
       {/* Display Count */}
       <div className="text-sm text-gray-600 text-center">
-        Showing {displayedAvatars.length} of {avatars.length} avatars
+        Showing {displayedAvatars.length} of {avatars.length} {type}s
       </div>
     </div>
   );
