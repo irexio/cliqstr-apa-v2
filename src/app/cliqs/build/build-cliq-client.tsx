@@ -24,6 +24,7 @@ import { UploadDropzone } from '@/lib/uploadthing-client';
 import type { OurFileRouter } from '@/app/api/uploadthing/core';
 import { fetchJson } from '@/lib/fetchJson';
 import Image from 'next/image';
+import { AvatarLibraryModal } from '@/components/AvatarLibraryModal';
 
 export default function BuildCliqClient() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function BuildCliqClient() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showAvatarLibrary, setShowAvatarLibrary] = useState(false);
 
   const stripTags = (input: string) =>
     input.replace(/<[^>]*>?/gm, '').trim(); // 🧽 Strip HTML + trim
@@ -155,9 +157,33 @@ export default function BuildCliqClient() {
 
         <div>
           <Label>Banner Image</Label>
-          <p className="text-xs text-neutral-500 italic mb-2">
+          <p className="text-xs text-neutral-500 italic mb-3">
             Ideal size: 1200 x 630 pixels for best results. Max file size: 4MB.
           </p>
+
+          {/* Banner Image Buttons */}
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                const uploadElement = document.querySelector('[class*="uploadthing"]') as HTMLElement;
+                uploadElement?.click();
+              }}
+              className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            >
+              <span>📤</span>
+              Upload Custom
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAvatarLibrary(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            >
+              <span>🎨</span>
+              Choose from Library
+            </button>
+          </div>
+        
           {uploading && (
             <div className="mb-4 p-3 bg-black border border-black rounded-lg">
               <div className="flex items-center gap-2 text-white">
@@ -226,6 +252,14 @@ export default function BuildCliqClient() {
           {uploading ? 'Uploading image...' : loading ? 'Creating...' : 'Create Cliq'}
         </Button>
       </form>
+
+      {/* Avatar Library Modal */}
+      <AvatarLibraryModal
+        isOpen={showAvatarLibrary}
+        onClose={() => setShowAvatarLibrary(false)}
+        onSelect={setBannerImage}
+        title="Choose a Banner for Your Cliq"
+      />
     </div>
   );
 }

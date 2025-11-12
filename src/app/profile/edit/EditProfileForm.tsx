@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AvatarLibraryModal } from '@/components/AvatarLibraryModal';
 
 interface MyProfile {
   id: string;
@@ -31,6 +32,8 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showAvatarLibrary, setShowAvatarLibrary] = useState(false);
+  const [showBannerLibrary, setShowBannerLibrary] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,6 +167,52 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
         </p>
       </div>
 
+      {/* Avatar Library */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Profile Avatar
+        </label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAvatarLibrary(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+          >
+            <span>🎨</span>
+            Choose from Library
+          </button>
+        </div>
+        {avatarUrl && (
+          <div className="mt-2">
+            <p className="text-xs text-gray-500 mb-1">Current avatar:</p>
+            <img src={avatarUrl} alt="Profile Avatar" className="w-16 h-16 rounded-lg" />
+          </div>
+        )}
+      </div>
+
+      {/* Banner Library */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Profile Banner
+        </label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setShowBannerLibrary(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+          >
+            <span>🎨</span>
+            Choose from Library
+          </button>
+        </div>
+        {bannerUrl && (
+          <div className="mt-2">
+            <p className="text-xs text-gray-500 mb-1">Current banner:</p>
+            <img src={bannerUrl} alt="Profile Banner" className="w-full h-24 rounded-lg object-cover" />
+          </div>
+        )}
+      </div>
+
       {/* Birthdate - Read Only */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -214,6 +263,62 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
           {loading ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
+
+      {/* Avatar Library Modal */}
+      <AvatarLibraryModal
+        isOpen={showAvatarLibrary}
+        onClose={() => setShowAvatarLibrary(false)}
+        onSelect={(imageUrl) => {
+          // Extract just the avatar ID from the URL for avatar usage
+          const avatarId = imageUrl.split('/').pop()?.replace('.png', '') || '';
+          // For profile avatar, we use the full URL
+          // Update the avatarUrl by calling the parent with it
+          // Since we can't update avatarUrl directly here, we'll need to handle this in the parent
+          // For now, we'll store it in a temp state and include in submission
+          const tempAvatarUrl = imageUrl;
+          // Pass it through the form data
+          fetch('/api/profile/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: username.trim(),
+              displayName: displayName.trim() || null,
+              about: about.trim() || null,
+              showYear,
+              image: tempAvatarUrl,
+              bannerImage: bannerUrl,
+            }),
+          }).then(() => {
+            router.refresh();
+            setShowAvatarLibrary(false);
+          }).catch((err) => setError(err.message));
+        }}
+        title="Choose Your Avatar"
+      />
+
+      {/* Banner Library Modal */}
+      <AvatarLibraryModal
+        isOpen={showBannerLibrary}
+        onClose={() => setShowBannerLibrary(false)}
+        onSelect={(imageUrl) => {
+          fetch('/api/profile/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: username.trim(),
+              displayName: displayName.trim() || null,
+              about: about.trim() || null,
+              showYear,
+              image: avatarUrl,
+              bannerImage: imageUrl,
+            }),
+          }).then(() => {
+            router.refresh();
+            setShowBannerLibrary(false);
+          }).catch((err) => setError(err.message));
+        }}
+        title="Choose Your Banner"
+      />
     </form>
   );
 }
