@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { UploadButton } from '@/lib/uploadthing-client';
 import { AvatarLibraryModal } from '@/components/AvatarLibraryModal';
 
 interface MyProfile {
@@ -34,6 +35,8 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
   const [error, setError] = useState('');
   const [showAvatarLibrary, setShowAvatarLibrary] = useState(false);
   const [showBannerLibrary, setShowBannerLibrary] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,14 +182,63 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
               <img src={bannerUrl} alt="Profile Banner" className="w-full h-32 rounded-lg object-cover" />
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setShowBannerLibrary(true)}
-            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
-          >
-            <span>🎨</span>
-            Choose from Library
-          </button>
+          <div className="flex gap-2">
+            <UploadButton
+              endpoint="banner"
+              onClientUploadComplete={(res: any) => {
+                if (res && res[0]?.url) {
+                  const imageUrl = res[0].url;
+                  fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      username: username.trim(),
+                      displayName: displayName.trim() || null,
+                      about: about.trim() || null,
+                      showYear,
+                      image: avatarUrl,
+                      bannerImage: imageUrl,
+                    }),
+                  }).then(() => {
+                    router.refresh();
+                    setIsUploadingBanner(false);
+                  }).catch((err) => setError(err.message));
+                }
+              }}
+              onUploadError={(err: any) => {
+                setError(err.message || 'Upload failed');
+                setIsUploadingBanner(false);
+              }}
+              onUploadBegin={() => {
+                setIsUploadingBanner(true);
+              }}
+              appearance={{
+                button: 'flex-1 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 ut-allowed-content:hidden',
+                allowedContent: 'hidden',
+              }}
+              content={{
+                button: isUploadingBanner ? (
+                  <>
+                    <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <span>📤</span>
+                    Upload Custom
+                  </>
+                ),
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowBannerLibrary(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            >
+              <span>🎨</span>
+              Choose from Library
+            </button>
+          </div>
         </div>
 
         {/* Avatar */}
@@ -199,14 +251,63 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
               <img src={avatarUrl} alt="Profile Avatar" className="w-16 h-16 rounded-lg object-cover" />
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setShowAvatarLibrary(true)}
-            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
-          >
-            <span>🎨</span>
-            Choose from Library
-          </button>
+          <div className="flex gap-2">
+            <UploadButton
+              endpoint="avatar"
+              onClientUploadComplete={(res: any) => {
+                if (res && res[0]?.url) {
+                  const imageUrl = res[0].url;
+                  fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      username: username.trim(),
+                      displayName: displayName.trim() || null,
+                      about: about.trim() || null,
+                      showYear,
+                      image: imageUrl,
+                      bannerImage: bannerUrl,
+                    }),
+                  }).then(() => {
+                    router.refresh();
+                    setIsUploadingAvatar(false);
+                  }).catch((err) => setError(err.message));
+                }
+              }}
+              onUploadError={(err: any) => {
+                setError(err.message || 'Upload failed');
+                setIsUploadingAvatar(false);
+              }}
+              onUploadBegin={() => {
+                setIsUploadingAvatar(true);
+              }}
+              appearance={{
+                button: 'flex-1 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 ut-allowed-content:hidden',
+                allowedContent: 'hidden',
+              }}
+              content={{
+                button: isUploadingAvatar ? (
+                  <>
+                    <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <span>📤</span>
+                    Upload Custom
+                  </>
+                ),
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowAvatarLibrary(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+            >
+              <span>🎨</span>
+              Choose from Library
+            </button>
+          </div>
         </div>
       </div>
 
