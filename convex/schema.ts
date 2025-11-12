@@ -480,4 +480,17 @@ export default defineSchema({
   })
     .index("by_category", ["category"])
     .index("by_subcategory", ["subcategory"]),
+
+  // Banner Library - Themed banners for cliq and profile customization
+  bannerLibrary: defineTable({
+    id: v.string(), // Unique identifier (e.g., "beach-sunset")
+    displayName: v.string(), // Pretty display name (e.g., "Beach Sunset")
+    category: v.string(), // Main category (nature, hobby, sports, patterns, etc.)
+    subcategory: v.string(), // Subcategory (e.g., "beach", "fishing", "gaming")
+    tags: v.array(v.string()), // Searchable tags (e.g., ["beach", "sunset", "travel"])
+    description: v.string(), // Banner description
+    createdAt: v.number(), // When banner was added to library
+  })
+    .index("by_category", ["category"])
+    .index("by_subcategory", ["subcategory"]),
 });
