@@ -38,6 +38,8 @@ export default function EditProfilePageClient({ profile }: EditProfilePageClient
               profile={profile} 
               avatarUrl={avatarUrl}
               bannerUrl={bannerUrl}
+              onAvatarChange={setAvatarUrl}
+              onBannerChange={setBannerUrl}
             />
           </div>
         </div>

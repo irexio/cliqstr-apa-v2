@@ -20,9 +20,11 @@ interface EditProfileFormProps {
   profile: MyProfile;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
+  onAvatarChange?: (url: string) => void;
+  onBannerChange?: (url: string) => void;
 }
 
-export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditProfileFormProps) {
+export default function EditProfileForm({ profile, avatarUrl, bannerUrl, onAvatarChange, onBannerChange }: EditProfileFormProps) {
   const router = useRouter();
   
   // firstName, lastName, and birthdate are read-only from Account
@@ -367,14 +369,9 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
         isOpen={showAvatarLibrary}
         onClose={() => setShowAvatarLibrary(false)}
         onSelect={(imageUrl) => {
-          // Extract just the avatar ID from the URL for avatar usage
-          const avatarId = imageUrl.split('/').pop()?.replace('.png', '') || '';
-          // For profile avatar, we use the full URL
-          // Update the avatarUrl by calling the parent with it
-          // Since we can't update avatarUrl directly here, we'll need to handle this in the parent
-          // For now, we'll store it in a temp state and include in submission
-          const tempAvatarUrl = imageUrl;
-          // Pass it through the form data
+          // Update local state immediately for preview
+          onAvatarChange?.(imageUrl);
+          // Update in database
           fetch('/api/profile/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -383,7 +380,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
               displayName: displayName.trim() || null,
               about: about.trim() || null,
               showYear,
-              image: tempAvatarUrl,
+              image: imageUrl,
               bannerImage: bannerUrl,
             }),
           }).then(() => {
@@ -400,6 +397,9 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl }: EditP
         isOpen={showBannerLibrary}
         onClose={() => setShowBannerLibrary(false)}
         onSelect={(imageUrl) => {
+          // Update local state immediately for preview
+          onBannerChange?.(imageUrl);
+          // Update in database
           fetch('/api/profile/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
