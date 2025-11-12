@@ -29,8 +29,6 @@ const createChildSchema = z.object({
   redAlertAccepted: z.boolean(),
   silentMonitoring: z.boolean(),
   secondParentEmail: z.string().email().optional(),
-  parentMobileNumber: z.string().optional().or(z.literal('')),
-  secondParentMobileNumber: z.string().optional().or(z.literal('')),
   approvalToken: z.string().optional(),
   inviteCode: z.string().optional(),
 }).refine(
@@ -147,7 +145,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const { username, password, childEmail, firstName, lastName, birthdate, permissions, redAlertAccepted, silentMonitoring, secondParentEmail, approvalToken, parentMobileNumber, secondParentMobileNumber } = parsed.data;
+    const { username, password, childEmail, firstName, lastName, birthdate, permissions, redAlertAccepted, silentMonitoring, secondParentEmail, approvalToken, inviteCode } = parsed.data;
 
     console.log(`[PARENT-CHILDREN] Creating child account: ${username} for parent ${user.email}`);
 
@@ -286,9 +284,7 @@ export async function POST(req: NextRequest) {
           canViewActivity: true,
           receivesNotifications: true,
         },
-        mobileNumber: parentMobileNumber || undefined,
         secondParentEmail: secondParentEmail || undefined,
-        secondParentMobileNumber: secondParentMobileNumber || undefined,
       });
 
       console.log(`[PARENT-CHILDREN] Created parent link with ID: ${parentLinkId}`);

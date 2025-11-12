@@ -42,8 +42,6 @@ export default function ChildPermissionForm({
   const [currentPassword, setCurrentPassword] = useState('');
   const [childEmail, setChildEmail] = useState('');
   const [secondParentEmail, setSecondParentEmail] = useState('');
-  const [parentMobileNumber, setParentMobileNumber] = useState('');
-  const [secondParentMobileNumber, setSecondParentMobileNumber] = useState('');
 
   // Consent & Monitoring
   const [redAlertAccepted, setRedAlertAccepted] = useState(false);
@@ -187,8 +185,6 @@ export default function ChildPermissionForm({
         redAlertAccepted: mode === 'create' ? redAlertAccepted : undefined,
         silentMonitoring,
         secondParentEmail: secondParentEmail.trim() || undefined,
-        parentMobileNumber: parentMobileNumber.trim() || undefined,
-        secondParentMobileNumber: secondParentMobileNumber.trim() || undefined,
         permissions,
       };
 
@@ -279,22 +275,6 @@ export default function ChildPermissionForm({
               <p className="text-red-800 text-sm sm:text-base">
                 The Red Alert System immediately suspends posts and notifies AI moderation and parents of concerning behavior. This is a critical safety feature.
               </p>
-              <div>
-                <Label htmlFor="parentMobile" className="text-red-800 font-medium text-sm sm:text-base">
-                  Primary Parent/Guardian Mobile Number
-                </Label>
-                <Input
-                  id="parentMobile"
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  value={parentMobileNumber}
-                  onChange={(e) => setParentMobileNumber(e.target.value)}
-                  className="text-sm sm:text-base mt-1"
-                />
-                <p className="text-red-700 text-xs sm:text-sm mt-1">
-                  Used for Red Alert SMS notifications (optional)
-                </p>
-              </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="redAlert"
@@ -365,21 +345,6 @@ export default function ChildPermissionForm({
                   placeholder="other-parent@example.com"
                   className="text-sm sm:text-base"
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="secondParentMobile" className="text-sm sm:text-base font-medium">Additional Parent/Guardian Mobile (Optional)</Label>
-                <Input
-                  id="secondParentMobile"
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  value={secondParentMobileNumber}
-                  onChange={(e) => setSecondParentMobileNumber(e.target.value)}
-                  className="text-sm sm:text-base"
-                />
-                <p className="text-gray-600 text-xs sm:text-sm mt-1">
-                  Used for Red Alert SMS notifications if provided
-                </p>
               </div>
             </CardContent>
           </Card>

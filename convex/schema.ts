@@ -467,4 +467,17 @@ export default defineSchema({
     .index("by_cliq_id", ["cliqId"])
     .index("by_created_by", ["createdByUserId"])
     .index("by_series_id", ["seriesId"]),
+
+  // Avatar Library - 120 customizable avatars for users and cliqs
+  avatarLibrary: defineTable({
+    id: v.string(), // Unique identifier (e.g., "zealous-zebra")
+    displayName: v.string(), // Pretty display name (e.g., "Zealous Zebra")
+    category: v.string(), // Main category (occupations, animals, fantasy, sports, fuzzballs, families)
+    subcategory: v.string(), // Subcategory (e.g., "healthcare", "racing", "dance")
+    tags: v.array(v.string()), // Searchable tags (e.g., ["doctor", "professional", "bear"])
+    description: v.string(), // Character description
+    createdAt: v.number(), // When avatar was added to library
+  })
+    .index("by_category", ["category"])
+    .index("by_subcategory", ["subcategory"]),
 });

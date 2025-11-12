@@ -174,34 +174,32 @@ export default function InviteClient({ cliqId }: InviteClientProps) {
 
       setSuccess(true);
       
+      // Reset form for both child and adult invites
+      setFriendFirstName('');
+      setFriendLastName('');
+      setChildBirthdate('');
+      setParentEmail('');
+      setTrustedAdultContact('');
+      setInviteType('');
+      setInviteNote('');
+      
+      // For both child and adult invites, redirect to invite sent page
+      let recipientName = '';
       if (inviteType === 'child') {
-        // Child invites redirect to awaiting approval
-        setTimeout(() => {
-          window.location.href = '/awaiting-approval';
-        }, 1500);
+        recipientName = `${friendFirstName} ${friendLastName}`;
       } else {
-        // Adult invites redirect to invite sent page
-        // Reset form
-        setFriendFirstName('');
-        setFriendLastName('');
-        setChildBirthdate('');
-        setParentEmail('');
-        setTrustedAdultContact('');
-        setInviteType('');
-        setInviteNote('');
-        
-        // Redirect to invitation sent page with details
-        const recipientName = trustedAdultContact.trim();
-        const params = new URLSearchParams({
-          name: recipientName,
-          type: inviteType
-        });
-        
-        // Use router to navigate after a brief delay to show success message
-        setTimeout(() => {
-          window.location.href = `/invite/sent?${params.toString()}`;
-        }, 1500);
+        recipientName = trustedAdultContact.trim();
       }
+      
+      const params = new URLSearchParams({
+        name: recipientName,
+        type: inviteType
+      });
+      
+      // Use router to navigate after a brief delay to show success message
+      setTimeout(() => {
+        window.location.href = `/invite/sent?${params.toString()}`;
+      }, 1500);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
