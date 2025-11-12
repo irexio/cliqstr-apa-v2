@@ -232,16 +232,26 @@ export default function BuildCliqClient() {
         {bannerImage && (
           <div className="mt-4">
             <div className="mb-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-700">
-              ✅ Banner image uploaded successfully!
+              ✅ Banner image selected!
             </div>
             <div className="w-full max-w-md">
-              <Image
-                src={bannerImage}
-                alt="Banner Preview"
-                width={600}
-                height={200}
-                className="rounded border object-cover w-full"
-              />
+              {bannerImage.startsWith('/IMAGE-FEATURE/') ? (
+                // Library images: use regular img tag
+                <img
+                  src={bannerImage}
+                  alt="Banner Preview"
+                  className="rounded border object-cover w-full"
+                />
+              ) : (
+                // Uploaded images: use Next.js Image component for optimization
+                <Image
+                  src={bannerImage}
+                  alt="Banner Preview"
+                  width={600}
+                  height={200}
+                  className="rounded border object-cover w-full"
+                />
+              )}
             </div>
           </div>
         )}
