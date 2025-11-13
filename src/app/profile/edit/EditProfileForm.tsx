@@ -79,7 +79,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl, onAvata
       }
       router.refresh();
     } catch (err: any) {
-      setError(err.message);
+      setError(typeof err === 'string' ? err : err?.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -204,11 +204,11 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl, onAvata
                   }).then(() => {
                     router.refresh();
                     setIsUploadingBanner(false);
-                  }).catch((err) => setError(err.message));
+                  }).catch((err) => setError(typeof err === 'string' ? err : err?.message || 'Failed to update profile'));
                 }
               }}
               onUploadError={(err: any) => {
-                setError(err.message || 'Upload failed');
+                setError(typeof err === 'string' ? err : err?.message || 'Banner upload failed');
                 setIsUploadingBanner(false);
               }}
               onUploadBegin={() => {
@@ -273,11 +273,11 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl, onAvata
                   }).then(() => {
                     router.refresh();
                     setIsUploadingAvatar(false);
-                  }).catch((err) => setError(err.message));
+                  }).catch((err) => setError(typeof err === 'string' ? err : err?.message || 'Failed to update profile'));
                 }
               }}
               onUploadError={(err: any) => {
-                setError(err.message || 'Upload failed');
+                setError(typeof err === 'string' ? err : err?.message || 'Avatar upload failed');
                 setIsUploadingAvatar(false);
               }}
               onUploadBegin={() => {
@@ -386,7 +386,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl, onAvata
           }).then(() => {
             router.refresh();
             setShowAvatarLibrary(false);
-          }).catch((err) => setError(err.message));
+          }).catch((err) => setError(typeof err === 'string' ? err : err?.message || 'Failed to update avatar'));
         }}
         title="Choose Your Avatar"
         type="avatar"
@@ -414,7 +414,7 @@ export default function EditProfileForm({ profile, avatarUrl, bannerUrl, onAvata
           }).then(() => {
             router.refresh();
             setShowBannerLibrary(false);
-          }).catch((err) => setError(err.message));
+          }).catch((err) => setError(typeof err === 'string' ? err : err?.message || 'Failed to update banner'));
         }}
         title="Choose Your Banner"
         type="banner"
