@@ -19,7 +19,6 @@ export const dynamic = 'force-dynamic';
  * - /api/banners/list?q=beach → Search for beach
  * - /api/banners/list?category=nature&random=true → Random nature banner
  */
-// @ts-expect-error bannerLibrary types regenerate on deployment
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
