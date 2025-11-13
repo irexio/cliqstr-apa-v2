@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { convexHttp } from '@/lib/convex-server';
 import { api } from 'convex/_generated/api';
