@@ -28,8 +28,14 @@ const updateProfileSchema = z.object({
     'Username can only contain letters, numbers, underscores and hyphens').optional(),
   displayName: z.string().max(50).optional().nullable(), // Nickname for social display
   about: z.string().max(500).optional().nullable(),
-  image: z.union([z.string().url(), z.literal('')]).optional().nullable(),
-  bannerImage: z.union([z.string().url(), z.literal('')]).optional().nullable(),
+  image: z.string().refine(
+    (url) => url === '' || url.startsWith('/IMAGE-FEATURE/') || url.startsWith('http'),
+    'Invalid image URL'
+  ).optional().nullable(),
+  bannerImage: z.string().refine(
+    (url) => url === '' || url.startsWith('/IMAGE-FEATURE/') || url.startsWith('http'),
+    'Invalid banner URL'
+  ).optional().nullable(),
   showYear: z.boolean().optional(),
   aiModerationLevel: z.enum(['strict', 'moderate', 'relaxed']).optional(),
 });
